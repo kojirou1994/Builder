@@ -1,0 +1,52 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Executable",
+        "repositoryURL": "git@github.com:kojirou1994/Executable.git",
+        "state": {
+          "branch": null,
+          "revision": "1518110295a865364960883a2fa124d552a24bab",
+          "version": "0.2.2"
+        }
+      },
+      {
+        "package": "Kwift",
+        "repositoryURL": "https://github.com/kojirou1994/Kwift.git",
+        "state": {
+          "branch": null,
+          "revision": "370e9821326c3c8985b644e78dac2f61a683e0bd",
+          "version": "0.8.5"
+        }
+      },
+      {
+        "package": "swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "state": {
+          "branch": null,
+          "revision": "9564d61b08a5335ae0a36f789a7d71493eacadfc",
+          "version": "0.3.2"
+        }
+      },
+      {
+        "package": "swift-tools-support-core",
+        "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
+        "state": {
+          "branch": null,
+          "revision": "243beea77d20db46647a3de4765c96e2c801c7c7",
+          "version": "0.1.12"
+        }
+      },
+      {
+        "package": "URLFileManager",
+        "repositoryURL": "https://github.com/kojirou1994/URLFileManager.git",
+        "state": {
+          "branch": null,
+          "revision": "bab5addd61c2f274ed4fc392f90fcd105e834760",
+          "version": "0.1.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
