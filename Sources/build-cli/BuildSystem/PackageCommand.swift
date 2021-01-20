@@ -7,7 +7,7 @@ struct PackageCommand<T: Package>: ParsableCommand {
           version: "")
   }
 
-  @Option(name: .shortAndLong, help: "Library type")
+  @Option(name: .shortAndLong, help: "Library type, available: \(PackageLib.allCases.map(\.rawValue).joined(separator: ", "))")
   var library: PackageLib = .statik
 
   @Option(help: "Customize the package version, if supported.")
@@ -46,6 +46,10 @@ struct PackageCommand<T: Package>: ParsableCommand {
     try ProcessEnv.setVar("PKG_CONFIG_PATH", value: productsDirectoryURL.appendingPathComponent("lib")
                           .appendingPathComponent("pkgconfig").path)
 
+    let oldPATH = ProcessEnv.path ?? ""
+    let newPATH = productsDirectoryURL.appendingPathComponent("bin").path + ":" + oldPATH
+    try ProcessEnv.setVar("PATH", value: newPATH)
+
     try builder.startBuild(package: package)
   }
 }
@@ -57,6 +61,8 @@ extension Builder {
 //      builtPackages = .init()
 //    }
     try? removeItem(at: productsDirectoryURL)
+    try? removeItem(at: srcRootDirectoryURL)
+    
     try mkdir(downloadCacheDirectory)
 
     try buildPackageAndDeps(package: package)

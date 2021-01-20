@@ -14,7 +14,11 @@ struct BuildCli: ParsableCommand {
       PackageCommand<x264>.self,
       PackageCommand<x265>.self,
       PackageCommand<Ogg>.self,
-      PackageCommand<Vorbis>.self
+      PackageCommand<Vorbis>.self,
+      PackageCommand<Mozjpeg>.self,
+      PackageCommand<Webp>.self,
+      PackageCommand<Png>.self,
+      PackageCommand<Aribb24>.self
     ])
   }
 

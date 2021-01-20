@@ -24,6 +24,20 @@ enum PackageLib: String, ExpressibleByArgument, CaseIterable, CustomStringConver
   var buildShared: Bool {
     self != .statik
   }
+
+  var staticConfigureFlag: String {
+    buildStatic.configureFlag("static")
+  }
+  var sharedConfigureFlag: String {
+    buildShared.configureFlag("shared")
+  }
+
+  var staticCmakeFlag: String {
+    buildStatic.cmakeFlag("ENABLE_STATIC")
+  }
+  var sharedCmakeFlag: String {
+    buildShared.cmakeFlag("ENABLE_SHARED")
+  }
 }
 
 enum BuildTarget: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {

@@ -21,22 +21,6 @@ struct Builder {
     _ = try launcher.launch(executable: executable, options: .init(checkNonZeroExitCode: true))
   }
 
-  func make(_ targets: String...) throws {
-    try launch(Make(targets: targets))
-  }
-
-  func configure(_ arguments: String?...) throws {
-    try configure(arguments)
-  }
-
-  func configure(_ arguments: [String?]) throws {
-    try launch(path: "configure",
-               CollectionOfOne("--prefix=\(settings.prefix)") + arguments.compactMap {$0})
-  }
-
-  func autoreconf() throws {
-    try launch("autoreconf", "-if")
-  }
   func launch(_ executableName: String, _ arguments: String?...) throws {
     try launch(executableName, arguments)
   }
@@ -124,5 +108,34 @@ extension Builder {
         try package.build(with: self)
       })
     })
+  }
+}
+
+// MARK: Common tools
+extension Builder {
+  func make(_ targets: String...) throws {
+    try launch(Make(targets: targets))
+  }
+
+  func cmake(_ arguments: String?...) throws {
+    try cmake(arguments)
+  }
+  func cmake(_ arguments: [String?]) throws {
+    try launch("cmake",
+               ["-DCMAKE_INSTALL_PREFIX=\(settings.prefix)", "-DCMAKE_BUILD_TYPE=Release"]
+                + arguments.compactMap {$0})
+  }
+
+  func configure(_ arguments: String?...) throws {
+    try configure(arguments)
+  }
+
+  func configure(_ arguments: [String?]) throws {
+    try launch(path: "configure",
+               CollectionOfOne("--prefix=\(settings.prefix)") + arguments.compactMap {$0})
+  }
+
+  func autoreconf() throws {
+    try launch("autoreconf", "-if")
   }
 }

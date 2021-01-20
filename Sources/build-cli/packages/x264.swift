@@ -10,12 +10,13 @@ struct x264: Package {
       "--disable-ffms",
       "--disable-gpac",
       enableLsmash ? nil : "--disable-lsmash")
+    
     try builder.make("install")
   }
 
   var version: BuildVersion {
-    //    .ball(url: URL(string: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")!, filename: nil)
-    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
+    .ball(url: URL(string: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")!, filename: nil)
+//    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
   }
 
   enum Mp4Support: String, ExpressibleByArgument {
