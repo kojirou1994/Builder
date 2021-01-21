@@ -59,7 +59,6 @@ struct x265: Package {
         "libx265.a",
         "libx265_main.a", "libx265_main10.a",
         "libx265_main12.a")
-      try builder.launch("ranlib", "libx265.a")
       #else
       fatalError("Unsupported os!")
       #endif
