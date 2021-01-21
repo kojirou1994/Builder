@@ -36,7 +36,7 @@ struct PackageCommand<T: Package>: ParsableCommand {
     let downloadCacheDirectory = builderDirectoryURL.appendingPathComponent("download")
     let productsDirectoryURL = builderDirectoryURL.appendingPathComponent("products")
 
-    let builder = Builder(
+    var builder = Builder(
       settings: .init(prefix: productsDirectoryURL.path,
                       library: library),
       srcRootDirectoryURL: workingRootDirectoryURL,
@@ -55,11 +55,11 @@ struct PackageCommand<T: Package>: ParsableCommand {
 }
 
 extension Builder {
-  func startBuild(package: Package) throws {
-//    builtPackages = .init()
-//    defer {
-//      builtPackages = .init()
-//    }
+  mutating func startBuild(package: Package) throws {
+    builtPackages = .init()
+    defer {
+      builtPackages = .init()
+    }
     try? removeItem(at: productsDirectoryURL)
     try? removeItem(at: srcRootDirectoryURL)
     
@@ -68,7 +68,7 @@ extension Builder {
     try buildPackageAndDeps(package: package)
   }
 
-  private func buildPackageAndDeps(package: Package) throws {
+  private mutating func buildPackageAndDeps(package: Package) throws {
     let deps = package.dependencies
     print("Building \(package.name)")
     if !deps.isEmpty {
@@ -78,5 +78,6 @@ extension Builder {
       }
     }
     try build(package: package)
+    builtPackages.insert(package.name)
   }
 }

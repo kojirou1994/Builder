@@ -3,7 +3,7 @@ import KwiftUtility
 
 struct Builder {
 
-//  var builtPackages: Set<ObjectIdentifier> = .init()
+  var builtPackages: Set<String> = .init()
 
   private let launcher = BuilderLauncher()
 
@@ -91,9 +91,10 @@ struct Builder {
 
 extension Builder {
   func build(package: Package) throws {
-//    if builtPackages.contains() {
-//
-//    }
+    if builtPackages.contains(package.name) {
+      print("SKIP BUILDING \(package.name).")
+      return
+    }
     try withChangingDirectory(srcRootDirectoryURL, block: { cwd in
       let srcDir = cwd.appendingPathComponent(package.name)
       if fm.fileExistance(at: srcDir).exists {
@@ -126,6 +127,18 @@ extension Builder {
                 + arguments.compactMap {$0})
   }
 
+  func meson(_ arguments: String?...) throws {
+    try meson(arguments)
+  }
+  func meson(_ arguments: [String?]) throws {
+    try launch("meson",
+               ["--prefix=\(settings.prefix)",
+                "--buildtype=release",
+//                "--wrap-mode=nofallback
+               ]
+                + arguments.compactMap {$0})
+  }
+
   func configure(_ arguments: String?...) throws {
     try configure(arguments)
   }
@@ -138,4 +151,14 @@ extension Builder {
   func autoreconf() throws {
     try launch("autoreconf", "-if")
   }
+}
+
+func replace(contentIn file: URL, matching string: String, with newString: String) throws {
+  try String(contentsOf: file)
+    .replacingOccurrences(of: string, with: newString)
+    .write(to: file, atomically: true, encoding: .utf8)
+}
+
+func replace(contentIn file: String, matching string: String, with newString: String) throws {
+  try replace(contentIn: URL(fileURLWithPath: file), matching: string, with: newString)
 }

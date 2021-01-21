@@ -21,6 +21,15 @@ enum PackageLib: String, ExpressibleByArgument, CaseIterable, CustomStringConver
     self != .shared
   }
 
+  var mesonFlag: String {
+    switch self {
+    case .all:
+      return "both"
+    default:
+      return rawValue
+    }
+  }
+
   var buildShared: Bool {
     self != .statik
   }
@@ -47,3 +56,14 @@ enum BuildTarget: String, ExpressibleByArgument, CaseIterable, CustomStringConve
   var description: String { rawValue }
 
 }
+
+var sharedLibraryPathExtension: String {
+  #if os(macOS)
+  return "dylib"
+  #elseif os(Linux)
+  return "so"
+  #else
+  #error("Unsupported OS!")
+  #endif
+}
+

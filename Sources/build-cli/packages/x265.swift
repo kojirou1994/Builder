@@ -39,7 +39,6 @@ struct x265: Package {
         "-DEXTRA_LINK_FLAGS=-L.",
         "-DLINKED_10BIT=ON",
         "-DLINKED_12BIT=ON",
-        builder.settings.library.staticCmakeFlag,
         builder.settings.library.sharedCmakeFlag,
         cli.cmakeFlag("ENABLE_CLI", defaultEnabled: true)
         )

@@ -18,7 +18,15 @@ struct BuildCli: ParsableCommand {
       PackageCommand<Mozjpeg>.self,
       PackageCommand<Webp>.self,
       PackageCommand<Png>.self,
-      PackageCommand<Aribb24>.self
+      PackageCommand<Aribb24>.self,
+      PackageCommand<Vpx>.self,
+      PackageCommand<Lame>.self,
+      PackageCommand<Opencore>.self,
+      PackageCommand<Ass>.self,
+      PackageCommand<Freetype>.self,
+      PackageCommand<Fribidi>.self,
+      PackageCommand<Harfbuzz>.self,
+      PackageCommand<Icu4c>.self
     ])
   }
 

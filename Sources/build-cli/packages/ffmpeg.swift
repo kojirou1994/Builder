@@ -13,6 +13,9 @@ struct Ffmpeg: Package {
   private var configure: [String] = []
 
   @Option
+  private var preset: Preset?
+
+  @Option
   private var configureFile: String?
 
   enum FFmpegDependeny: String, EnumerableFlag {
@@ -23,6 +26,8 @@ struct Ffmpeg: Package {
     case libx265
     case libwebp
     case libaribb24
+    case libopencore
+    case libass
 
     case apple
 
@@ -62,10 +67,7 @@ struct Ffmpeg: Package {
     /*
      EXTERNAL_LIBRARY_VERSION3_LIST='
      gmp
-     libaribb24
      liblensfun
-     libopencore_amrnb
-     libopencore_amrwb
      libvmaf
      libvo_amrwbenc
      mbedtls
@@ -74,7 +76,7 @@ struct Ffmpeg: Package {
      */
     var isVersion3: Bool {
       switch self {
-      case .libaribb24:
+      case .libaribb24, .libopencore:
         return true
       default:
         return false
@@ -123,8 +125,11 @@ struct Ffmpeg: Package {
       }
       switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
-           .libx264, .libx265, .libwebp, .libaribb24:
+           .libx264, .libx265, .libwebp, .libaribb24,
+           .libass:
         r.formUnion(true.configureFlag(dependency.rawValue))
+      case .libopencore:
+        r.formUnion(true.configureFlag("libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
         #if os(macOS)
         r.formUnion(true.configureFlag("audiotoolbox", "videotoolbox",
@@ -155,6 +160,10 @@ struct Ffmpeg: Package {
         deps.append(Webp.new())
       case .libaribb24:
         deps.append(Aribb24.new())
+      case .libopencore:
+        deps.append(Opencore.new())
+      case .libass:
+        deps.append(Ass.new())
       case .apple: break
       }
     }
@@ -165,9 +174,16 @@ struct Ffmpeg: Package {
     if let path = configureFile {
       configureFile = URL(fileURLWithPath: path).path
     }
+    switch preset {
+    case .allYeah:
+      print("ALL YEAH!")
+      dependencyOptions = FFmpegDependeny.allCases
+    default:
+      break
+    }
   }
 
-  enum Preset {
+  enum Preset: String, ExpressibleByArgument {
     case allYeah
   }
 
