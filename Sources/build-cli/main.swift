@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import URLFileManager
+import BuildSystem
 
 struct BuildCli: ParsableCommand {
 
@@ -26,7 +27,19 @@ struct BuildCli: ParsableCommand {
       PackageCommand<Freetype>.self,
       PackageCommand<Fribidi>.self,
       PackageCommand<Harfbuzz>.self,
-      PackageCommand<Icu4c>.self
+      PackageCommand<Icu4c>.self,
+      PackageCommand<Flac>.self,
+      PackageCommand<Ebml>.self,
+      PackageCommand<Matroska>.self,
+      PackageCommand<Fmt>.self,
+      PackageCommand<Pcre2>.self,
+      PackageCommand<Pugixml>.self,
+      PackageCommand<Mkvtoolnix>.self,
+      PackageCommand<Jpcre2>.self,
+      PackageCommand<Xml2>.self,
+      PackageCommand<Xz>.self,
+      PackageCommand<Xslt>.self,
+      PackageCommand<Gcrypt>.self,
     ])
   }
 

@@ -1,9 +1,11 @@
+import BuildSystem
+
 struct x265: Package {
   func build(with builder: Builder) throws {
 
     let srcDir = "../source"
 
-    try builder.withChangingDirectory("12bit", block: { cwd in
+    try builder.changingDirectory("12bit", block: { cwd in
       try builder.cmake(
         srcDir,
         "-DHIGH_BIT_DEPTH=ON",
@@ -14,7 +16,7 @@ struct x265: Package {
       try builder.make()
     })
 
-    try builder.withChangingDirectory("10bit", block: { cwd in
+    try builder.changingDirectory("10bit", block: { cwd in
       try builder.cmake(
         srcDir,
         "-DHIGH_BIT_DEPTH=ON",
@@ -25,11 +27,11 @@ struct x265: Package {
       try builder.make()
     })
 
-    try builder.withChangingDirectory("8bit", block: { cwd in
+    try builder.changingDirectory("8bit", block: { cwd in
 
-      try builder.fm.linkItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
+      try builder.fm.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
                               to: URL(fileURLWithPath: "libx265_main10.a"))
-      try builder.fm.linkItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
+      try builder.fm.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
                               to: URL(fileURLWithPath: "libx265_main12.a"))
 
       try builder.cmake(
@@ -59,21 +61,22 @@ struct x265: Package {
         "libx265.a",
         "libx265_main.a", "libx265_main10.a",
         "libx265_main12.a")
+      try builder.launch("ranlib", "libx265.a")
       #else
-      fatalError("Unsupported os!")
+      #error("Unsupported OS!")
       #endif
 
       try builder.make("install")
     })
   }
 
-  var version: BuildVersion {
+  var source: PackageSource {
 //    .ball(url: URL(string: "https://bitbucket.org/multicoreware/x265_git/get/3.4.tar.gz")!,
 //          filename: nil)
     .branch(repo: "https://bitbucket.org/multicoreware/x265_git.git", revision: nil)
   }
 
   @Flag(inversion: .prefixedEnableDisable)
-  var cli: Bool = true
+  var cli: Bool = false
 
 }

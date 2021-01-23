@@ -1,24 +1,29 @@
 import BuildSystem
 
-struct Ass: Package {
+struct Xslt: Package {
+//  var version: PackageVersion {
+//    .stable("2.9.10")
+//  }
+
   func build(with builder: Builder) throws {
     try builder.autoreconf()
+
     try builder.configure(
-      configureFlag(false, CommonOptions.dependencyTracking),
+      false.configureFlag(CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
       builder.settings.library.sharedConfigureFlag,
-      configureFlag(false, "fontconfig")
+      "--without-python",
+      nil
     )
 
-    try builder.make()
     try builder.make("install")
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz")
+    .tarball(url: "http://xmlsoft.org/sources/libxslt-1.1.34.tar.gz")
   }
 
   var dependencies: [Package] {
-    [Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage()]
+    [Xml2.defaultPackage(), Gcrypt.defaultPackage()]
   }
 }

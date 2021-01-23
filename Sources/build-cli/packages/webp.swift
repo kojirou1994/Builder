@@ -1,4 +1,10 @@
+import BuildSystem
+
 struct Webp: Package {
+  var version: PackageVersion {
+    .stable("1.1.0")
+  }
+
   func build(with builder: Builder) throws {
     try builder.autoreconf()
 
@@ -22,8 +28,8 @@ struct Webp: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz")
   }
 
 //  var dependencies: [Package] {

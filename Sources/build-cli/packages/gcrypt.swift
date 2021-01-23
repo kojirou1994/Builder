@@ -1,13 +1,13 @@
 import BuildSystem
 
-struct Ass: Package {
+struct Gcrypt: Package {
   func build(with builder: Builder) throws {
-    try builder.autoreconf()
+//    try builder.autoreconf()
     try builder.configure(
       configureFlag(false, CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
-      configureFlag(false, "fontconfig")
+      builder.settings.library.sharedConfigureFlag
+//      configureFlag(false, "fontconfig")
     )
 
     try builder.make()
@@ -15,10 +15,10 @@ struct Ass: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz")
+    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.7.tar.bz2")
   }
 
   var dependencies: [Package] {
-    [Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage()]
+    [GpgError.defaultPackage()]
   }
 }

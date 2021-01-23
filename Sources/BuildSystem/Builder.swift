@@ -1,45 +1,45 @@
 import URLFileManager
 import KwiftUtility
 
-struct Builder {
+public struct Builder {
 
   var builtPackages: Set<String> = .init()
 
   private let launcher = BuilderLauncher()
 
-  let fm = URLFileManager.default
+  public let fm = URLFileManager.default
 
-  let settings: BuildSettings
+  public let settings: BuildSettings
 
   let srcRootDirectoryURL: URL
 
-  let productsDirectoryURL: URL
+  public let productsDirectoryURL: URL
 
   let downloadCacheDirectory: URL
 
-  func launch<T>(_ executable: T) throws where T : Executable {
+  public func launch<T>(_ executable: T) throws where T : Executable {
     _ = try launcher.launch(executable: executable, options: .init(checkNonZeroExitCode: true))
   }
 
-  func launch(_ executableName: String, _ arguments: String?...) throws {
+  public func launch(_ executableName: String, _ arguments: String?...) throws {
     try launch(executableName, arguments)
   }
-  func launch(_ executableName: String, _ arguments: [String?]) throws {
+  public func launch(_ executableName: String, _ arguments: [String?]) throws {
     try launch(AnyExecutable(executableName: executableName, arguments: arguments.compactMap {$0}))
   }
-  func launch(path: String, _ arguments: String?...) throws {
+  public func launch(path: String, _ arguments: String?...) throws {
     try launch(path: path, arguments)
   }
 
-  func launch(path: String, _ arguments: [String?]) throws {
+  public func launch(path: String, _ arguments: [String?]) throws {
     try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
   }
 
-  func withChangingDirectory(_ path: String, create: Bool = true, block: (URL) throws -> ()) throws {
-    try withChangingDirectory(URL(fileURLWithPath: path), create: create, block: block)
+  public func changingDirectory(_ path: String, create: Bool = true, block: (URL) throws -> ()) throws {
+    try changingDirectory(URL(fileURLWithPath: path), create: create, block: block)
   }
 
-  func withChangingDirectory(_ url: URL, create: Bool = true, block: (URL) throws -> ()) throws {
+  public func changingDirectory(_ url: URL, create: Bool = true, block: (URL) throws -> ()) throws {
     if create {
       try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }
@@ -53,11 +53,12 @@ struct Builder {
     try block(url)
   }
 
-  func checkout(version: BuildVersion, directory: String) throws {
-    switch version {
-    case .branch(repo: let repo, revision: _):
-      try launch("git", "clone", repo, directory)
-    case .ball(url: let url, filename: let filename):
+  func checkout(source: PackageSource, directory: String) throws {
+    switch source.requirement {
+    case .revisionItem(let revision):
+      try launch("git", "clone", source.url, directory)
+    case .tarball(filename: let filename):
+      let url = URL(string: source.url)!
       let filename = filename ?? url.lastPathComponent
       let dstFileURL = downloadCacheDirectory.appendingPathComponent(filename)
       if !URLFileManager.default.fileExistance(at: dstFileURL).exists {
@@ -73,39 +74,52 @@ struct Builder {
 
       let uncompressedURL = URL(fileURLWithPath: dstFileURL.deletingPathExtension().deletingPathExtension().lastPathComponent)
       try URLFileManager.default.moveItem(at: uncompressedURL, to: URL(fileURLWithPath: directory))
+    default: fatalError()
     }
   }
 
-  func removeItem(at url: URL) throws {
+  public func removeItem(at url: URL) throws {
     try retry(body: try fm.removeItem(at: url))
   }
 
-  func mkdir(_ path: String) throws {
+  public func mkdir(_ path: String) throws {
     try mkdir(URL(fileURLWithPath: path))
   }
 
-  func mkdir(_ url: URL) throws {
+  public func mkdir(_ url: URL) throws {
     try fm.createDirectory(at: url)
   }
 }
 
 extension Builder {
-  func build(package: Package) throws {
+  func build(package: Package, version: String? = nil) throws {
     if builtPackages.contains(package.name) {
       print("SKIP BUILDING \(package.name).")
       return
     }
-    try withChangingDirectory(srcRootDirectoryURL, block: { cwd in
+    try changingDirectory(srcRootDirectoryURL, block: { cwd in
       let srcDir = cwd.appendingPathComponent(package.name)
       if fm.fileExistance(at: srcDir).exists {
         try removeItem(at: srcDir)
       }
 
+      let source: PackageSource
+      if let v = version {
+        if let s = package.packageSource(for: .stable(v)) {
+          print("Using custom version: \(v), source: \(s)")
+          source = s
+        } else {
+          print("Invalid custom version: \(v), use default source!")
+          source = package.source
+        }
+      } else {
+        source = package.source
+      }
       try checkout(
-        version: package.version,
+        source: source,
         directory: srcDir.lastPathComponent)
 
-      try withChangingDirectory(srcDir, block: { _ in
+      try changingDirectory(srcDir, block: { _ in
         try package.build(with: self)
       })
     })
@@ -114,23 +128,27 @@ extension Builder {
 
 // MARK: Common tools
 extension Builder {
-  func make(_ targets: String...) throws {
-    try launch(Make(targets: targets))
+  public func make(_ targets: String...) throws {
+    try launch(Make(jobs: settings.parallelJobs, targets: targets))
   }
 
-  func cmake(_ arguments: String?...) throws {
+  public func rake(_ targets: String...) throws {
+    try launch(Rake(jobs: settings.parallelJobs, targets: targets))
+  }
+
+  public func cmake(_ arguments: String?...) throws {
     try cmake(arguments)
   }
-  func cmake(_ arguments: [String?]) throws {
+  public func cmake(_ arguments: [String?]) throws {
     try launch("cmake",
                ["-DCMAKE_INSTALL_PREFIX=\(settings.prefix)", "-DCMAKE_BUILD_TYPE=Release"]
                 + arguments.compactMap {$0})
   }
 
-  func meson(_ arguments: String?...) throws {
+  public func meson(_ arguments: String?...) throws {
     try meson(arguments)
   }
-  func meson(_ arguments: [String?]) throws {
+  public func meson(_ arguments: [String?]) throws {
     try launch("meson",
                ["--prefix=\(settings.prefix)",
                 "--buildtype=release",
@@ -139,26 +157,26 @@ extension Builder {
                 + arguments.compactMap {$0})
   }
 
-  func configure(_ arguments: String?...) throws {
+  public func configure(_ arguments: String?...) throws {
     try configure(arguments)
   }
 
-  func configure(_ arguments: [String?]) throws {
+  public func configure(_ arguments: [String?]) throws {
     try launch(path: "configure",
                CollectionOfOne("--prefix=\(settings.prefix)") + arguments.compactMap {$0})
   }
 
-  func autoreconf() throws {
+  public func autoreconf() throws {
     try launch("autoreconf", "-if")
   }
 }
 
-func replace(contentIn file: URL, matching string: String, with newString: String) throws {
+public func replace(contentIn file: URL, matching string: String, with newString: String) throws {
   try String(contentsOf: file)
     .replacingOccurrences(of: string, with: newString)
     .write(to: file, atomically: true, encoding: .utf8)
 }
 
-func replace(contentIn file: String, matching string: String, with newString: String) throws {
+public func replace(contentIn file: String, matching string: String, with newString: String) throws {
   try replace(contentIn: URL(fileURLWithPath: file), matching: string, with: newString)
 }

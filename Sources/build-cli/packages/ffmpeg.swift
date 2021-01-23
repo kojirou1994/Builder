@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Ffmpeg: Package {
   func build(with builder: Builder) throws {
     try builder.configure(configureOptions(builder: builder))
@@ -5,8 +7,19 @@ struct Ffmpeg: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz")!, filename: nil)
+  var version: PackageVersion {
+    .stable("4.3.1")
+  }
+
+  var source: PackageSource {
+    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz")
+  }
+
+  var buildInfo: String {
+    """
+    Autodetect: \(autodetect)
+    DisabledCompoennts: \(disabledComponents)
+    """
   }
 
   @Option
@@ -18,7 +31,209 @@ struct Ffmpeg: Package {
   @Option
   private var configureFile: String?
 
-  enum FFmpegDependeny: String, EnumerableFlag {
+  @Flag
+  var dependencyOptions: [FFmpegDependeny] = []
+
+  @Flag
+  var licenseOptions: [FFmpegLicense] = []
+
+  @Flag
+  var disabledComponents: [DisableComponents] = []
+
+  @Flag(inversion: .prefixedEnableDisable)
+  var autodetect: Bool = false
+
+  private func configureOptions(builder: Builder) throws -> [String] {
+    var r = Set(configure)
+    var licenses = Set(licenseOptions)
+
+    if let path = configureFile {
+      r.formUnion(try String(contentsOfFile: path).components(separatedBy: .newlines))
+    }
+
+    r.insert(autodetect.configureFlag("autodetect"))
+
+    // static/shared library
+    if builder.settings.library == .statik {
+      r.insert("--pkg-config-flags=--static")
+    }
+    r.formUnion([builder.settings.library.staticConfigureFlag,
+                 builder.settings.library.sharedConfigureFlag])
+
+    // MARK: External library
+    Set(dependencyOptions).forEach { dependency in
+      if dependency.isNonFree {
+        licenses.insert(.nonfree)
+      }
+      if dependency.isGPL {
+        licenses.insert(.gpl)
+      }
+      if dependency.isVersion3 {
+        licenses.insert(.version3)
+        licenses.insert(.gpl)
+      }
+      switch dependency {
+      case .libopus, .libfdkaac, .libvorbis,
+           .libx264, .libx265, .libwebp, .libaribb24,
+           .libass:
+        r.formUnion(true.configureFlag(dependency.rawValue))
+      case .libopencore:
+        r.formUnion(true.configureFlag("libopencore_amrnb", "libopencore_amrwb"))
+      case .apple:
+        #if os(macOS)
+        r.formUnion(true.configureFlag("audiotoolbox", "videotoolbox",
+                                       "appkit", "avfoundation", "coreimage"))
+        #else
+        break
+        #endif
+      }
+    }
+
+    // MARK: Licenses
+    licenses.forEach { license in
+      r.insert(true.configureFlag(license.rawValue))
+    }
+
+    // MARK: Disabled
+    disabledComponents.forEach { comp in
+      r.insert(false.configureFlag(comp.rawValue))
+    }
+
+    return r.sorted()
+  }
+
+  var dependencies: [Package] {
+    var deps = [Package]()
+    dependencyOptions.forEach { dependency in
+      switch dependency {
+      case .libopus:
+        deps.append(Opus.defaultPackage())
+      case .libvorbis:
+        deps.append(Vorbis.defaultPackage())
+      case .libfdkaac:
+        deps.append(FdkAac.defaultPackage())
+      case .libx264:
+        deps.append(x264.defaultPackage())
+      case .libx265:
+        deps.append(x265.defaultPackage())
+      case .libwebp:
+        deps.append(Webp.defaultPackage())
+      case .libaribb24:
+        deps.append(Aribb24.defaultPackage())
+      case .libopencore:
+        deps.append(Opencore.defaultPackage())
+      case .libass:
+        deps.append(Ass.defaultPackage())
+      case .apple: break
+      }
+    }
+    return deps
+  }
+
+  mutating func validate() throws {
+    if let path = configureFile {
+      configureFile = URL(fileURLWithPath: path).path
+    }
+    switch preset {
+    case .allYeah:
+      print("FFMPEG ALL YEAH!")
+      dependencyOptions = FFmpegDependeny.allCases
+    default:
+      break
+    }
+  }
+
+  enum Preset: String, ExpressibleByArgument, CustomStringConvertible {
+    case allYeah
+//    case minimalDecoder
+
+    var description: String { rawValue }
+  }
+
+  static var minimalDecoder: Self {
+    var ff = Self.defaultPackage()
+    ff.dependencyOptions.append(.apple)
+    ff.disabledComponents = [.muxers, .encoders, .filters, .hwaccels, .network, .devices, .programs, .doc]
+    return ff
+  }
+
+}
+
+extension Ffmpeg {
+  enum DisableComponents: String, EnumerableFlag, CustomStringConvertible {
+    // Individual component options
+    case encoders
+    case decoders
+    case hwaccels
+    case muxers
+    case demuxers
+    case parsers
+    case protocols
+    case indevs
+    case outdevs
+    case devices
+    case filters
+
+    /*
+     Component options:
+     --disable-avdevice       disable libavdevice build
+     --disable-avcodec        disable libavcodec build
+     --disable-avformat       disable libavformat build
+     --disable-swresample     disable libswresample build
+     --disable-swscale        disable libswscale build
+     --disable-postproc       disable libpostproc build
+     --disable-avfilter       disable libavfilter build
+     --enable-avresample      enable libavresample build (deprecated) [no]
+     --disable-pthreads       disable pthreads [autodetect]
+     --disable-w32threads     disable Win32 threads [autodetect]
+     --disable-os2threads     disable OS/2 threads [autodetect]
+     --disable-network        disable network support [no]
+     --disable-dct            disable DCT code
+     --disable-dwt            disable DWT code
+     --disable-error-resilience disable error resilience code
+     --disable-lsp            disable LSP code
+     --disable-lzo            disable LZO decoder code
+     --disable-mdct           disable MDCT code
+     --disable-rdft           disable RDFT code
+     --disable-fft            disable FFT code
+     --disable-faan           disable floating point AAN (I)DCT code
+     --disable-pixelutils     disable pixel utils in libavutil
+     */
+    case network
+
+    case programs
+    case doc
+
+    var description: String { rawValue }
+
+    static func name(for value: Self) -> NameSpecification {
+      .customLong("disable-\(value.rawValue)")
+    }
+  }
+  enum FFmpegLicense: String, EnumerableFlag, CustomStringConvertible {
+    case gpl
+    case version3
+    case nonfree
+
+    var description: String { rawValue }
+
+    static func name(for value: Self) -> NameSpecification {
+      .customLong("enable-\(value.rawValue)")
+    }
+
+    static func help(for value: Self) -> ArgumentHelp? {
+      switch value {
+      case .gpl:
+        return "allow use of GPL code, the resulting libs and binaries will be under GPL"
+      case .version3:
+        return "upgrade (L)GPL to version 3"
+      case .nonfree:
+        return "allow use of nonfree code, the resulting libs and binaries will be unredistributable"
+      }
+    }
+  }
+
+  enum FFmpegDependeny: String, EnumerableFlag, CustomStringConvertible {
     case libopus
     case libfdkaac = "libfdk-aac"
     case libvorbis
@@ -30,6 +245,8 @@ struct Ffmpeg: Package {
     case libass
 
     case apple
+
+    var description: String { rawValue }
 
     var isNonFree: Bool {
       switch self {
@@ -57,7 +274,7 @@ struct Ffmpeg: Package {
      */
     var isGPL: Bool {
       switch self {
-      case .libx265, .libx264, .libaribb24:
+      case .libx265, .libx264, .libaribb24, .libopencore:
         return true
       default:
         return false
@@ -83,7 +300,7 @@ struct Ffmpeg: Package {
       }
     }
 
-    static func name(for value: Ffmpeg.FFmpegDependeny) -> NameSpecification {
+    static func name(for value: Self) -> NameSpecification {
       .customLong("enable-\(value.rawValue)")
     }
     static func help(for value: Self) -> ArgumentHelp? {
@@ -95,105 +312,6 @@ struct Ffmpeg: Package {
       }
     }
   }
-
-  @Flag
-  var dependencyOptions: [FFmpegDependeny] = []
-
-  @Flag(inversion: .prefixedEnableDisable)
-  var autodetect: Bool = false
-
-  private func configureOptions(builder: Builder) throws -> [String] {
-    var r = Set(configure)
-    if let path = configureFile {
-      r.formUnion(try String(contentsOfFile: path).components(separatedBy: .newlines))
-    }
-
-    r.insert(autodetect.configureFlag("autodetect"))
-    if builder.settings.library == .statik {
-      r.insert("--pkg-config-flags=--static")
-    }
-    // MARK: External library
-    Set(dependencyOptions).forEach { dependency in
-      if dependency.isNonFree {
-        r.insert(true.configureFlag("nonfree"))
-      }
-      if dependency.isGPL {
-        r.insert(true.configureFlag("gpl"))
-      }
-      if dependency.isVersion3 {
-        r.insert(true.configureFlag("version3"))
-      }
-      switch dependency {
-      case .libopus, .libfdkaac, .libvorbis,
-           .libx264, .libx265, .libwebp, .libaribb24,
-           .libass:
-        r.formUnion(true.configureFlag(dependency.rawValue))
-      case .libopencore:
-        r.formUnion(true.configureFlag("libopencore_amrnb", "libopencore_amrwb"))
-      case .apple:
-        #if os(macOS)
-        r.formUnion(true.configureFlag("audiotoolbox", "videotoolbox",
-                                       "appkit", "avfoundation", "coreimage"))
-        #else
-        break
-        #endif
-      }
-    }
-    return r.sorted()
-  }
-
-  var dependencies: [Package] {
-    var deps = [Package]()
-    dependencyOptions.forEach { dependency in
-      switch dependency {
-      case .libopus:
-        deps.append(Opus.new())
-      case .libvorbis:
-        deps.append(Vorbis.new())
-      case .libfdkaac:
-        deps.append(FdkAac.new())
-      case .libx264:
-        deps.append(x264.new())
-      case .libx265:
-        deps.append(x265.new())
-      case .libwebp:
-        deps.append(Webp.new())
-      case .libaribb24:
-        deps.append(Aribb24.new())
-      case .libopencore:
-        deps.append(Opencore.new())
-      case .libass:
-        deps.append(Ass.new())
-      case .apple: break
-      }
-    }
-    return deps
-  }
-
-  mutating func validate() throws {
-    if let path = configureFile {
-      configureFile = URL(fileURLWithPath: path).path
-    }
-    switch preset {
-    case .allYeah:
-      print("ALL YEAH!")
-      dependencyOptions = FFmpegDependeny.allCases
-    default:
-      break
-    }
-  }
-
-  enum Preset: String, ExpressibleByArgument {
-    case allYeah
-  }
-
-  static var minimalDecoder: Self {
-    var ff = Self.new()
-    //    ff.configureFile = nil
-    ff.configure = "--disable-debug --disable-muxers --disable-encoders --disable-filters --disable-hwaccels --disable-network --disable-devices --enable-audiotoolbox --enable-videotoolbox --disable-autodetect --disable-programs --disable-doc".components(separatedBy: .whitespaces)
-    return ff
-  }
-
 }
 
 /*

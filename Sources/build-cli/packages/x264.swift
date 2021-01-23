@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct x264: Package {
   func build(with builder: Builder) throws {
     try builder.configure(
@@ -14,8 +16,8 @@ struct x264: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
 //    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
   }
 
@@ -32,7 +34,7 @@ struct x264: Package {
   var dependencies: [Package] {
     var deps = [Package]()
     if enableLsmash {
-      deps.append(Lsmash.new())
+      deps.append(Lsmash.defaultPackage())
     }
     if enableLibav {
       deps.append(Ffmpeg.minimalDecoder)

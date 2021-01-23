@@ -1,13 +1,12 @@
 import BuildSystem
 
-struct Ass: Package {
+struct Jpcre2: Package {
   func build(with builder: Builder) throws {
     try builder.autoreconf()
     try builder.configure(
       configureFlag(false, CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
-      configureFlag(false, "fontconfig")
+      builder.settings.library.sharedConfigureFlag
     )
 
     try builder.make()
@@ -15,10 +14,12 @@ struct Ass: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz")
+    .tarball(url: "https://github.com/jpcre2/jpcre2/archive/10.32.01.tar.gz", filename: "jpcre2-10.32.01.tar.gz")
   }
-
+  var version: PackageVersion {
+    .stable("10.32.01")
+  }
   var dependencies: [Package] {
-    [Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage()]
+    [Pcre2.defaultPackage()]
   }
 }

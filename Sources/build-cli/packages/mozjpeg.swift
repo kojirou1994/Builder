@@ -1,4 +1,10 @@
+import BuildSystem
+
 struct Mozjpeg: Package {
+  var version: PackageVersion {
+    .stable("4.0.0")
+  }
+
   func build(with builder: Builder) throws {
     try builder.cmake(
       ".",
@@ -8,7 +14,7 @@ struct Mozjpeg: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz")!, filename: "mozjpeg-4.0.0.tar.gz")
+  var source: PackageSource {
+    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz", filename: "mozjpeg-4.0.0.tar.gz")
   }
 }

@@ -1,13 +1,17 @@
 import BuildSystem
 
-struct Ass: Package {
+struct Pcre2: Package {
   func build(with builder: Builder) throws {
     try builder.autoreconf()
     try builder.configure(
       configureFlag(false, CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
       builder.settings.library.sharedConfigureFlag,
-      configureFlag(false, "fontconfig")
+      configureFlag(true, "pcre2-16"),
+      configureFlag(true, "pcre2-32"),
+      configureFlag(true, "pcre2grep-libz"),
+      configureFlag(true, "pcre2grep-libbz2")
+      //configureFlag(true, "jit") // not for apple silicon
     )
 
     try builder.make()
@@ -15,10 +19,9 @@ struct Ass: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz")
+    .tarball(url: "https://ftp.pcre.org/pub/pcre/pcre2-10.36.tar.bz2")
   }
-
-  var dependencies: [Package] {
-    [Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage()]
+  var version: PackageVersion {
+    .stable("10.36")
   }
 }

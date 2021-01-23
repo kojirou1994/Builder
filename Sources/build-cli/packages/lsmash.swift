@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Lsmash: Package {
   func build(with builder: Builder) throws {
     if builder.settings.library.buildShared {
@@ -11,7 +13,7 @@ struct Lsmash: Package {
     try builder.make(enableCli ? "install" : "install-lib")
   }
 
-  var version: BuildVersion {
+  var source: PackageSource {
     .branch(repo: "https://github.com/l-smash/l-smash", revision: nil)
   }
 

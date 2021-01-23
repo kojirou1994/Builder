@@ -7,6 +7,9 @@ let package = Package(
   platforms: [
     .macOS(.v10_15)
   ],
+  products: [
+    .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"])
+  ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
@@ -15,12 +18,17 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "build-cli",
+      name: "BuildSystem",
       dependencies: [
         "Executable",
         "URLFileManager",
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "KwiftUtility", package: "Kwift")
+      ]),
+    .target(
+      name: "build-cli",
+      dependencies: [
+        "BuildSystem"
       ]),
     //        .testTarget(
     //            name: "BuilderTests",

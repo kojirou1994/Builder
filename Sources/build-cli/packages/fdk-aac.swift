@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct FdkAac: Package {
   func build(with builder: Builder) throws {
     try builder.configure(
@@ -8,8 +10,8 @@ struct FdkAac: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-2.0.1.tar.gz")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-2.0.1.tar.gz")
   }
   
   @Flag(inversion: .prefixedEnableDisable, help: "Enable example encoding program.")

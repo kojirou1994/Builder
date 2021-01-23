@@ -1,9 +1,10 @@
 import BuildSystem
 
-struct Aribb24: Package {
+struct GpgError: Package {
   func build(with builder: Builder) throws {
-    try builder.launch(path: "bootstrap")
+    //    try builder.autoreconf()
     try builder.configure(
+      configureFlag(false, CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
       builder.settings.library.sharedConfigureFlag
     )
@@ -13,10 +14,7 @@ struct Aribb24: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/nkoriyama/aribb24/archive/v1.0.3.tar.gz", filename: "aribb24-1.0.3.tar.gz")
+    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.41.tar.bz2")
   }
 
-  var dependencies: [Package] {
-    [Png.defaultPackage()]
-  }
 }

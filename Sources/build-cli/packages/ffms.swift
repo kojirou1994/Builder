@@ -1,4 +1,7 @@
+import BuildSystem
+
 struct Ffms: Package {
+
   func build(with builder: Builder) throws {
     try builder.launch(path: "./autogen.sh")
     try builder.configure()
@@ -6,7 +9,7 @@ struct Ffms: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
+  var source: PackageSource {
     .branch(repo: "https://github.com/FFMS/ffms2", revision: nil)
   }
 

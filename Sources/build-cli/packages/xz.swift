@@ -1,22 +1,23 @@
 import BuildSystem
 
-struct Aribb24: Package {
+struct Xz: Package {
+  var version: PackageVersion {
+    .stable("5.2.5")
+  }
+
   func build(with builder: Builder) throws {
-    try builder.launch(path: "bootstrap")
+
     try builder.configure(
+      false.configureFlag(CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
       builder.settings.library.sharedConfigureFlag
     )
 
-    try builder.make()
+    try builder.make("check")
     try builder.make("install")
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/nkoriyama/aribb24/archive/v1.0.3.tar.gz", filename: "aribb24-1.0.3.tar.gz")
-  }
-
-  var dependencies: [Package] {
-    [Png.defaultPackage()]
+    .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-5.2.5.tar.gz")
   }
 }

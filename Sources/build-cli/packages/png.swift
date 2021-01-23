@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Png: Package {
   func build(with builder: Builder) throws {
     
@@ -13,7 +15,7 @@ struct Png: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz")
   }
 }

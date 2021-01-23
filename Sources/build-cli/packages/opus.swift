@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Opus: Package {
   func build(with builder: Builder) throws {
     try builder.configure(
@@ -9,7 +11,16 @@ struct Opus: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz")!, filename: nil)
+  var source: PackageSource {
+    packageSource(for: version)!
+  }
+
+  var version: PackageVersion {
+    .stable("1.3.1")
+  }
+
+  func packageSource(for version: PackageVersion) -> PackageSource? {
+    guard let v = version.stableVersion else { return nil }
+    return .tarball(url: "https://archive.mozilla.org/pub/opus/opus-\(v).tar.gz")
   }
 }

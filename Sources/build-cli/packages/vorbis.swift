@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Vorbis: Package {
   func build(with builder: Builder) throws {
 
@@ -16,12 +18,12 @@ struct Vorbis: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz")
   }
 
   var dependencies: [Package] {
-    [Ogg.new()]
+    [Ogg.defaultPackage()]
   }
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the examples.")

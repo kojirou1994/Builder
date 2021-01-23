@@ -1,6 +1,8 @@
+import BuildSystem
+
 struct Harfbuzz: Package {
   func build(with builder: Builder) throws {
-    try builder.withChangingDirectory("build", block: { _ in
+    try builder.changingDirectory("build", block: { _ in
       try builder.meson(
         "--default-library=\(builder.settings.library.mesonFlag)",
         builder.settings.library == .statik ? "-Db_lundef=false" : nil,
@@ -19,11 +21,11 @@ struct Harfbuzz: Package {
     })
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.tar.gz")!, filename: "harfbuzz-2.7.4.tar.gz")
+  var source: PackageSource {
+    .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.tar.gz", filename: "harfbuzz-2.7.4.tar.gz")
   }
 
   var dependencies: [Package] {
-    [Freetype.new(), Icu4c.new()]
+    [Freetype.defaultPackage(), Icu4c.defaultPackage()]
   }
 }

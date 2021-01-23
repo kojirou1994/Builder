@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Lame: Package {
   func build(with builder: Builder) throws {
 
@@ -15,12 +17,12 @@ struct Lame: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
+  var source: PackageSource {
     /*
      1.3.4 always fail?
      https://gitlab.xiph.org/xiph/ogg/-/issues/2298
      */
-    .ball(url: URL(string: "https://netcologne.dl.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz")!, filename: nil)
+    .tarball(url: "https://netcologne.dl.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz")
   }
 
 }

@@ -1,13 +1,16 @@
 import BuildSystem
 
-struct Ass: Package {
+struct Flac: Package {
+  var version: PackageVersion {
+    .stable("1.3.3")
+  }
+
   func build(with builder: Builder) throws {
-    try builder.autoreconf()
+    try builder.launch(path: "autogen.sh")
     try builder.configure(
       configureFlag(false, CommonOptions.dependencyTracking),
       builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
-      configureFlag(false, "fontconfig")
+      builder.settings.library.sharedConfigureFlag
     )
 
     try builder.make()
@@ -15,10 +18,10 @@ struct Ass: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://github.com/libass/libass/releases/download/0.15.0/libass-0.15.0.tar.xz")
+    .tarball(url: "https://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz")
   }
 
   var dependencies: [Package] {
-    [Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage()]
+    [Ogg.defaultPackage()]
   }
 }

@@ -1,3 +1,5 @@
+import BuildSystem
+
 struct Freetype: Package {
   func build(with builder: Builder) throws {
 
@@ -15,11 +17,11 @@ struct Freetype: Package {
     try builder.make("install")
   }
 
-  var version: BuildVersion {
-    .ball(url: URL(string: "https://downloads.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.xz")!, filename: nil)
+  var source: PackageSource {
+    .tarball(url: "https://downloads.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.xz")
   }
 
   var dependencies: [Package] {
-    [Png.new()]
+    [Png.defaultPackage()]
   }
 }
