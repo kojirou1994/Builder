@@ -1,15 +1,36 @@
 import XCTest
-@testable import Builder
+@testable import BuildSystem
 
-final class BuilderTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(Builder().text, "Hello, World!")
+final class BuilderSystemTests: XCTestCase {
+  func testBuildEnvironment() {
+//    var env = BuildEnvironment(
+//      version: .stable("1.0.0"),
+//      source: .tarball(url: ""),
+//      packageDependencies: .init(),
+//      brewDependencies: .init(),
+//      safeMode: false,
+//      cc: "clang",
+//      cxx: "clang++",
+//      environment: ProcessInfo.processInfo.environment,
+//      prefix: "/usr/local",
+//      libraryType: .statik)
+  }
+
+  func testTriple() {
+    for arch in BuildArch.allCases {
+      for system in BuildTargetSystem.allCases {
+        print(BuildTriple(arch: arch, system: system).tripleString)
+      }
     }
+  }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+  func testGetSDKPath() {
+    let launcher = TSCExecutableLauncher(outputRedirection: .none)
+    for system in BuildTargetSystem.allCases {
+      XCTAssertNoThrow(try launcher.launch(executable: AnyExecutable(
+                                            executableName: "xcrun",
+                                            arguments: ["--sdk", system.sdkName, "--show-sdk-path"]),
+                                           options: .init()))
+    }
+  }
 }
