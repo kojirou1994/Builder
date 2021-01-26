@@ -1,15 +1,16 @@
 import BuildSystem
 
 struct Pugixml: Package {
-  func build(with builder: Builder) throws {
-    try builder.changingDirectory("build", block: { _ in
-      try builder.cmake(
+  func build(with env: BuildEnvironment) throws {
+    try env.changingDirectory("build", block: { _ in
+      try env.cmake(
+        toolType: .ninja,
         "..",
-        builder.settings.library.buildShared ? cmakeFlag(true, builder.settings.library.buildStatic ? "BUILD_SHARED_AND_STATIC_LIBS" : "BUILD_SHARED_LIBS") : nil
+        env.libraryType.buildShared ? cmakeOnFlag(true, env.libraryType.buildStatic ? "BUILD_SHARED_AND_STATIC_LIBS" : "BUILD_SHARED_LIBS") : nil
       )
 
-      try builder.make()
-      try builder.make("install")
+      try env.make(toolType: .ninja)
+      try env.make(toolType: .ninja, "install")
     })
   }
 

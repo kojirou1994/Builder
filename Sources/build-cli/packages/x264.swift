@@ -1,8 +1,8 @@
 import BuildSystem
 
 struct x264: Package {
-  func build(with builder: Builder) throws {
-    try builder.configure(
+  func build(with env: BuildEnvironment) throws {
+    try env.configure(
       enableShared ? "--enable-shared" : nil,
       "--enable-static",
       "--enable-strip",
@@ -13,7 +13,7 @@ struct x264: Package {
       "--disable-gpac",
       enableLsmash ? nil : "--disable-lsmash")
     
-    try builder.make("install")
+    try env.make("install")
   }
 
   var source: PackageSource {
@@ -31,7 +31,7 @@ struct x264: Package {
     case ffms
   }
 
-  var dependencies: [Package] {
+  var dependencies: PackageDependency {
     var deps = [Package]()
     if enableLsmash {
       deps.append(Lsmash.defaultPackage())
@@ -39,7 +39,7 @@ struct x264: Package {
     if enableLibav {
       deps.append(Ffmpeg.minimalDecoder)
     }
-    return deps
+    return .packages(deps)
   }
 
   @Flag()

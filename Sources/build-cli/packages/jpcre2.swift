@@ -1,16 +1,16 @@
 import BuildSystem
 
 struct Jpcre2: Package {
-  func build(with builder: Builder) throws {
-    try builder.autoreconf()
-    try builder.configure(
-      configureFlag(false, CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag
+  func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag
     )
 
-    try builder.make()
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
   var source: PackageSource {
@@ -19,7 +19,7 @@ struct Jpcre2: Package {
   var version: PackageVersion {
     .stable("10.32.01")
   }
-  var dependencies: [Package] {
-    [Pcre2.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(Pcre2.defaultPackage())
   }
 }

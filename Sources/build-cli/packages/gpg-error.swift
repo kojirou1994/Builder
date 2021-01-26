@@ -1,16 +1,16 @@
 import BuildSystem
 
 struct GpgError: Package {
-  func build(with builder: Builder) throws {
-    //    try builder.autoreconf()
-    try builder.configure(
-      configureFlag(false, CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag
+  func build(with env: BuildEnvironment) throws {
+    //    try env.autoreconf()
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag
     )
 
-    try builder.make()
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
   var source: PackageSource {

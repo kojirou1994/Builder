@@ -1,29 +1,29 @@
 import BuildSystem
 
 struct Vorbis: Package {
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
 
-    try builder.autoreconf()
+    try env.autoreconf()
 
-    try builder.configure(
-      false.configureFlag(CommonOptions.dependencyTracking),
-      builder.settings.library.buildStatic.configureFlag("static"),
-      builder.settings.library.buildShared.configureFlag("shared"),
-      examples.configureFlag("examples"),
-      docs.configureFlag("docs"),
-      false.configureFlag("oggtest"),
-      "--with-ogg-libraries=\(builder.productsDirectoryURL.appendingPathComponent("lib").path)",
-      "--with-ogg-includes=\(builder.productsDirectoryURL.appendingPathComponent("include").path)"
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
+      configureEnableFlag(examples, "examples"),
+      configureEnableFlag(docs, "docs"),
+      configureEnableFlag(false, "oggtest"),
+      "--with-ogg-libraries=\(env.dependencyMap[Ogg.self].lib.path)",
+      "--with-ogg-includes=\(env.dependencyMap[Ogg.self].include.path)"
     )
-    try builder.make("install")
+    try env.make("install")
   }
 
   var source: PackageSource {
     .tarball(url: "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz")
   }
 
-  var dependencies: [Package] {
-    [Ogg.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(Ogg.defaultPackage())
   }
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the examples.")

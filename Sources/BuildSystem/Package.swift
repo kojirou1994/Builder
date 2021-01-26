@@ -2,14 +2,15 @@ import ArgumentParser
 
 public protocol Package: ParsableArguments, CustomStringConvertible {
 
-  var dependencies: [Package] { get }
+  var dependencies: PackageDependency { get }
   var version: PackageVersion { get }
   var source: PackageSource { get }
+  var tag: String { get }
 
   var buildInfo: String { get }
 
   func packageSource(for version: PackageVersion) -> PackageSource?
-  func build(with builder: Builder) throws
+  func build(with env: BuildEnvironment) throws
 
 }
 
@@ -19,8 +20,11 @@ public extension Package {
 
   var version: PackageVersion {
     // guess version from source
-    fatalError("Unimplemented")
+//    fatalError("Unimplemented")
+    return .stable("unknown-version")
   }
+
+  var tag: String { "" }
 
   var description: String {
     """
@@ -28,14 +32,14 @@ public extension Package {
     Version: \(version)
     Source: \(source)
     Dependencies:
-    \(dependencies.map(\.name).joined(separator: ", "))
+    \(dependencies)
     Information:
     \(buildInfo)
     """
   }
 
-  var dependencies: [Package] {
-    []
+  var dependencies: PackageDependency {
+    .empty
   }
 
   static var name: String {
@@ -51,4 +55,14 @@ public extension Package {
   }
 
   func packageSource(for version: PackageVersion) -> PackageSource? { nil }
+
+  var headSource: PackageSource? {
+    packageSource(for: .head)
+  }
+}
+
+extension Package {
+  var identifier: ObjectIdentifier {
+    .init(Self.self)
+  }
 }

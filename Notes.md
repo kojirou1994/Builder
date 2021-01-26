@@ -8,5 +8,12 @@ root
  \- repositories (downloaded tarball or git repo)
  \- working (extracted files or git checkout)
  \- products (built things)
-    \- package-name
-       \- arch-name (x86_64 arm64 universal)
+    \- both/shared/static
+      \- package-name
+        \- arch-name (x86_64 arm64 universal)
+
+
+package folder name
+package-version-tag's hash
+
+always run autogen.sh or autoreconf to generate new sh

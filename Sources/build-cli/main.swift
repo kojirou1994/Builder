@@ -40,6 +40,11 @@ struct BuildCli: ParsableCommand {
       PackageCommand<Xz>.self,
       PackageCommand<Xslt>.self,
       PackageCommand<Gcrypt>.self,
+      PackageCommand<OpusFile>.self,
+      PackageCommand<Opusenc>.self,
+      PackageCommand<OpusTools>.self,
+      PackageCommand<Mediainfo>.self,
+      PackageCommand<Zstd>.self,
     ])
   }
 

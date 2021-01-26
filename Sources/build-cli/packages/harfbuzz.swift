@@ -1,11 +1,11 @@
 import BuildSystem
 
 struct Harfbuzz: Package {
-  func build(with builder: Builder) throws {
-    try builder.changingDirectory("build", block: { _ in
-      try builder.meson(
-        "--default-library=\(builder.settings.library.mesonFlag)",
-        builder.settings.library == .statik ? "-Db_lundef=false" : nil,
+  func build(with env: BuildEnvironment) throws {
+    try env.changingDirectory("build", block: { _ in
+      try env.meson(
+        "--default-library=\(env.libraryType.mesonFlag)",
+        env.libraryType == .statik ? "-Db_lundef=false" : nil,
         "-Dcairo=disabled",
         "-Dcoretext=enabled",
         "-Dfreetype=enabled",
@@ -16,8 +16,8 @@ struct Harfbuzz: Package {
         "-Dintrospection=disabled"
       )
 
-      try builder.launch("ninja")
-      try builder.launch("ninja", "install")
+      try env.launch("ninja")
+      try env.launch("ninja", "install")
     })
   }
 
@@ -25,7 +25,7 @@ struct Harfbuzz: Package {
     .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.tar.gz", filename: "harfbuzz-2.7.4.tar.gz")
   }
 
-  var dependencies: [Package] {
-    [Freetype.defaultPackage(), Icu4c.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(Freetype.defaultPackage(), Icu4c.defaultPackage())
   }
 }

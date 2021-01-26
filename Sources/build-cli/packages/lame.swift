@@ -1,20 +1,20 @@
 import BuildSystem
 
 struct Lame: Package {
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
 
     try replace(contentIn: "include/libmp3lame.sym", matching: "lame_init_old\n", with: "")
 
-    try builder.autoreconf()
+    try env.autoreconf()
 
-    try builder.configure(
-      false.configureFlag(CommonOptions.dependencyTracking),
-      builder.settings.library.buildStatic.configureFlag("static"),
-      builder.settings.library.buildShared.configureFlag("shared"),
-      true.configureFlag("nasm")
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
+      configureEnableFlag(true, "nasm")
     )
 
-    try builder.make("install")
+    try env.make("install")
   }
 
   var source: PackageSource {

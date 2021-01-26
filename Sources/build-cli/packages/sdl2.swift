@@ -1,12 +1,12 @@
 //struct Sdl2: Package {
-//  func build(with builder: Builder) throws {
-//    try builder.configure(
-//      builder.settings.library.buildStatic.configureFlag("static"),
-//      builder.settings.library.buildShared.configureFlag("shared"),
-//      false.configureFlag("dependency-tracking"),
-//      false.configureFlag("doc")
+//  func build(with env: BuildEnvironment) throws {
+//    try env.configure(
+//      env.libraryType.staticConfigureFlag,
+//      env.libraryType.sharedConfigureFlag,
+//      configureEnableFlag(false, CommonOptions.dependencyTracking),
+//      false.configureEnableFlag("doc")
 //    )
-//    try builder.make("install")
+//    try env.make("install")
 //  }
 //
 //  var version: BuildVersion {

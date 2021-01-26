@@ -5,13 +5,13 @@ struct Webp: Package {
     .stable("1.1.0")
   }
 
-  func build(with builder: Builder) throws {
-    try builder.autoreconf()
+  func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
 
-    try builder.configure(
-      false.configureFlag(CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
       "--disable-gl",
       "--disable-sdl",
       "--disable-png",
@@ -25,7 +25,7 @@ struct Webp: Package {
       "--enable-libwebpextras"
     )
 
-    try builder.make("install")
+    try env.make("install")
   }
 
   var source: PackageSource {

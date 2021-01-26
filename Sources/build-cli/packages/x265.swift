@@ -1,72 +1,79 @@
 import BuildSystem
 
 struct x265: Package {
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
 
     let srcDir = "../source"
 
-    try builder.changingDirectory("12bit", block: { cwd in
-      try builder.cmake(
+    /*
+     set -DNASM_EXECUTABLE="" for arm64
+     */
+    try env.changingDirectory("12bit", block: { cwd in
+      try env.cmake(
+        toolType: .ninja,
         srcDir,
         "-DHIGH_BIT_DEPTH=ON",
         "-DEXPORT_C_API=OFF",
         "-DENABLE_SHARED=OFF",
         "-DENABLE_CLI=OFF",
         "-DMAIN12=ON")
-      try builder.make()
+
+      try env.make(toolType: .ninja)
     })
 
-    try builder.changingDirectory("10bit", block: { cwd in
-      try builder.cmake(
+    try env.changingDirectory("10bit", block: { cwd in
+      try env.cmake(
+        toolType: .ninja,
         srcDir,
         "-DHIGH_BIT_DEPTH=ON",
         "-DENABLE_HDR10_PLUS=ON",
         "-DEXPORT_C_API=OFF",
         "-DENABLE_SHARED=OFF",
         "-DENABLE_CLI=OFF")
-      try builder.make()
+
+      try env.make(toolType: .ninja)
     })
 
-    try builder.changingDirectory("8bit", block: { cwd in
+    try env.changingDirectory("8bit", block: { cwd in
 
-      try builder.fm.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
+      try env.fm.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
                               to: URL(fileURLWithPath: "libx265_main10.a"))
-      try builder.fm.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
+      try env.fm.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
                               to: URL(fileURLWithPath: "libx265_main12.a"))
 
-      try builder.cmake(
+      try env.cmake(
+        toolType: .ninja,
         srcDir,
-        "-DCMAKE_INSTALL_PREFIX=\(builder.settings.prefix)",
         "-DEXTRA_LIB=x265_main10.a;x265_main12.a",
         "-DEXTRA_LINK_FLAGS=-L.",
         "-DLINKED_10BIT=ON",
         "-DLINKED_12BIT=ON",
-        builder.settings.library.sharedCmakeFlag,
-        cli.cmakeFlag("ENABLE_CLI", defaultEnabled: true)
+        env.libraryType.sharedCmakeFlag,
+        cmakeOnFlag(cli, "ENABLE_CLI", defaultEnabled: true)
         )
 
-      try builder.make()
+      try env.make(toolType: .ninja)
 
-      try builder.fm.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
+      try env.fm.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
       #if os(macOS)
-      try builder.launch(
+      try env.launch(
         "libtool",
         "-static",
         "-o", "libx265.a",
         "libx265_main.a", "libx265_main10.a", "libx265_main12.a")
       #elseif os(Linux)
-      try builder.launch(
+      try env.launch(
         "ar", "cr",
         "libx265.a",
         "libx265_main.a", "libx265_main10.a",
         "libx265_main12.a")
-      try builder.launch("ranlib", "libx265.a")
+      try env.launch("ranlib", "libx265.a")
       #else
       #error("Unsupported OS!")
       #endif
 
-      try builder.make("install")
+      try env.make(toolType: .ninja, "install")
     })
   }
 
@@ -79,4 +86,7 @@ struct x265: Package {
   @Flag(inversion: .prefixedEnableDisable)
   var cli: Bool = false
 
+  var tag: String {
+    cli ? "ENABLE_CLI" : ""
+  }
 }

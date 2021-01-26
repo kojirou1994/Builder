@@ -1,21 +1,21 @@
 import BuildSystem
 
 struct Pcre2: Package {
-  func build(with builder: Builder) throws {
-    try builder.autoreconf()
-    try builder.configure(
-      configureFlag(false, CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
-      configureFlag(true, "pcre2-16"),
-      configureFlag(true, "pcre2-32"),
-      configureFlag(true, "pcre2grep-libz"),
-      configureFlag(true, "pcre2grep-libbz2")
-      //configureFlag(true, "jit") // not for apple silicon
+  func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
+      configureEnableFlag(true, "pcre2-16"),
+      configureEnableFlag(true, "pcre2-32"),
+      configureEnableFlag(true, "pcre2grep-libz"),
+      configureEnableFlag(true, "pcre2grep-libbz2")
+      //configureEnableFlag(true, "jit") // not for apple silicon
     )
 
-    try builder.make()
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
   var source: PackageSource {

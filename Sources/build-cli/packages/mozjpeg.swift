@@ -5,13 +5,16 @@ struct Mozjpeg: Package {
     .stable("4.0.0")
   }
 
-  func build(with builder: Builder) throws {
-    try builder.cmake(
+  func build(with env: BuildEnvironment) throws {
+    try env.cmake(
+      toolType: .ninja,
       ".",
-      builder.settings.library.staticCmakeFlag,
-      builder.settings.library.sharedCmakeFlag
+      env.libraryType.staticCmakeFlag,
+      env.libraryType.sharedCmakeFlag
     )
-    try builder.make("install")
+
+    try env.make(toolType: .ninja)
+    try env.make(toolType: .ninja, "install")
   }
 
   var source: PackageSource {

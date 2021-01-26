@@ -1,18 +1,18 @@
 import BuildSystem
 
 struct Png: Package {
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
     
-    try builder.configure(
-      false.configureFlag(CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag
     )
 
-    try builder.make()
+    try env.make()
 
-//    try builder.make("test")
-    try builder.make("install")
+//    try env.make("test")
+    try env.make("install")
   }
 
   var source: PackageSource {

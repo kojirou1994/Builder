@@ -1,24 +1,24 @@
 import BuildSystem
 
 struct Gcrypt: Package {
-  func build(with builder: Builder) throws {
-//    try builder.autoreconf()
-    try builder.configure(
-      configureFlag(false, CommonOptions.dependencyTracking),
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag
-//      configureFlag(false, "fontconfig")
+  func build(with env: BuildEnvironment) throws {
+//    try env.autoreconf()
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag
+//      configureEnableFlag(false, "fontconfig")
     )
 
-    try builder.make()
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
   var source: PackageSource {
     .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.7.tar.bz2")
   }
 
-  var dependencies: [Package] {
-    [GpgError.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(GpgError.defaultPackage())
   }
 }

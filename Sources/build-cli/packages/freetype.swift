@@ -1,27 +1,27 @@
 import BuildSystem
 
 struct Freetype: Package {
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
 
-    try builder.launch(path: "autogen.sh")
+    try env.launch(path: "autogen.sh")
 
-    try builder.configure(
-      builder.settings.library.staticConfigureFlag,
-      builder.settings.library.sharedConfigureFlag,
+    try env.configure(
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
       "--enable-freetype-config",
       "--without-harfbuzz",
       "--without-brotli"
     )
 
-    try builder.make()
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
   var source: PackageSource {
     .tarball(url: "https://downloads.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.xz")
   }
 
-  var dependencies: [Package] {
-    [Png.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(Png.defaultPackage())
   }
 }

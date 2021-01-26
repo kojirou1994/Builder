@@ -14,17 +14,19 @@ struct Opencore: Package {
     guard let v = version.stableVersion else { return nil }
     return .tarball(url: "https://deac-riga.dl.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-\(v).tar.gz")
   }
-  func build(with builder: Builder) throws {
+  
+  func build(with env: BuildEnvironment) throws {
 
-    try builder.autoreconf()
+    try env.autoreconf()
 
-    try builder.configure(
-      false.configureFlag(CommonOptions.dependencyTracking),
-      builder.settings.library.buildStatic.configureFlag("static"),
-      builder.settings.library.buildShared.configureFlag("shared")
+    try env.configure(
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag
     )
 
-    try builder.make("install")
+    try env.make()
+    try env.make("install")
   }
 
 }

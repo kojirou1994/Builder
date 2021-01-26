@@ -1,16 +1,16 @@
 import BuildSystem
 
 struct Lsmash: Package {
-  func build(with builder: Builder) throws {
-    if builder.settings.library.buildShared {
+  func build(with env: BuildEnvironment) throws {
+    if env.libraryType.buildShared {
       // send warning
     }
-    try builder.configure(
-//      builder.settings.library.buildStatic.configureFlag("static", defaultEnabled: true)
-//      builder.settings.library.buildShared.configureFlag("shared", defaultEnabled: false)
+    try env.configure(
+//      env.libraryType.buildStatic.configureEnableFlag("static", defaultEnabled: true)
+//      env.libraryType.buildShared.configureEnableFlag("shared", defaultEnabled: false)
     )
 
-    try builder.make(enableCli ? "install" : "install-lib")
+    try env.make(enableCli ? "install" : "install-lib")
   }
 
   var source: PackageSource {

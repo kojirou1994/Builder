@@ -1,10 +1,10 @@
 import BuildSystem
 
 struct Ffmpeg: Package {
-  func build(with builder: Builder) throws {
-    try builder.configure(configureOptions(builder: builder))
+  func build(with env: BuildEnvironment) throws {
+    try env.configure(configureOptions(env: env))
 
-    try builder.make("install")
+    try env.make("install")
   }
 
   var version: PackageVersion {
@@ -43,7 +43,7 @@ struct Ffmpeg: Package {
   @Flag(inversion: .prefixedEnableDisable)
   var autodetect: Bool = false
 
-  private func configureOptions(builder: Builder) throws -> [String] {
+  private func configureOptions(env: BuildEnvironment) throws -> [String] {
     var r = Set(configure)
     var licenses = Set(licenseOptions)
 
@@ -51,14 +51,14 @@ struct Ffmpeg: Package {
       r.formUnion(try String(contentsOfFile: path).components(separatedBy: .newlines))
     }
 
-    r.insert(autodetect.configureFlag("autodetect"))
+    r.insert(configureEnableFlag(autodetect, "autodetect"))
 
     // static/shared library
-    if builder.settings.library == .statik {
+    if env.libraryType == .statik {
       r.insert("--pkg-config-flags=--static")
     }
-    r.formUnion([builder.settings.library.staticConfigureFlag,
-                 builder.settings.library.sharedConfigureFlag])
+    r.formUnion([env.libraryType.staticConfigureFlag,
+                 env.libraryType.sharedConfigureFlag])
 
     // MARK: External library
     Set(dependencyOptions).forEach { dependency in
@@ -76,12 +76,12 @@ struct Ffmpeg: Package {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
            .libass:
-        r.formUnion(true.configureFlag(dependency.rawValue))
+        r.formUnion(configureEnableFlag(true, dependency.rawValue))
       case .libopencore:
-        r.formUnion(true.configureFlag("libopencore_amrnb", "libopencore_amrwb"))
+        r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
         #if os(macOS)
-        r.formUnion(true.configureFlag("audiotoolbox", "videotoolbox",
+        r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
                                        "appkit", "avfoundation", "coreimage"))
         #else
         break
@@ -91,18 +91,21 @@ struct Ffmpeg: Package {
 
     // MARK: Licenses
     licenses.forEach { license in
-      r.insert(true.configureFlag(license.rawValue))
+      r.insert(configureEnableFlag(true, license.rawValue))
     }
 
     // MARK: Disabled
     disabledComponents.forEach { comp in
-      r.insert(false.configureFlag(comp.rawValue))
+      r.insert(configureEnableFlag(false, comp.rawValue))
     }
+
+    r.insert("--extra-cflags=\(env.environment["CFLAGS", default: ""])")
+    r.insert("--extra-ldflags=\(env.environment["LDLAGS", default: ""])")
 
     return r.sorted()
   }
 
-  var dependencies: [Package] {
+  var dependencies: PackageDependency {
     var deps = [Package]()
     dependencyOptions.forEach { dependency in
       switch dependency {
@@ -127,7 +130,7 @@ struct Ffmpeg: Package {
       case .apple: break
       }
     }
-    return deps
+    return .packages(deps)
   }
 
   mutating func validate() throws {

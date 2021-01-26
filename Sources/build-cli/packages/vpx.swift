@@ -5,21 +5,21 @@ struct Vpx: Package {
     .stable("1.9.0")
   }
 
-  func build(with builder: Builder) throws {
+  func build(with env: BuildEnvironment) throws {
 
-    try builder.changingDirectory("mac_build", block: { _ in
-      try builder.launch(
+    try env.changingDirectory("mac_build", block: { _ in
+      try env.launch(
         path: "../configure",
-        "--prefix=\(builder.settings.prefix)",
-        false.configureFlag(CommonOptions.dependencyTracking),
+        "--prefix=\(env.prefix.root.path)",
+        configureEnableFlag(false, CommonOptions.dependencyTracking),
         // shared won't compile, so always build static as default
-        false.configureFlag("examples"),
-        false.configureFlag("unit-tests"),
-        true.configureFlag("pic"),
-        true.configureFlag("vp9-highbitdepth")
+        configureEnableFlag(false, "examples"),
+        configureEnableFlag(false, "unit-tests"),
+        configureEnableFlag(true, "pic"),
+        configureEnableFlag(true, "vp9-highbitdepth")
       )
 
-      try builder.make("install")
+      try env.make("install")
     })
   }
 

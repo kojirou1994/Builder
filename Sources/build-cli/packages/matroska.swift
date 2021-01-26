@@ -5,27 +5,29 @@ struct Matroska: Package {
     .stable("1.6.2")
   }
 
-  func build(with builder: Builder) throws {
-    if builder.settings.library.buildStatic {
-      try builder.changingDirectory("build_static", block: { _ in
-        try builder.cmake(
+  func build(with env: BuildEnvironment) throws {
+    if env.libraryType.buildStatic {
+      try env.changingDirectory("build_static", block: { _ in
+        try env.cmake(
+          toolType: .ninja,
           ".."
         )
 
-        try builder.make()
-        try builder.make("install")
+        try env.make(toolType: .ninja)
+        try env.make(toolType: .ninja, "install")
       })
     }
 
-    if builder.settings.library.buildShared {
-      try builder.changingDirectory("build_shared", block: { _ in
-        try builder.cmake(
+    if env.libraryType.buildShared {
+      try env.changingDirectory("build_shared", block: { _ in
+        try env.cmake(
+          toolType: .ninja,
           "..",
-          cmakeFlag(true, "BUILD_SHARED_LIBS")
+          cmakeOnFlag(true, "BUILD_SHARED_LIBS")
         )
 
-        try builder.make()
-        try builder.make("install")
+        try env.make(toolType: .ninja)
+        try env.make(toolType: .ninja, "install")
       })
     }
   }
@@ -34,8 +36,8 @@ struct Matroska: Package {
     .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.6.2.tar.xz")
   }
 
-  var dependencies: [Package] {
-    [Ebml.defaultPackage()]
+  var dependencies: PackageDependency {
+    .packages(Ebml.defaultPackage())
   }
 
 }

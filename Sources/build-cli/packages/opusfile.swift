@@ -1,31 +1,31 @@
 import BuildSystem
 
-struct FdkAac: Package {
-
-  var version: PackageVersion {
-    .stable("2.0.1")
-  }
+struct OpusFile: Package {
 
   var source: PackageSource {
     packageSource(for: version)!
   }
 
+  var version: PackageVersion {
+    .stable("0.12")
+  }
+
   func packageSource(for version: PackageVersion) -> PackageSource? {
     guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-\(v).tar.gz")
+    return .tarball(url: "https://downloads.xiph.org/releases/opus/opusfile-\(v).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
-    try env.autogen()
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(example, "example")
+      configureEnableFlag(false, CommonOptions.dependencyTracking)
     )
     try env.make("install")
   }
-  
-  @Flag(inversion: .prefixedEnableDisable, help: "Enable example encoding program.")
-  var example: Bool = false
+
+  var dependencies: PackageDependency {
+    .packages(Openssl.defaultPackage(), Opus.defaultPackage(), Ogg.defaultPackage())
+  }
 
 }

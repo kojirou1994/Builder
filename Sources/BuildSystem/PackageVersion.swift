@@ -9,7 +9,7 @@ public enum PackageVersion: CustomStringConvertible {
     case .head:
       return "HEAD"
     case .stable(let version):
-      return "stable " + version
+      return version
     }
   }
 
