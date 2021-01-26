@@ -8,7 +8,7 @@ struct Builder {
        cc: String, cxx: String,
        libraryType: PackageLibraryBuildType,
        target: BuildTriple,
-       rebuildDependnecy: Bool, cleanAll: Bool,
+       rebuildDependnecy: Bool, joinDependency: Bool, cleanAll: Bool,
        deployTarget: String?) throws {
     self.builderDirectoryURL = builderDirectoryURL
     self.srcRootDirectoryURL = builderDirectoryURL.appendingPathComponent("working")
@@ -16,7 +16,12 @@ struct Builder {
     self.logger = Logger(label: "Builder")
     self.productsDirectoryURL = builderDirectoryURL.appendingPathComponent("products")
     self.cleanAll = cleanAll
-    self.rebuildDependnecy = rebuildDependnecy
+    self.joinDependency = joinDependency
+    if joinDependency {
+      self.rebuildDependnecy = false
+    } else {
+      self.rebuildDependnecy = rebuildDependnecy
+    }
 
     let sdkPath: String?
     if target.system.needSdkPath {
@@ -46,7 +51,7 @@ struct Builder {
   let productsDirectoryURL: URL
 
   let rebuildDependnecy: Bool
-
+  let joinDependency: Bool
   let cleanAll: Bool
 
   func checkout(source: PackageSource, directoryName: String) throws -> URL {
@@ -80,23 +85,31 @@ struct Builder {
 
 extension Builder {
 
-  func formPrefix(package: Package, version: PackageVersion) -> PackagePath {
+  func formPrefix(package: Package, version: PackageVersion,
+                  suffix: String = "") -> PackagePath {
     var prefix = env.prefix.root
 
-    // example root/x86_64-macOS/static/curl/7.14-feature_hash
-    prefix.appendPathComponent("\(env.target.arch.rawValue)-\(env.target.system.rawValue)")
-    prefix.appendPathComponent(env.libraryType.description)
+    // example root/curl/7.14-feature_hash/static-x86_64-macOS/
     prefix.appendPathComponent(package.name.safeFilename())
+
     var versionTag = version.description
     var tag = package.tag
     if !tag.isEmpty {
       let tagHash = tag.withUTF8 { buffer in
-        SHA256.hash(data: buffer).hexString(uppercase: false, prefix: "")
+        SHA256.hash(data: buffer)
+          .hexString(uppercase: false, prefix: "")
       }
       versionTag.append("-")
       versionTag.append(tagHash)
     }
+    if !suffix.isEmpty {
+      versionTag.append("-")
+      versionTag.append(suffix)
+    }
     prefix.appendPathComponent(versionTag.safeFilename())
+
+    prefix.appendPathComponent("\(env.libraryType)-\(env.target.arch.rawValue)-\(env.target.system.rawValue)")
+
     return .init(root: prefix)
   }
 
@@ -159,6 +172,8 @@ extension Builder {
       if env.isBuildingCross {
         cflags.append("-arch")
         cflags.append(env.target.arch.rawValue)
+        ldlags.append("-arch")
+        ldlags.append(env.target.arch.rawValue)
         if let sysroot = env.sdkPath {
           cflags.append("-isysroot")
           cflags.append(sysroot)
@@ -171,8 +186,12 @@ extension Builder {
          */
 
       }
+      cflags.append("-fembed-bitcode")
+      ldlags.append("-fembed-bitcode")
+      
       if let deployTarget = env.deployTarget {
         cflags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
+        ldlags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
       }
       allPrefixes.forEach { prefix in
         cflags.append("-I\(prefix.include.path)")
@@ -226,7 +245,7 @@ public func replace(contentIn file: String, matching string: String, with newStr
 }
 
 extension Builder {
-  func startBuild(package: Package, version: String?) throws {
+  func startBuild(package: Package, version: String?) throws -> PackagePath {
     if cleanAll {
       print("Cleaning products directory...")
       try? env.removeItem(at: productsDirectoryURL)
@@ -236,10 +255,27 @@ extension Builder {
 
     try env.mkdir(downloadCacheDirectory)
 
-    let summary = try buildDeps(package: package, buildSelf: false)
+    let dependencyPrefix: PackagePath?
+    if joinDependency {
+      let usedVersion: PackageVersion
+      if let v = version,
+         package.packageSource(for: .stable(v)) != nil {
+        usedVersion = .stable(v)
+      } else {
+        usedVersion = package.version
+      }
+      dependencyPrefix = formPrefix(package: package, version: usedVersion, suffix: "dependency")
+      try env.removeItem(at: dependencyPrefix!.root)
+    } else {
+      dependencyPrefix = nil
+    }
+
+    let summary = try buildDeps(package: package, buildSelf: false, prefix: dependencyPrefix)
+
 
     let prefix = try build(package: package, version: version, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
+    return prefix
   }
 
   struct BuildSummary {
@@ -248,8 +284,7 @@ extension Builder {
   }
 
   // return deps map
-  private func buildDeps(package: Package,
-                                  buildSelf: Bool) throws -> BuildSummary {
+  private func buildDeps(package: Package, buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
     let dependencies = package.dependencies
 
     print("Building \(package.name)")
@@ -262,14 +297,14 @@ extension Builder {
     }
 
     try dependencies.packages.forEach { depPackage in
-      let summary = try buildDeps(package: depPackage, buildSelf: true)
+      let summary = try buildDeps(package: depPackage, buildSelf: true, prefix: prefix)
       dependencyMap.add(package: depPackage, prefix: summary.prefix!)
       dependencyMap.merge(summary.dependencyMap)
     }
 
     dependencyMap.mergeBrewDependency(try parseBrewDeps(dependencies.brewFormulas))
 
-    let prefix = try buildSelf ? build(package: package, dependencyMap: dependencyMap) : nil
+    let prefix = try buildSelf ? build(package: package, prefix: prefix, dependencyMap: dependencyMap) : nil
 
     return .init(prefix: prefix, dependencyMap: dependencyMap)
   }

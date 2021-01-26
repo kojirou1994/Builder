@@ -26,6 +26,6 @@ struct Harfbuzz: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Freetype.defaultPackage(), Icu4c.defaultPackage())
+    .packages(Freetype.defaultPackage, Icu4c.defaultPackage)
   }
 }

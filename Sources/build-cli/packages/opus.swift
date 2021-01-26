@@ -2,12 +2,12 @@ import BuildSystem
 
 struct Opus: Package {
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
   var version: PackageVersion {
     .stable("1.3.1")
+  }
+
+  var source: PackageSource {
+    packageSource(for: version)!
   }
 
   func packageSource(for version: PackageVersion) -> PackageSource? {
@@ -22,6 +22,9 @@ struct Opus: Package {
       env.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, "doc")
     )
+
+    try env.make()
+
     try env.make("install")
   }
 

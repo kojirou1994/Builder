@@ -6,6 +6,10 @@ struct Flac: Package {
   }
 
   func build(with env: BuildEnvironment) throws {
+    /*
+     add -mfpu=neon to cflags and ldflags on arm
+     */
+    let useASM = env.target.arch == .x86_64
     try env.autogen()
     
     try env.configure(
@@ -13,7 +17,10 @@ struct Flac: Package {
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
       "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)",
-      env.isBuildingCross ? configureEnableFlag(false, "asm-optimizations") : nil
+      configureEnableFlag(cpplibs, "cpplibs"),
+      configureEnableFlag(false, "64-bit-words"),
+      configureEnableFlag(false, "examples"),
+      configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true)
     )
 
     try env.make()
@@ -23,8 +30,13 @@ struct Flac: Package {
   var source: PackageSource {
     .tarball(url: "https://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz")
   }
+  @Flag
+  var cpplibs: Bool = false
+  /*
+   --enable-64-bit-words
+   */
 
   var dependencies: PackageDependency {
-    .packages(Ogg.defaultPackage())
+    .packages(Ogg.defaultPackage)
   }
 }

@@ -19,8 +19,7 @@ struct Opusenc: Package {
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(false, CommonOptions.dependencyTracking)
+      env.libraryType.sharedConfigureFlag
     )
     
     try env.make()
@@ -28,7 +27,7 @@ struct Opusenc: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Opus.defaultPackage())
+    .packages(Opus.defaultPackage)
   }
 
 }

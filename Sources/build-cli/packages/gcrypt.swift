@@ -19,6 +19,6 @@ struct Gcrypt: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(GpgError.defaultPackage())
+    .packages(GpgError.defaultPackage)
   }
 }

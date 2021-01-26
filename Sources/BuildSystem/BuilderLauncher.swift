@@ -49,7 +49,7 @@ struct BuilderLauncher: ExecutableLauncher {
   let environment: [String : String]
 
   init(environment: [String : String]) {
-    tsc = .init(outputRedirection: .collect)
+    tsc = .init(outputRedirection: .none)
     self.environment = environment
   }
 

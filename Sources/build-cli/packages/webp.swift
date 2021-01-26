@@ -25,6 +25,8 @@ struct Webp: Package {
       "--enable-libwebpextras"
     )
 
+    try env.make()
+    
     try env.make("install")
   }
 

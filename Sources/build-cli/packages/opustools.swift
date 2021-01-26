@@ -26,11 +26,11 @@ struct OpusTools: Package {
 
   var dependencies: PackageDependency {
     .packages(
-      Flac.defaultPackage(),
-      Ogg.defaultPackage(),
-      Opus.defaultPackage(),
-      Opusenc.defaultPackage(),
-      OpusFile.defaultPackage()
+      Flac.defaultPackage,
+      Ogg.defaultPackage,
+      Opus.defaultPackage,
+      Opusenc.defaultPackage,
+      OpusFile.defaultPackage
     )
   }
 

@@ -110,23 +110,23 @@ struct Ffmpeg: Package {
     dependencyOptions.forEach { dependency in
       switch dependency {
       case .libopus:
-        deps.append(Opus.defaultPackage())
+        deps.append(Opus.defaultPackage)
       case .libvorbis:
-        deps.append(Vorbis.defaultPackage())
+        deps.append(Vorbis.defaultPackage)
       case .libfdkaac:
-        deps.append(FdkAac.defaultPackage())
+        deps.append(FdkAac.defaultPackage)
       case .libx264:
-        deps.append(x264.defaultPackage())
+        deps.append(x264.defaultPackage)
       case .libx265:
-        deps.append(x265.defaultPackage())
+        deps.append(x265.defaultPackage)
       case .libwebp:
-        deps.append(Webp.defaultPackage())
+        deps.append(Webp.defaultPackage)
       case .libaribb24:
-        deps.append(Aribb24.defaultPackage())
+        deps.append(Aribb24.defaultPackage)
       case .libopencore:
-        deps.append(Opencore.defaultPackage())
+        deps.append(Opencore.defaultPackage)
       case .libass:
-        deps.append(Ass.defaultPackage())
+        deps.append(Ass.defaultPackage)
       case .apple: break
       }
     }
@@ -154,7 +154,7 @@ struct Ffmpeg: Package {
   }
 
   static var minimalDecoder: Self {
-    var ff = Self.defaultPackage()
+    var ff = Self.defaultPackage
     ff.dependencyOptions.append(.apple)
     ff.disabledComponents = [.muxers, .encoders, .filters, .hwaccels, .network, .devices, .programs, .doc]
     return ff

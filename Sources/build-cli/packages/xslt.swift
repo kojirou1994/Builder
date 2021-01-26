@@ -24,6 +24,6 @@ struct Xslt: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Xml2.defaultPackage(), Gcrypt.defaultPackage())
+    .packages(Xml2.defaultPackage, Gcrypt.defaultPackage)
   }
 }

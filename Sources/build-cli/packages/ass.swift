@@ -19,6 +19,6 @@ struct Ass: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Freetype.defaultPackage(), Harfbuzz.defaultPackage(), Fribidi.defaultPackage())
+    .packages(Freetype.defaultPackage, Harfbuzz.defaultPackage, Fribidi.defaultPackage)
   }
 }

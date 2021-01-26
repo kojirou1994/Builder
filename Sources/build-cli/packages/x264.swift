@@ -1,24 +1,45 @@
 import BuildSystem
 
 struct x264: Package {
+
+  var version: PackageVersion {
+    .stable("r3027")
+  }
+
   func build(with env: BuildEnvironment) throws {
+
+    let needGas = env.target.arch != .x86_64
+
+    if needGas {
+      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.target.arch.tripleString) -- \(env.cc)"
+    }
+
     try env.configure(
-      enableShared ? "--enable-shared" : nil,
-      "--enable-static",
-      "--enable-strip",
-      "--disable-avs",
-      //      "--disable-swscale", /* libavformat is not supported without swscale support */
-      enableLibav ? nil : "--disable-lavf",
-      "--disable-ffms",
-      "--disable-gpac",
-      enableLsmash ? nil : "--disable-lsmash")
-    
+      configureEnableFlag(cli, "cli", defaultEnabled: true),
+      env.libraryType.staticConfigureFlag,
+      env.libraryType.sharedConfigureFlag,
+//      configureEnableFlag(true, "lto"),
+      configureEnableFlag(true, "strip"),
+      configureEnableFlag(true, "pic"),
+      needGas ? "--extra-asflags=\(env.environment["CFLAGS", default: ""])" : nil,
+
+      configureEnableFlag(false, "avs"),
+      configureEnableFlag(libav, "swscale", defaultEnabled: true),
+      configureEnableFlag(libav, "lavf", defaultEnabled: true),
+      /* libavformat is not supported without swscale support */
+      configureEnableFlag(false, "ffms"),
+      configureEnableFlag(false, "gpac"),
+      configureEnableFlag(lsmash, "lsmash", defaultEnabled: true)
+    )
+
+    try env.make()
+
     try env.make("install")
   }
 
   var source: PackageSource {
     .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
-//    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
+    //    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
   }
 
   enum Mp4Support: String, ExpressibleByArgument {
@@ -33,25 +54,29 @@ struct x264: Package {
 
   var dependencies: PackageDependency {
     var deps = [Package]()
-    if enableLsmash {
-      deps.append(Lsmash.defaultPackage())
+    if lsmash {
+      deps.append(Lsmash.defaultPackage)
     }
-    if enableLibav {
+    if libav {
       deps.append(Ffmpeg.minimalDecoder)
     }
     return .packages(deps)
   }
 
-  @Flag()
-  var enableLsmash: Bool = false
-  @Flag()
-  var enableLibav: Bool = false
-  @Flag()
-  var enableShared: Bool = false
+  @Flag(inversion: .prefixedEnableDisable)
+  var lsmash: Bool = false
 
-  func validate() throws {
-    if enableLibav, enableShared {
-      throw ValidationError("shared conflicts with libav")
-    }
+  @Flag(inversion: .prefixedEnableDisable)
+  var libav: Bool = false
+
+  @Flag(inversion: .prefixedEnableDisable)
+  var cli: Bool = false
+
+  var tag: String {
+    [
+      cli ? "CLI" : "",
+      lsmash ? "LSMASH" : "",
+      libav ? "LIBAV" : ""
+    ].joined()
   }
 }

@@ -1,4 +1,4 @@
-public struct BuildTriple: Hashable {
+public struct BuildTriple: Hashable, CustomStringConvertible {
   public let arch: BuildArch
   public let system: BuildTargetSystem
 
@@ -14,17 +14,57 @@ public struct BuildTriple: Hashable {
     //    vendor = "unknown"
     }
 
-    return "\(arch.rawValue)-\(vendor)-\(system.tripleString)"
+    return "\(arch.tripleString)-\(vendor)-\(system.tripleString)"
+  }
+  
+  public var description: String {
+    "\(arch)-\(system)"
   }
 
   public static var native: Self {
     .init(arch: .native, system: .native)
   }
+
+  public static let all: [Self] = {
+    var r = [Self]()
+    for arch in BuildArch.allCases {
+      for system in BuildTargetSystem.allCases {
+        r.append(.init(arch: arch, system: system))
+      }
+    }
+    return r
+  }()
+
+  public static let allValid: [Self] = all.filter(\.isValid)
+
+  public var isValid: Bool {
+    switch (arch, system) {
+    case (.x86_64, .tvSimulator), (.arm64, .tvSimulator),
+         (.arm64, .tvOS),
+         (.arm64, .iphoneOS), (.armv7, .iphoneOS),
+         (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator),
+         (.x86_64, .macOS), (.arm64, .macOS),
+         (.armv7, .watchOS),
+         (.x86_64, .watchSimulator), (.arm64, .watchSimulator):
+      return true
+    default:
+      return false
+    }
+  }
 }
 
 public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
   case arm64
+  case armv7
   case x86_64
+
+  public var tripleString: String {
+    switch self {
+    case .arm64: return "aarch64"
+    case .x86_64: return rawValue
+    case .armv7: return "arm"
+    }
+  }
 
   public var description: String { rawValue }
 
@@ -53,10 +93,19 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
 
   public var description: String { rawValue }
 
+  var isSimulator: Bool {
+    switch self {
+    case  .tvSimulator, .iphoneSimulator,
+          .watchSimulator:
+      return true
+    default: return false
+    }
+  }
+
   var tripleString: String {
     switch self {
     case .macOS:
-      return "macosx"
+      return "darwin" // macosx
     case .tvOS, .tvSimulator,
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
@@ -100,7 +149,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var sdkName: String {
+  public var sdkName: String {
     switch self {
     case .macOS: return "macosx"
     case .iphoneOS: return "iphoneos"

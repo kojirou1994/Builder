@@ -17,6 +17,6 @@ struct Aribb24: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Png.defaultPackage())
+    .packages(Png.defaultPackage)
   }
 }

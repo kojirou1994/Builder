@@ -37,7 +37,7 @@ struct Matroska: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Ebml.defaultPackage())
+    .packages(Ebml.defaultPackage)
   }
 
 }

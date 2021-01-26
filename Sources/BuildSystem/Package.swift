@@ -2,11 +2,11 @@ import ArgumentParser
 
 public protocol Package: ParsableArguments, CustomStringConvertible {
 
-  var dependencies: PackageDependency { get }
   var version: PackageVersion { get }
   var source: PackageSource { get }
-  var tag: String { get }
+  var dependencies: PackageDependency { get }
 
+  var tag: String { get }
   var buildInfo: String { get }
 
   func packageSource(for version: PackageVersion) -> PackageSource?
@@ -50,8 +50,14 @@ public extension Package {
     Self.name
   }
 
-  static func defaultPackage() -> Self {
-    try! parse([])
+  static var defaultPackage: Self {
+    try! {
+      do {
+        return try parse([])
+      } catch {
+        throw BuilderError.invalidDefaultPackage(name: String(describing: Self.self))
+      }
+    }()
   }
 
   func packageSource(for version: PackageVersion) -> PackageSource? { nil }

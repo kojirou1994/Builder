@@ -25,7 +25,7 @@ struct OpusFile: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Openssl.defaultPackage(), Opus.defaultPackage(), Ogg.defaultPackage())
+    .packages(Openssl.defaultPackage, Opus.defaultPackage, Ogg.defaultPackage)
   }
 
 }

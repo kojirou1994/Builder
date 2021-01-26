@@ -2,7 +2,23 @@ import URLFileManager
 import Logging
 import KwiftUtility
 
-public struct BuildEnvironment {
+public class BuildEnvironment {
+  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: [String : String], libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, sdkPath: String?, deployTarget: String?) {
+    self.version = version
+    self.source = source
+    self.prefix = prefix
+    self.dependencyMap = dependencyMap
+    self.safeMode = safeMode
+    self.cc = cc
+    self.cxx = cxx
+    self.environment = environment
+    self.libraryType = libraryType
+    self.target = target
+    self.logger = logger
+    self.sdkPath = sdkPath
+    self.deployTarget = deployTarget
+  }
+  
   public let fm: URLFileManager = .init()
   public let version: PackageVersion
   public let source: PackageSource
@@ -19,7 +35,7 @@ public struct BuildEnvironment {
   public let cxx: String
 
   /// the environment will be used to run processes
-  public let environment: [String : String]
+  public var environment: [String : String]
 
   public let parallelJobs: Int? = 8
   public let libraryType: PackageLibraryBuildType
@@ -135,6 +151,11 @@ extension BuildEnvironment {
     }
     if isBuildingCross {
       cmakeArguments.append(cmakeDefineFlag(target.arch.rawValue, "CMAKE_OSX_ARCHITECTURES"))
+      cmakeArguments.append(cmakeDefineFlag(target.arch.tripleString, "CMAKE_SYSTEM_PROCESSOR"))
+      cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
+    }
+    if let sysroot = sdkPath {
+      cmakeArguments.append(cmakeDefineFlag(sysroot, "CMAKE_OSX_SYSROOT"))
     }
     try launch("cmake", cmakeArguments)
   }

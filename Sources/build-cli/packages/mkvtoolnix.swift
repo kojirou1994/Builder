@@ -35,10 +35,10 @@ struct Mkvtoolnix: Package {
 
   var dependencies: PackageDependency {
     .blend(packages: [
-            Vorbis.defaultPackage(), Ebml.defaultPackage(),
-            Matroska.defaultPackage(), Pugixml.defaultPackage(),
-            Pcre2.defaultPackage(), Fmt.defaultPackage(),
-            Flac.defaultPackage(), Jpcre2.defaultPackage()],
+            Vorbis.defaultPackage, Ebml.defaultPackage,
+            Matroska.defaultPackage, Pugixml.defaultPackage,
+            Pcre2.defaultPackage, Fmt.defaultPackage,
+            Flac.defaultPackage, Jpcre2.defaultPackage],
            brewFormulas: ["docbook-xsl"])
   }
 }

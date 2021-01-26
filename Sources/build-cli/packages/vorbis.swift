@@ -23,7 +23,7 @@ struct Vorbis: Package {
   }
 
   var dependencies: PackageDependency {
-    .packages(Ogg.defaultPackage())
+    .packages(Ogg.defaultPackage)
   }
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the examples.")

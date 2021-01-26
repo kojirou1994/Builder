@@ -16,6 +16,8 @@ struct Xml2: Package {
       "--without-lzma"
     )
 
+    try env.make()
+
     try env.make("install")
   }
 

@@ -20,6 +20,6 @@ struct Jpcre2: Package {
     .stable("10.32.01")
   }
   var dependencies: PackageDependency {
-    .packages(Pcre2.defaultPackage())
+    .packages(Pcre2.defaultPackage)
   }
 }
