@@ -9,6 +9,7 @@ public protocol Package: ParsableArguments, CustomStringConvertible {
   var tag: String { get }
   var buildInfo: String { get }
 
+  func supports(target: BuildTriple) -> Bool
   func packageSource(for version: PackageVersion) -> PackageSource?
   func build(with env: BuildEnvironment) throws
 
@@ -59,6 +60,8 @@ public extension Package {
       }
     }()
   }
+
+  func supports(target: BuildTriple) -> Bool { true }
 
   func packageSource(for version: PackageVersion) -> PackageSource? { nil }
 

@@ -67,7 +67,13 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   public mutating func run() throws {
     var builtPackages = [BuildTargetSystem : [(arch: BuildArch, prefix: PackagePath)]]()
     var failedTargets = [BuildTriple]()
+    var unsupportedTargets = [BuildTriple]()
+
     for target in BuildTriple.allValid {
+      guard package.supports(target: target) else {
+        unsupportedTargets.append(target)
+        continue
+      }
       do {
         print("Building \(target)")
         let builder = try Builder(
@@ -86,6 +92,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     }
     print("\n\n\n")
     print("FAILED TARGETS:", failedTargets)
+    print("UNSUPPORTED TARGETS:", unsupportedTargets)
 
     let fm = URLFileManager.default
 
