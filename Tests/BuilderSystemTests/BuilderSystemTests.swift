@@ -19,7 +19,7 @@ final class BuilderSystemTests: XCTestCase {
   func testTriple() {
     for arch in BuildArch.allCases {
       for system in BuildTargetSystem.allCases {
-        print(BuildTriple(arch: arch, system: system).tripleString)
+        print(BuildTriple(arch: arch, system: system).clangTripleString)
       }
     }
   }
