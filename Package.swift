@@ -8,7 +8,8 @@ let package = Package(
     .macOS(.v10_15)
   ],
   products: [
-    .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"])
+    .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"]),
+    .executable(name: "build-cli", targets: ["build-cli"])
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
@@ -31,6 +32,11 @@ let package = Package(
       name: "build-cli",
       dependencies: [
         "BuildSystem"
+      ]),
+    .target(
+      name: "generate-code",
+      dependencies: [
+        "URLFileManager",
       ]),
     .testTarget(
       name: "BuilderSystemTests",
