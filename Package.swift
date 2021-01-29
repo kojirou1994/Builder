@@ -15,14 +15,13 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "0.8.0"),
-
-    .package(url: "git@github.com:kojirou1994/Executable.git", from: "0.1.0"),
+    .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
   ],
   targets: [
     .target(
       name: "BuildSystem",
       dependencies: [
-        "Executable",
+        .product(name: "ExecutableLauncher", package: "Executable"),
         "URLFileManager",
         .product(name: "Logging", package: "swift-log"),
         .product(name: "ArgumentParser", package: "swift-argument-parser"),

@@ -1,6 +1,6 @@
 //import TSCBasic
 //import TSCUtility
-import Executable
+import ExecutableLauncher
 import URLFileManager
 import KwiftUtility
 
@@ -39,7 +39,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
         builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
         cc: "clang", cxx: "clang++",
         libraryType: builderOptions.library, target: .init(arch: arch, system: system),
-        rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, deployTarget: deployTarget)
+        rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
 
       try builder.startBuild(package: package, version: builderOptions.version)
     }
@@ -80,7 +80,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
           builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
           cc: "clang", cxx: "clang++",
           libraryType: builderOptions.library, target: target,
-          rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, deployTarget: nil)
+          rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
 
         let prefix = try builder.startBuild(package: package, version: builderOptions.version)
 
@@ -173,4 +173,7 @@ struct BuilderOptions: ParsableArguments {
 
   @Option(help: "Specify build/cache directory")
   var buildPath: String = "./builder"
+
+  @Flag(help: "Enable bitcode.")
+  var enableBitcode: Bool = false
 }

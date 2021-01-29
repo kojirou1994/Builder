@@ -1,5 +1,5 @@
 import Foundation
-import Executable
+import ExecutableLauncher
 import KwiftExtension
 
 extension Builder {

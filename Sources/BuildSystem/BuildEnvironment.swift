@@ -3,7 +3,7 @@ import Logging
 import KwiftUtility
 
 public class BuildEnvironment {
-  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: [String : String], libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, sdkPath: String?, deployTarget: String?) {
+  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: [String : String], libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
     self.version = version
     self.source = source
     self.prefix = prefix
@@ -15,9 +15,11 @@ public class BuildEnvironment {
     self.libraryType = libraryType
     self.target = target
     self.logger = logger
+    self.enableBitcode = enableBitcode
     self.sdkPath = sdkPath
     self.deployTarget = deployTarget
-  }
+  }  
+
   
   public let fm: URLFileManager = .init()
   public let version: PackageVersion
@@ -42,6 +44,7 @@ public class BuildEnvironment {
   public let target: BuildTriple
   let logger: Logger
 
+  public let enableBitcode: Bool
   public let sdkPath: String?
   public let deployTarget: String?
 
@@ -150,8 +153,8 @@ extension BuildEnvironment {
       break
     }
     if isBuildingCross {
-      cmakeArguments.append(cmakeDefineFlag(target.arch.rawValue, "CMAKE_OSX_ARCHITECTURES"))
-      cmakeArguments.append(cmakeDefineFlag(target.arch.tripleString, "CMAKE_SYSTEM_PROCESSOR"))
+      cmakeArguments.append(cmakeDefineFlag(target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
+      cmakeArguments.append(cmakeDefineFlag(target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
       cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
     }
     if let sysroot = sdkPath {
@@ -178,11 +181,11 @@ extension BuildEnvironment {
 
   public func configure(_ arguments: [String?]) throws {
     var configureArguments = ["--prefix=\(prefix.root.path)"]
-    arguments.forEach { $0.map { configureArguments.append($0) } }
 
     if isBuildingCross {
-      configureArguments.append("--host=\(target.tripleString)")
+      configureArguments.append("--host=\(target.gnuTripleString)")
     }
+    arguments.forEach { $0.map { configureArguments.append($0) } }
     
     try launch(path: "configure", configureArguments)
   }

@@ -2,6 +2,8 @@ import ArgumentParser
 
 public protocol Package: ParsableArguments, CustomStringConvertible {
 
+  static var name: String { get }
+  
   var version: PackageVersion { get }
   var source: PackageSource { get }
   var dependencies: PackageDependency { get }
@@ -9,7 +11,9 @@ public protocol Package: ParsableArguments, CustomStringConvertible {
   var tag: String { get }
   var buildInfo: String { get }
 
+  var supportsBitcode: Bool { get }
   func supports(target: BuildTriple) -> Bool
+
   func packageSource(for version: PackageVersion) -> PackageSource?
   func build(with env: BuildEnvironment) throws
 
@@ -61,6 +65,7 @@ public extension Package {
     }()
   }
 
+  var supportsBitcode: Bool { true }
   func supports(target: BuildTriple) -> Bool { true }
 
   func packageSource(for version: PackageVersion) -> PackageSource? { nil }

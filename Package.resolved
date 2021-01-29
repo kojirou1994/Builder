@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "Executable",
-        "repositoryURL": "git@github.com:kojirou1994/Executable.git",
+        "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "dda9f6f4b34c700fccc5a25a19243c1f742af928",
-          "version": "0.3.0"
+          "revision": "c8bcbd0cd85df7aaa11e218c802490d29795817b",
+          "version": "0.4.0"
         }
       },
       {

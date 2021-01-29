@@ -1,3 +1,3 @@
 @_exported import Foundation
-@_exported import Executable
+@_exported import ExecutableLauncher
 @_exported import ArgumentParser

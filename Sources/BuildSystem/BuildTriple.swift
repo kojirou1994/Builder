@@ -2,19 +2,12 @@ public struct BuildTriple: Hashable, CustomStringConvertible {
   public let arch: BuildArch
   public let system: BuildTargetSystem
 
-  public var tripleString: String {
-    let vendor: String
-    switch system {
-    case .macOS,
-         .tvOS, .tvSimulator,
-         .iphoneOS, .iphoneSimulator,
-         .watchOS, .watchSimulator:
-      vendor = "apple"
-    //  case .linxGNU:
-    //    vendor = "unknown"
-    }
+  public var gnuTripleString: String {
+    "\(arch.gnuTripleString)-\(system.vendor)-\(system.gnuTripleString)"
+  }
 
-    return "\(arch.tripleString)-\(vendor)-\(system.tripleString)"
+  public var clangTripleString: String {
+    "\(arch.clangTripleString)-\(system.vendor)-\(system.clangTripleString)"
   }
   
   public var description: String {
@@ -41,9 +34,10 @@ public struct BuildTriple: Hashable, CustomStringConvertible {
     switch (arch, system) {
     case (.x86_64, .tvSimulator), (.arm64, .tvSimulator),
          (.arm64, .tvOS),
-         (.arm64, .iphoneOS), (.armv7, .iphoneOS),
+         (.arm64, .iphoneOS), (.armv7, .iphoneOS), (.armv7s, .iphoneOS), (.arm64e, .iphoneOS),
          (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator),
          (.x86_64, .macOS), (.arm64, .macOS),
+         (.x86_64, .macCatalyst), (.arm64, .macCatalyst),
          (.armv7, .watchOS),
          (.x86_64, .watchSimulator), (.arm64, .watchSimulator):
       return true
@@ -55,15 +49,21 @@ public struct BuildTriple: Hashable, CustomStringConvertible {
 
 public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
   case arm64
+  case arm64e
   case armv7
+  case armv7s
   case x86_64
 
-  public var tripleString: String {
+  public var gnuTripleString: String {
     switch self {
-    case .arm64: return "aarch64"
+    case .arm64, .arm64e: return "aarch64"
     case .x86_64: return rawValue
-    case .armv7: return "arm"
+    case .armv7, .armv7s: return "arm"
     }
+  }
+
+  public var clangTripleString: String {
+    rawValue
   }
 
   public var description: String { rawValue }
@@ -82,6 +82,7 @@ public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomString
 
 public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
   case macOS
+  case macCatalyst
   case tvOS
   case tvSimulator
   case iphoneOS
@@ -89,9 +90,21 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
   case watchOS
   case watchSimulator
 
-  //  case linxGNU
+  case linxGNU
 
   public var description: String { rawValue }
+
+  var vendor: String {
+    switch self {
+    case .macOS, .macCatalyst,
+         .tvOS, .tvSimulator,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator:
+      return "apple"
+    case .linxGNU:
+      return "unknown"
+    }
+  }
 
   var isSimulator: Bool {
     switch self {
@@ -102,16 +115,31 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var tripleString: String {
+  var gnuTripleString: String {
     switch self {
-    case .macOS:
-      return "darwin" // macosx
+    case .macOS, .macCatalyst:
+      return "darwin"
     case .tvOS, .tvSimulator,
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
       return "darwin"
-    //    case .linxGNU:
-    //      return "linux-gnu"
+    case .linxGNU:
+      return "linux-gnu"
+    }
+  }
+
+  var clangTripleString: String {
+    switch self {
+    case .macOS:
+      return "darwin" // macosx
+    case .macCatalyst:
+      return "ios-macabi"
+    case .tvOS, .tvSimulator,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator:
+      return "darwin"
+    case .linxGNU:
+      return "linux-gnu"
     }
   }
 
@@ -133,41 +161,46 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     switch self {
     case .iphoneOS: name = "iphoneos" // ios
     case .iphoneSimulator: name = "iphonesimulator"
-    case .macOS: name = "macosx"
+    case .macOS, .macCatalyst: name = "macosx"
     case .tvOS: name = "appletvos"
     case .tvSimulator: name = "appletvsimulator"
     case .watchOS: name = "watchos"
     case .watchSimulator: name = "watchsimulator"
+    case .linxGNU: fatalError()
     }
     return "-m\(name)-version-min"
   }
 
   var needSdkPath: Bool {
     switch self {
-    case .macOS: return false
+    case .macOS, .macCatalyst,
+         .linxGNU:
+      return false
     default: return true
     }
   }
 
-  public var sdkName: String {
+  var sdkName: String {
     switch self {
-    case .macOS: return "macosx"
+    case .macOS, .macCatalyst: return "macosx"
     case .iphoneOS: return "iphoneos"
     case .iphoneSimulator: return "iphonesimulator"
     case .tvOS: return "appletvos"
     case .tvSimulator: return "appletvsimulator"
     case .watchOS: return "watchos"
     case .watchSimulator: return "watchsimulator"
+
+    case .linxGNU: fatalError()
     }
   }
 
   public static var native: Self {
     #if os(macOS)
     return .macOS
-    //    #elseif os(Linux)
-    //    return .linuxGNU
+    #elseif os(Linux)
+    return .linuxGNU
     #else
-    #error("Unknown arch!")
+    #error("Unknown system!")
     #endif
   }
 

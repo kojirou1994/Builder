@@ -9,7 +9,7 @@ struct Builder {
        libraryType: PackageLibraryBuildType,
        target: BuildTriple,
        rebuildDependnecy: Bool, joinDependency: Bool, cleanAll: Bool,
-       deployTarget: String?) throws {
+       enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = builderDirectoryURL
     self.srcRootDirectoryURL = builderDirectoryURL.appendingPathComponent("working")
     self.downloadCacheDirectory = builderDirectoryURL.appendingPathComponent("download")
@@ -38,7 +38,7 @@ struct Builder {
       safeMode: false,
       cc: cc, cxx: cxx,
       environment: ProcessInfo.processInfo.environment,
-      libraryType: libraryType, target: target, logger: logger, sdkPath: sdkPath, deployTarget: deployTarget)
+      libraryType: libraryType, target: target, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget)
 
   }
 
@@ -73,11 +73,15 @@ struct Builder {
         try URLFileManager.default.moveItem(at: tmpFileURL, to: dstFileURL)
       }
 
+      #warning("handle other tarball format")
       try env.launch("tar", "xf", dstFileURL.path)
 
-      let uncompressedURL = URL(fileURLWithPath: dstFileURL.deletingPathExtension().deletingPathExtension().lastPathComponent)
-//      try URLFileManager.default.moveItem(at: uncompressedURL, to: URL(fileURLWithPath: directory))
-      return uncompressedURL
+      let contents = try env.fm.contentsOfDirectory(at: env.fm.currentDirectory, options: [.skipsHiddenFiles])
+      if contents.count == 1, env.fm.fileExistance(at: contents[0]) == .directory {
+        return contents[0]
+      } else {
+        return env.fm.currentDirectory
+      }
     default: fatalError()
     }
   }
@@ -170,24 +174,33 @@ extension Builder {
       var cflags = environment["CFLAGS", default: ""].split(separator: " ").map(String.init)
       var ldlags = environment["LDLAGS", default: ""].split(separator: " ").map(String.init)
       if env.isBuildingCross {
-        cflags.append("-arch")
-        cflags.append(env.target.arch.rawValue)
+        switch env.target.system {
+        case .macCatalyst:
+          /*
+           Thanks:
+           https://stackoverflow.com/questions/59903554/uikit-uikit-h-not-found-for-clang-building-mac-catalyst
+           */
+          cflags.append("-target")
+          cflags.append(env.target.clangTripleString)
+        default:
+          cflags.append("-arch")
+          cflags.append(env.target.arch.clangTripleString)
+        }
         ldlags.append("-arch")
-        ldlags.append(env.target.arch.rawValue)
+        ldlags.append(env.target.arch.clangTripleString)
         if let sysroot = env.sdkPath {
           cflags.append("-isysroot")
           cflags.append(sysroot)
         }
-
-        /*
-         todo:
-         -miphoneos-version-min=7.0
-         -fembed-bitcode
-         */
-
       }
-      cflags.append("-fembed-bitcode")
-      ldlags.append("-fembed-bitcode")
+      if env.enableBitcode {
+        if package.supportsBitcode {
+          cflags.append("-fembed-bitcode")
+          ldlags.append("-fembed-bitcode")
+        } else {
+          print("Package doesn't support bitcode!")
+        }
+      }
       
       if let deployTarget = env.deployTarget {
         cflags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
@@ -319,6 +332,6 @@ extension Builder {
       prefix: prefix, dependencyMap: dependencyMap,
       safeMode: env.safeMode, cc: env.cc, cxx: env.cxx,
       environment: environment,
-      libraryType: env.libraryType, target: env.target, logger: env.logger, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
+      libraryType: env.libraryType, target: env.target, logger: env.logger, enableBitcode: env.enableBitcode, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
   }
 }

@@ -3,7 +3,7 @@ import TSCBasic
 
 struct BuilderLauncher: ExecutableLauncher {
   func generateProcess<T>(for executable: T) throws -> Process where T : Executable {
-    let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable)
+    let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable, overridePath: environment["PATH"])
     let arguments = CollectionOfOne(launchPath) + executable.arguments
 
     if let workingDirectory = executable.currentDirectoryURL?.path {
