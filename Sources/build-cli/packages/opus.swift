@@ -2,6 +2,8 @@ import BuildSystem
 
 struct Opus: Package {
 
+  static var name: String { "opus" }
+
   var version: PackageVersion {
     .stable("1.3.1")
   }

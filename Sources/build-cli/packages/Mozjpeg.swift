@@ -7,16 +7,13 @@ struct Mozjpeg: Package {
 
   func build(with env: BuildEnvironment) throws {
 
-//    switch env.target.arch {
-//    case .arm64, .armv7:
-//      print("Use own env")
-////      env.environment["CFLAGS"] =
-////        "-Wall -arch arm64 -miphoneos-version-min=8.0 -funwind-tables"
-////        "-arch \(env.target.arch.rawValue) -funwind-tables -Wall"
-////      env.environment["LDFLAGS"] = nil
-////      env.environment["CFLAGS", default: ""].append(" -funwind-tables -Wall")
-//    default: break
-//    }
+    switch env.target.arch {
+    case .arm64:
+      env.environment["CFLAGS", default: ""].append(" -funwind-tables -Wall")
+    case .armv7:
+      env.environment["CFLAGS", default: ""].append(" -mfloat-abi=softfp -Wall")
+    default: break
+    }
 
     try env.changingDirectory("build_dir") { _ in
       try env.cmake(
@@ -38,7 +35,7 @@ struct Mozjpeg: Package {
     .tarball(url: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz", filename: "mozjpeg-4.0.0.tar.gz")
   }
 
-  var dependencies: PackageDependency {
-    .packages(Png.defaultPackage)
-  }
+//  var dependencies: PackageDependency {
+//    .packages(Png.defaultPackage)
+//  }
 }

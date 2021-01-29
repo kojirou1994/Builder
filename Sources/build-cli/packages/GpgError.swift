@@ -1,13 +1,12 @@
 import BuildSystem
 
-struct Gcrypt: Package {
+struct GpgError: Package {
   func build(with env: BuildEnvironment) throws {
-//    try env.autoreconf()
+    //    try env.autoreconf()
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag
-//      configureEnableFlag(false, "fontconfig")
     )
 
     try env.make()
@@ -15,10 +14,11 @@ struct Gcrypt: Package {
   }
 
   var source: PackageSource {
-    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.7.tar.bz2")
+    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.41.tar.bz2")
   }
 
-  var dependencies: PackageDependency {
-    .packages(GpgError.defaultPackage)
+  var version: PackageVersion {
+    .stable("1.41")
   }
+
 }

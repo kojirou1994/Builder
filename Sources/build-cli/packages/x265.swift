@@ -8,6 +8,11 @@ struct x265: Package {
     /*
      set -DNASM_EXECUTABLE="" for arm64
      */
+    let nasmEnabled = env.target.arch != .x86_64 ?
+//      cmakeDefineFlag("", "NASM_EXECUTABLE")
+    cmakeDefineFlag("yasm", "CMAKE_ASM_YASM_COMPILER")
+      : nil
+
     try env.changingDirectory("12bit", block: { cwd in
       try env.cmake(
         toolType: .ninja,
@@ -16,7 +21,8 @@ struct x265: Package {
         "-DEXPORT_C_API=OFF",
         "-DENABLE_SHARED=OFF",
         "-DENABLE_CLI=OFF",
-        "-DMAIN12=ON")
+        "-DMAIN12=ON",
+        nasmEnabled)
 
       try env.make(toolType: .ninja)
     })
@@ -29,7 +35,8 @@ struct x265: Package {
         "-DENABLE_HDR10_PLUS=ON",
         "-DEXPORT_C_API=OFF",
         "-DENABLE_SHARED=OFF",
-        "-DENABLE_CLI=OFF")
+        "-DENABLE_CLI=OFF",
+        nasmEnabled)
 
       try env.make(toolType: .ninja)
     })
@@ -49,7 +56,8 @@ struct x265: Package {
         "-DLINKED_10BIT=ON",
         "-DLINKED_12BIT=ON",
         env.libraryType.sharedCmakeFlag,
-        cmakeOnFlag(cli, "ENABLE_CLI", defaultEnabled: true)
+        cmakeOnFlag(cli, "ENABLE_CLI", defaultEnabled: true),
+        nasmEnabled
         )
 
       try env.make(toolType: .ninja)
@@ -77,10 +85,14 @@ struct x265: Package {
     })
   }
 
+  var version: PackageVersion {
+    .stable("3.4")
+  }
+
   var source: PackageSource {
-//    .ball(url: URL(string: "https://bitbucket.org/multicoreware/x265_git/get/3.4.tar.gz")!,
+    .tarball(url: "https://bitbucket.org/multicoreware/x265_git/get/3.4.tar.gz")
 //          filename: nil)
-    .branch(repo: "https://bitbucket.org/multicoreware/x265_git.git", revision: nil)
+//    .branch(repo: "https://bitbucket.org/multicoreware/x265_git.git", revision: nil)
   }
 
   @Flag(inversion: .prefixedEnableDisable)

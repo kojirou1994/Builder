@@ -11,7 +11,7 @@ struct x264: Package {
     let needGas = env.target.arch != .x86_64
 
     if needGas {
-      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.target.arch.tripleString) -- \(env.cc)"
+      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.target.arch.gnuTripleString) -- \(env.cc)"
     }
 
     try env.configure(

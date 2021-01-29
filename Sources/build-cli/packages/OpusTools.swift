@@ -30,7 +30,7 @@ struct OpusTools: Package {
       Ogg.defaultPackage,
       Opus.defaultPackage,
       Opusenc.defaultPackage,
-      OpusFile.defaultPackage
+      Opusfile.defaultPackage
     )
   }
 

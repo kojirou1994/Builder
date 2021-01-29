@@ -1,6 +1,6 @@
 import BuildSystem
 
-struct OpusFile: Package {
+struct Opusfile: Package {
 
   var source: PackageSource {
     packageSource(for: version)!
