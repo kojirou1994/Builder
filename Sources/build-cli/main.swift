@@ -7,7 +7,8 @@ struct BuildCli: ParsableCommand {
   static var configuration: CommandConfiguration {
     .init(subcommands: [
       Build.self,
-      BuildAll.self
+      BuildAll.self,
+      NewPackage.self,
     ])
   }
 }

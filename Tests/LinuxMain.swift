@@ -1,7 +1,8 @@
 import XCTest
 
-import BuilderTests
+import BuilderSystemTests
 
 var tests = [XCTestCaseEntry]()
-tests += BuilderTests.allTests()
+tests += BuilderSystemTests.__allTests()
+
 XCTMain(tests)

@@ -61,8 +61,11 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   @OptionGroup
   var package: T
 
-  @Option(help: "the library(.a) filename need to pack")
+  @Option(help: "Pack xcframework using specific library(.a) filename.")
   var packXc: String?
+
+  @Flag(help: "Auto pack xcframework, if package supports.")
+  var autoPackXC: Bool = false
 
   public mutating func run() throws {
     var builtPackages = [BuildTargetSystem : [(arch: BuildArch, prefix: PackagePath)]]()
@@ -94,15 +97,20 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     print("FAILED TARGETS:", failedTargets)
     print("UNSUPPORTED TARGETS:", unsupportedTargets)
 
+    if builtPackages.isEmpty {
+      print("NO BUILT PACKAGES!")
+      return
+    }
+
     let fm = URLFileManager.default
 
-    if let filename = packXc {
-      if builtPackages.isEmpty {
-        print("NOTHING TO PACK!")
-        return
-      }
-      print("PACKING XCFRAMEWORK...")
-      let output = "\(filename).xcframework"
+    func packXCFramework(libraryName: String, headers: [String]?) throws {
+      print("Packing xcframework from \(libraryName)...")
+
+      #warning("maybe other library format")
+      let libraryFilename = libraryName + ".a"
+      let output = "\(libraryName).xcframework"
+
       if case let outputURL = URL(fileURLWithPath: output),
          fm.fileExistance(at: outputURL).exists {
         print("Remove old xcframework.")
@@ -111,32 +119,46 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
       let lipoWorkingDirectory = URL(fileURLWithPath: "PACK_XC-\(UUID().uuidString)")
       try retry(body: fm.createDirectory(at: lipoWorkingDirectory))
       defer {
-//        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
+        //        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
       }
       var args = ["-create-xcframework", "-output", output]
       try builtPackages.forEach { package in
         precondition(!package.value.isEmpty)
         let libraryFileURL: URL
+        let tmpDirectory = lipoWorkingDirectory.appendingPathComponent("\(package.key)-\(package.value.map(\.arch.rawValue).joined(separator: "_"))")
         if package.value.count == 1 {
-          libraryFileURL = package.value[0].prefix.lib.appendingPathComponent("\(filename).a")
+          libraryFileURL = package.value[0].prefix.lib.appendingPathComponent(libraryFilename)
             .resolvingSymlinksInPath()
         } else {
-          let fatDirectory = lipoWorkingDirectory.appendingPathComponent("\(package.key)-\(package.value.map(\.arch.rawValue).joined(separator: "_"))")
-          try retry(body: fm.createDirectory(at: fatDirectory))
-          let fatOutput = fatDirectory.appendingPathComponent(filename + ".a")
+          try retry(body: fm.createDirectory(at: tmpDirectory))
+          let fatOutput = tmpDirectory.appendingPathComponent(libraryFilename)
           let lipoArguments = ["-create", "-output", fatOutput.path]
-            + package.value.map { $0.prefix.lib.appendingPathComponent("\(filename).a").path }
+            + package.value.map { $0.prefix.lib.appendingPathComponent(libraryFilename).path }
           let lipo = AnyExecutable(executableName: "lipo",
-                                       arguments: lipoArguments)
+                                   arguments: lipoArguments)
           try lipo.launch(use: TSCExecutableLauncher(outputRedirection: .none))
           libraryFileURL = fatOutput
         }
         args.append("-library")
         args.append(libraryFileURL.path)
         args.append("-headers")
-        args.append(package.value[0].prefix.include.path)
+        let headerIncludeDir: URL
+        if let specificHeaders = headers {
+          headerIncludeDir = tmpDirectory.appendingPathComponent("include")
+          try fm.createDirectory(at: headerIncludeDir)
+          try specificHeaders.forEach { headerFilename in
+            let headerDstURL = headerIncludeDir.appendingPathComponent(headerFilename)
+            let headerSuperDirectory = headerDstURL.deletingLastPathComponent()
+            try fm.createDirectory(at: headerSuperDirectory)
+            try fm.copyItem(at: package.value[0].prefix.include.appendingPathComponent(headerFilename),
+                            to: headerDstURL)
+          }
+        } else {
+          headerIncludeDir = package.value[0].prefix.include
+        }
+        args.append(headerIncludeDir.path)
       }
-      
+
       /*
        https://developer.apple.com/forums/thread/666335
        It seems like using lipo for these combinations might be necessary:
@@ -151,6 +173,23 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
       try AnyExecutable(executableName: "xcodebuild",
                         arguments: args)
         .launch(use: TSCExecutableLauncher(outputRedirection: .none))
+    }
+
+    if let libraryName = packXc {
+      try packXCFramework(libraryName: libraryName, headers: nil)
+    }
+
+    if autoPackXC {
+      let products = package.products
+
+      try products.forEach { product in
+        switch product {
+        case let .library(name: libraryName, headers: headers):
+          try packXCFramework(libraryName: libraryName, headers: headers)
+        default:
+          break
+        }
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ public protocol Package: ParsableArguments, CustomStringConvertible {
   var version: PackageVersion { get }
   var source: PackageSource { get }
   var dependencies: PackageDependency { get }
+  var products: [BuildProduct] { get }
 
   var tag: String { get }
   var buildInfo: String { get }
@@ -46,6 +47,8 @@ public extension Package {
   var dependencies: PackageDependency {
     .empty
   }
+
+  var products: [BuildProduct] { [] }
 
   static var name: String {
     String(describing: Self.self).lowercased()

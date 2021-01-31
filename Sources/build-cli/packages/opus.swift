@@ -12,6 +12,10 @@ struct Opus: Package {
     packageSource(for: version)!
   }
 
+  var products: [BuildProduct] {
+    [BuildProduct.library(name: "libopus", headers: ["opus"])]
+  }
+
   func packageSource(for version: PackageVersion) -> PackageSource? {
     guard let v = version.stableVersion else { return nil }
     return .tarball(url: "https://archive.mozilla.org/pub/opus/opus-\(v).tar.gz")

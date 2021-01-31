@@ -133,7 +133,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     case .macOS:
       return "darwin" // macosx
     case .macCatalyst:
-      return "ios-macabi"
+      return "ios13-macabi"
     case .tvOS, .tvSimulator,
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
@@ -173,8 +173,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
 
   var needSdkPath: Bool {
     switch self {
-    case .macOS, .macCatalyst,
-         .linxGNU:
+    case .linxGNU:
       return false
     default: return true
     }

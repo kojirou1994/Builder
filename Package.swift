@@ -20,10 +20,16 @@ let package = Package(
   ],
   targets: [
     .target(
+      name: "XcodeExecutable",
+      dependencies: [
+        .product(name: "ExecutableDescription", package: "Executable"),
+      ]),
+    .target(
       name: "BuildSystem",
       dependencies: [
+        .target(name: "XcodeExecutable"),
+        .product(name: "URLFileManager", package: "URLFileManager"),
         .product(name: "ExecutableLauncher", package: "Executable"),
-        "URLFileManager",
         .product(name: "Logging", package: "swift-log"),
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "KwiftUtility", package: "Kwift")
@@ -31,15 +37,17 @@ let package = Package(
     .target(
       name: "build-cli",
       dependencies: [
-        "BuildSystem"
+        .target(name: "BuildSystem"),
       ]),
     .target(
       name: "generate-code",
       dependencies: [
-        "URLFileManager",
+        .product(name: "URLFileManager", package: "URLFileManager"),
       ]),
     .testTarget(
       name: "BuilderSystemTests",
-      dependencies: ["BuildSystem"]),
+      dependencies: [
+        .target(name: "BuildSystem"),
+      ]),
   ]
 )

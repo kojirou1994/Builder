@@ -5,8 +5,22 @@ struct Webp: Package {
     .stable("1.1.0")
   }
 
+  var products: [BuildProduct] {
+    [
+      .bin("cwebp"),
+      .bin("dwebp"),
+      .bin("img2webp"),
+      .bin("webpinfo"),
+      .bin("webpmux"),
+      .library(name: "libwebp", headers: ["webp/decode.h", "webp/encode.h", "webp/types.h"]),
+      .library(name: "libwebpdecoder", headers: ["webp/decode.h", "webp/types.h"]),
+      .library(name: "libwebpdemux", headers: ["webp/decode.h", "webp/demux.h", "webp/mux_types.h", "webp/types.h"]),
+      .library(name: "libwebpmux", headers: ["webp/mux_types.h", "webp/mux.h", "webp/types.h"]),
+    ]
+  }
+
   func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+    try env.autogen()
 
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
