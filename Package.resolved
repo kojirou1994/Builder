@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "c8bcbd0cd85df7aaa11e218c802490d29795817b",
-          "version": "0.4.0"
+          "revision": "535d6b9ae5f7264dd3969b707858e1c9057351a9",
+          "version": "0.4.2"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Kwift.git",
         "state": {
           "branch": null,
-          "revision": "370e9821326c3c8985b644e78dac2f61a683e0bd",
-          "version": "0.8.5"
+          "revision": "96def044db6d0793825c47161ba0b7925974ef9f",
+          "version": "0.8.7"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
-          "revision": "9564d61b08a5335ae0a36f789a7d71493eacadfc",
-          "version": "0.3.2"
+          "revision": "831ed5e860a70e745bc1337830af4786b2576881",
+          "version": "0.4.1"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "173f567a2dfec11d74588eea82cecea555bdc0bc",
-          "version": "1.4.0"
+          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
+          "version": "1.4.2"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "243beea77d20db46647a3de4765c96e2c801c7c7",
-          "version": "0.1.12"
+          "revision": "2954e55faee5bfee928e844bb09e97fcfa8d24af",
+          "version": "0.2.0"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/kojirou1994/URLFileManager.git",
         "state": {
           "branch": null,
-          "revision": "bab5addd61c2f274ed4fc392f90fcd105e834760",
-          "version": "0.1.1"
+          "revision": "0e14b98abcd39ab0f2da51c44ee4a0cd7add2966",
+          "version": "0.1.2"
         }
       }
     ]
