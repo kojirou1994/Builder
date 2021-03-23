@@ -1,7 +1,13 @@
 import URLFileManager
 import KwiftUtility
 import Logging
+#if canImport(CryptoKit)
 import CryptoKit
+#elseif canImport(Crypto)
+import Crypto
+#else
+#error("Unsupported platform!")
+#endif
 
 struct Builder {
   init(builderDirectoryURL: URL,

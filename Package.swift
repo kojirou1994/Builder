@@ -17,6 +17,7 @@ let package = Package(
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "0.8.0"),
     .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
+    .package(url: "https://github.com/apple/swift-crypto.git", from: "1.0.0"),
   ],
   targets: [
     .target(
@@ -32,7 +33,8 @@ let package = Package(
         .product(name: "ExecutableLauncher", package: "Executable"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
-        .product(name: "KwiftUtility", package: "Kwift")
+        .product(name: "KwiftUtility", package: "Kwift"),
+        .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.linux])),
       ]),
     .target(
       name: "build-cli",
