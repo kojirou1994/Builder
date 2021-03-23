@@ -12,7 +12,7 @@ struct Zvbi: Package {
 
   func supports(target: BuildTriple) -> Bool {
     switch target.system {
-    case .macOS, .linxGNU:
+    case .macOS, .linuxGNU:
       return true
     default: return false
     }

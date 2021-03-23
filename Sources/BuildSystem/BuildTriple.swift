@@ -90,7 +90,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
   case watchOS
   case watchSimulator
 
-  case linxGNU
+  case linuxGNU
 
   public var description: String { rawValue }
 
@@ -101,7 +101,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
       return "apple"
-    case .linxGNU:
+    case .linuxGNU:
       return "unknown"
     }
   }
@@ -123,7 +123,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
       return "darwin"
-    case .linxGNU:
+    case .linuxGNU:
       return "linux-gnu"
     }
   }
@@ -138,7 +138,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:
       return "darwin"
-    case .linxGNU:
+    case .linuxGNU:
       return "linux-gnu"
     }
   }
@@ -166,14 +166,14 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     case .tvSimulator: name = "appletvsimulator"
     case .watchOS: name = "watchos"
     case .watchSimulator: name = "watchsimulator"
-    case .linxGNU: fatalError()
+    case .linuxGNU: fatalError()
     }
     return "-m\(name)-version-min"
   }
 
   var needSdkPath: Bool {
     switch self {
-    case .linxGNU:
+    case .linuxGNU:
       return false
     default: return true
     }
@@ -189,7 +189,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     case .watchOS: return "watchos"
     case .watchSimulator: return "watchsimulator"
 
-    case .linxGNU: fatalError()
+    case .linuxGNU: fatalError()
     }
   }
 
