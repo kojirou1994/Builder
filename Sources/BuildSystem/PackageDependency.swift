@@ -28,8 +28,8 @@ public struct PackageDependency: CustomStringConvertible {
 
   public var description: String {
     """
-    packages: \(packages.map(\.name).joined(separator: ", "))
-    brew formulas: \(brewFormulas.joined(separator: ", "))
+     - packages: \(packages.map(\.name).sorted().joined(separator: ", "))
+     - brew formulas: \(brewFormulas.sorted().joined(separator: ", "))
     """
   }
 }

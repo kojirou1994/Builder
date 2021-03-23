@@ -5,6 +5,11 @@ struct Flac: Package {
     .stable("1.3.3")
   }
 
+  var products: [BuildProduct] {
+    [
+      .library(name: "libFLAC", headers: ["FLAC"])
+    ]
+  }
   func build(with env: BuildEnvironment) throws {
     /*
      add -mfpu=neon to cflags and ldflags on arm
@@ -16,7 +21,7 @@ struct Flac: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)",
+      ogg ? "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)" : configureEnableFlag(false, "ogg"),
       configureEnableFlag(cpplibs, "cpplibs"),
       configureEnableFlag(false, "64-bit-words"),
       configureEnableFlag(false, "examples"),
@@ -30,13 +35,25 @@ struct Flac: Package {
   var source: PackageSource {
     .tarball(url: "https://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz")
   }
+
   @Flag
   var cpplibs: Bool = false
+
+  @Flag
+  var ogg: Bool = false
   /*
    --enable-64-bit-words
    */
 
   var dependencies: PackageDependency {
-    .packages(Ogg.defaultPackage)
+    if ogg {
+      return .packages(Ogg.defaultPackage)
+    } else {
+      return .empty
+    }
+  }
+
+  var tag: String {
+    "\(cpplibs)\(ogg)"
   }
 }

@@ -5,6 +5,14 @@ struct Ebml: Package {
     .stable("1.4.1")
   }
 
+  var source: PackageSource {
+    .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-1.4.1.tar.xz")
+  }
+  
+  var products: [BuildProduct] {
+    [.library(name: "libebml", headers: ["ebml"])]
+  }
+
   func build(with env: BuildEnvironment) throws {
     // build alone
     if env.libraryType.buildStatic {
@@ -34,7 +42,4 @@ struct Ebml: Package {
 
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-1.4.1.tar.xz")
-  }
 }

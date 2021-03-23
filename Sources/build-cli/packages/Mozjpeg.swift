@@ -5,6 +5,22 @@ struct Mozjpeg: Package {
     .stable("4.0.0")
   }
 
+  var source: PackageSource {
+    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz", filename: "mozjpeg-4.0.0.tar.gz")
+  }
+
+  var products: [BuildProduct] {
+    [
+      .library(
+        name: "libjpeg",
+        headers: [
+          "jconfig.h",
+          "jerror.h",
+          "jmorecfg.h",
+          "jpeglib.h",
+        ])
+    ]
+  }
   func build(with env: BuildEnvironment) throws {
 
     switch env.target.arch {
@@ -22,17 +38,13 @@ struct Mozjpeg: Package {
         env.libraryType.staticCmakeFlag,
         env.libraryType.sharedCmakeFlag,
         cmakeOnFlag(false, "PNG_SUPPORTED"),
-        //      cmakeOnFlag(false, "WITH_TURBOJPEG"),
+        cmakeOnFlag(false, "WITH_TURBOJPEG"),
         nil
       )
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
     }
-  }
-
-  var source: PackageSource {
-    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz", filename: "mozjpeg-4.0.0.tar.gz")
   }
 
 //  var dependencies: PackageDependency {

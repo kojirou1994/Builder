@@ -13,10 +13,10 @@ public struct PackageSource: CustomStringConvertible {
     //  case rangeItem(Range<Version>)
     case revisionItem(String?)
     case branchItem(String)
-//    case localPackageItem
+    //    case localPackageItem
 
     // url is download link
-    case tarball(filename: String?)
+    case tarball(filename: String?, sha256: String?)
 
     var isGitRepo: Bool {
       switch self {
@@ -35,17 +35,18 @@ public struct PackageSource: CustomStringConvertible {
   }
 
   public static func tarball(url: String, filename: String? = nil,
-                          patches: [PackagePatch] = []) -> Self {
-    .init(url: url, requirement: .tarball(filename: filename), patches: patches)
+                             sha256: String? = nil,
+                             patches: [PackagePatch] = []) -> Self {
+    .init(url: url, requirement: .tarball(filename: filename, sha256: sha256), patches: patches)
   }
 
   public var description: String {
-//    switch requirement {
-//    case .branch(repo: let repo, revision: _):
-//      return "[GIT REPO] \(repo)"
-//    case .ball(url: let url, filename: _):
-//      return "[BALL URL] \(url)"
-//    }
+    //    switch requirement {
+    //    case .branch(repo: let repo, revision: _):
+    //      return "[GIT REPO] \(repo)"
+    //    case .ball(url: let url, filename: _):
+    //      return "[BALL URL] \(url)"
+    //    }
     "url: \(url), requirement: \(requirement)"
   }
 }

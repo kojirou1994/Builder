@@ -8,6 +8,20 @@ struct CAres: Package {
     packageSource(for: version)!
   }
 
+  var products: [BuildProduct] {
+    [
+      .bin("acountry"),
+      .bin("adig"),
+      .bin("ahost"),
+      .library(
+        name: "libcares",
+        headers: [
+          "ares_build.h", "ares_dns.h",
+          "ares_rules.h", "ares_version.h",
+          "ares.h"]),
+    ]
+  }
+
   func packageSource(for version: PackageVersion) -> PackageSource? {
     switch version {
     case .stable(let v):

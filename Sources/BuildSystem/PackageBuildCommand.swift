@@ -3,6 +3,7 @@
 import ExecutableLauncher
 import URLFileManager
 import KwiftUtility
+import XcodeExecutable
 
 public struct PackageBuildCommand<T: Package>: ParsableCommand {
   public static var configuration: CommandConfiguration {
@@ -67,6 +68,9 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   @Flag(help: "Auto pack xcframework, if package supports.")
   var autoPackXC: Bool = false
 
+  @Flag(inversion: .prefixedEnableDisable, help: "If enabled, program will create framework to pack xcframework.")
+  var autoModulemap: Bool = true
+
   public mutating func run() throws {
     var builtPackages = [BuildTargetSystem : [(arch: BuildArch, prefix: PackagePath)]]()
     var failedTargets = [BuildTriple]()
@@ -116,32 +120,33 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         print("Remove old xcframework.")
         try retry(body: fm.removeItem(at: outputURL))
       }
-      let lipoWorkingDirectory = URL(fileURLWithPath: "PACK_XC-\(UUID().uuidString)")
-      try retry(body: fm.createDirectory(at: lipoWorkingDirectory))
+      let xcTempDirectory = URL(fileURLWithPath: "PACK_XC-\(UUID().uuidString)")
+      try retry(body: fm.createDirectory(at: xcTempDirectory))
       defer {
-        //        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
+//        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
       }
-      var args = ["-create-xcframework", "-output", output]
-      try builtPackages.forEach { package in
-        precondition(!package.value.isEmpty)
+
+      var createXCFramework = XcodeCreateXCFramework(output: output)
+
+      try builtPackages.forEach { (system, systemPackages) in
+
+        precondition(!systemPackages.isEmpty)
         let libraryFileURL: URL
-        let tmpDirectory = lipoWorkingDirectory.appendingPathComponent("\(package.key)-\(package.value.map(\.arch.rawValue).joined(separator: "_"))")
-        if package.value.count == 1 {
-          libraryFileURL = package.value[0].prefix.lib.appendingPathComponent(libraryFilename)
+        let tmpDirectory = xcTempDirectory.appendingPathComponent("\(system)-\(systemPackages.map(\.arch.rawValue).joined(separator: "_"))")
+        if systemPackages.count == 1 {
+          libraryFileURL = systemPackages[0].prefix.lib.appendingPathComponent(libraryFilename)
             .resolvingSymlinksInPath()
         } else {
           try retry(body: fm.createDirectory(at: tmpDirectory))
           let fatOutput = tmpDirectory.appendingPathComponent(libraryFilename)
           let lipoArguments = ["-create", "-output", fatOutput.path]
-            + package.value.map { $0.prefix.lib.appendingPathComponent(libraryFilename).path }
+            + systemPackages.map { $0.prefix.lib.appendingPathComponent(libraryFilename).path }
           let lipo = AnyExecutable(executableName: "lipo",
                                    arguments: lipoArguments)
           try lipo.launch(use: TSCExecutableLauncher(outputRedirection: .none))
           libraryFileURL = fatOutput
         }
-        args.append("-library")
-        args.append(libraryFileURL.path)
-        args.append("-headers")
+
         let headerIncludeDir: URL
         if let specificHeaders = headers {
           headerIncludeDir = tmpDirectory.appendingPathComponent("include")
@@ -150,13 +155,51 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
             let headerDstURL = headerIncludeDir.appendingPathComponent(headerFilename)
             let headerSuperDirectory = headerDstURL.deletingLastPathComponent()
             try fm.createDirectory(at: headerSuperDirectory)
-            try fm.copyItem(at: package.value[0].prefix.include.appendingPathComponent(headerFilename),
+            try fm.copyItem(at: systemPackages[0].prefix.include.appendingPathComponent(headerFilename),
                             to: headerDstURL)
           }
         } else {
-          headerIncludeDir = package.value[0].prefix.include
+          headerIncludeDir = systemPackages[0].prefix.include
         }
-        args.append(headerIncludeDir.path)
+        if autoModulemap {
+          // create tmp framework
+          let frameworkName = libraryName + ".framework"
+          let tmpFrameworkDirectory = tmpDirectory.appendingPathComponent(frameworkName)
+          try fm.createDirectory(at: tmpFrameworkDirectory)
+          let frameworkHeadersDirectory = tmpFrameworkDirectory.appendingPathComponent("Headers")
+
+          try fm.copyItem(at: headerIncludeDir, to: frameworkHeadersDirectory)
+
+          let frameworkModulesDirectory = tmpFrameworkDirectory.appendingPathComponent("Modules")
+
+          try fm.createDirectory(at: frameworkModulesDirectory)
+
+          var headerFiles = [String]()
+          _ = fm.forEachContent(in: frameworkHeadersDirectory) { file in
+            if file.pathExtension == "h" {
+              var relativePath = file.path.dropFirst(frameworkHeadersDirectory.path.count)
+              if relativePath.hasPrefix("/") {
+                relativePath.removeFirst()
+              }
+              headerFiles.append(String(relativePath))
+            }
+          }
+
+          let modulemap = """
+          framework module \(libraryName) {
+          \(headerFiles.map { "  header \"\($0)\"" }.joined(separator: "\n"))
+            export *
+            // module * { export * }
+          }
+          """
+          try modulemap.write(to: frameworkModulesDirectory.appendingPathComponent("module.modulemap"), atomically: true, encoding: .utf8)
+
+          try fm.copyItem(at: libraryFileURL, to: tmpFrameworkDirectory.appendingPathComponent(libraryName))
+
+          createXCFramework.components.append(.framework(tmpFrameworkDirectory.path))
+        } else {
+          createXCFramework.components.append(.library(libraryFileURL.path, header: headerIncludeDir.path))
+        }
       }
 
       /*
@@ -168,10 +211,8 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
        */
 
       print()
-      print(args.joined(separator: " "))
       print()
-      try AnyExecutable(executableName: "xcodebuild",
-                        arguments: args)
+      try createXCFramework
         .launch(use: TSCExecutableLauncher(outputRedirection: .none))
     }
 

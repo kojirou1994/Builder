@@ -13,6 +13,10 @@ struct Ogg: Package {
     packageSource(for: version)!
   }
 
+  var products: [BuildProduct] {
+    [.library(name: "libogg", headers: ["ogg"])]
+  }
+
   func packageSource(for version: PackageVersion) -> PackageSource? {
     guard let v = version.stableVersion else { return nil }
     return .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(v).tar.gz")

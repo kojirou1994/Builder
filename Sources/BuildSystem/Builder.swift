@@ -60,7 +60,7 @@ struct Builder {
     case .revisionItem(let revision):
       try env.launch("git", "clone", source.url, safeDirName)
       return URL(fileURLWithPath: safeDirName)
-    case .tarball(filename: let filename):
+    case let .tarball(filename: filename, sha256: sha256):
       let url = URL(string: source.url)!
       let filename = filename ?? url.lastPathComponent
       let dstFileURL = downloadCacheDirectory.appendingPathComponent(filename)
