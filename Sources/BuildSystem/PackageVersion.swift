@@ -37,7 +37,7 @@ extension Version {
   }
 }
 
-public enum PackageVersion: CustomStringConvertible {
+public enum PackageVersion: CustomStringConvertible, Equatable {
   case stable(Version)
   case head
 

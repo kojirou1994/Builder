@@ -106,6 +106,18 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
+  public var sharedLibraryExtension: String {
+    switch self {
+    case .macOS, .macCatalyst,
+         .tvOS, .tvSimulator,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator:
+      return "dylib"
+    case .linuxGNU:
+      return "so"
+    }
+  }
+
   var isSimulator: Bool {
     switch self {
     case  .tvSimulator, .iphoneSimulator,
