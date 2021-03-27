@@ -26,6 +26,7 @@ enum BuildCliCommand: CaseIterable {
   func generate(packageNames: [String], outputDirectory: URL) throws {
     let code = """
     import BuildSystem
+    import Packages
 
     struct \(commandName): ParsableCommand {
       static var configuration: CommandConfiguration {
@@ -43,10 +44,9 @@ enum BuildCliCommand: CaseIterable {
 let sourceDirectory = URL(fileURLWithPath: #filePath)
   .deletingLastPathComponent()
   .deletingLastPathComponent()
-  .appendingPathComponent("build-cli")
 
 let packageDirectory = sourceDirectory
-  .appendingPathComponent("packages")
+  .appendingPathComponent("Packages")
 
 let fm = URLFileManager.default
 
@@ -57,7 +57,7 @@ let packageNames = try fm.contentsOfDirectory(at: packageDirectory)
   .sorted()
 
 try BuildCliCommand.allCases.forEach { cmd in
-  try cmd.generate(packageNames: packageNames, outputDirectory: sourceDirectory)
+  try cmd.generate(packageNames: packageNames, outputDirectory: sourceDirectory.appendingPathComponent("build-cli"))
 }
 
 let testAllPackagesFileURL =
@@ -68,10 +68,10 @@ let testAllPackagesFileURL =
   .appendingPathComponent("Tests/BuilderSystemTests/AllPackages.swift")
 
 try """
-@testable import build_cli
 import BuildSystem
+import Packages
 
-let packages: [Package.Type] = [
+let allPackages: [Package.Type] = [
 \(packageNames.map {"\($0).self,"}.joined(separator: "\n"))
 ]
 """

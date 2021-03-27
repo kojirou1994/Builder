@@ -3,8 +3,16 @@ import BuildSystem
 public struct x264: Package {
   public init() {}
 
-  public var defaultVersion: PackageVersion {
-    .stable("r3027")
+//  public var defaultVersion: PackageVersion {
+//    .stable("3027")
+//  }
+
+  public var headPackageSource: PackageSource? {
+    .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
+  }
+
+  public func stablePackageSource(for version: Version) -> PackageSource? {
+    nil
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -36,11 +44,6 @@ public struct x264: Package {
     try env.make()
 
     try env.make("install")
-  }
-
-  var source: PackageSource {
-    .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
-    //    .branch(repo: "https://code.videolan.org/videolan/x264.git", revision: nil)
   }
 
   enum Mp4Support: String, ExpressibleByArgument {

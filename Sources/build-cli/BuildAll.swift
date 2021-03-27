@@ -1,4 +1,5 @@
 import BuildSystem
+import Packages
 
 struct BuildAll: ParsableCommand {
   static var configuration: CommandConfiguration {
@@ -27,7 +28,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<FFT3DFilter>.self,
       PackageBuildAllCommand<FdkAac>.self,
       PackageBuildAllCommand<Ffmpeg>.self,
-      PackageBuildAllCommand<Ffms>.self,
+      PackageBuildAllCommand<Ffms2>.self,
       PackageBuildAllCommand<Flac>.self,
       PackageBuildAllCommand<Flash3kyuuDeband>.self,
       PackageBuildAllCommand<Fmt>.self,

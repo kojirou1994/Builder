@@ -3,7 +3,7 @@ import BuildSystem
 public struct Openssl: Package {
   public init() {}
   public var defaultVersion: PackageVersion {
-    .stable("1.1.1i")
+    .stable("1.1.1-i")
   }
 
   public func stablePackageSource(for version: Version) -> PackageSource? {
