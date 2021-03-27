@@ -3,11 +3,18 @@ import BuildSystem
 public struct Openssl: Package {
   public init() {}
   public var defaultVersion: PackageVersion {
-    .stable("1.1.1-i")
+    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["i"]))
   }
 
   public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://www.openssl.org/source/openssl-\(version).tar.gz")
+    var versionString = version.toString(includeZeroMinor: true, includeZeroPatch: true, includePrerelease: false, includeBuildMetadata: false)
+    if !version.prereleaseIdentifiers.isEmpty {
+      versionString += "-"
+      versionString += version.prereleaseIdentifiers.joined(separator: ".")
+    } else if !version.buildMetadataIdentifiers.isEmpty {
+      versionString += version.buildMetadataIdentifiers.joined(separator: ".")
+    }
+    return .tarball(url: "https://www.openssl.org/source/openssl-\(versionString).tar.gz")
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -21,9 +28,10 @@ public struct Openssl: Package {
       "enable-ec_nistp_64_gcc_128"
     )
 
-//    try env.launch("make")
-//    try env.launch("make", "test")
     try env.make()
+    if env.safeMode {
+      try env.launch("make", "test")
+    }
     try env.make("install")
   }
 
