@@ -78,7 +78,7 @@ struct Builder {
         }
       }
       if tarballExtension == nil, case let ext = url.pathExtension, !ext.isEmpty {
-        tarballExtension = ext
+        tarballExtension = "." + ext
       }
       let versionString: String
       switch version {
