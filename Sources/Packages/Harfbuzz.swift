@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct Harfbuzz: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct Harfbuzz: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build", block: { _ in
       try env.meson(
         "--default-library=\(env.libraryType.mesonFlag)",
@@ -21,19 +22,19 @@ struct Harfbuzz: Package {
     })
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("2.7.4")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/\(version.toString()).tar.gz")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(Freetype.self), .init(Icu4c.self))
   }
 }

@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct Cmake: Package {
-  var defaultVersion: PackageVersion {
+public struct Cmake: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("3.20.0")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/Kitware/CMake/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/Kitware/CMake/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build") { _ in
       try env.cmake(
         toolType: .ninja,
@@ -29,7 +30,7 @@ struct Cmake: Package {
     }
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .blend(packages: [], brewFormulas: ["cmake", "sphinx-doc"])
   }
 

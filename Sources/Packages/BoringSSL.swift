@@ -1,12 +1,13 @@
 import BuildSystem
 
-struct BoringSSL: Package {
+public struct BoringSSL: Package {
+  public init() {}
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/google/boringssl/archive/master.zip")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.changingDirectory("build", block: { _ in
 

@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct P7Zip: Package {
-  var defaultVersion: PackageVersion {
+public struct P7Zip: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("17.03")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/jinfeihan57/p7zip/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/jinfeihan57/p7zip/archive/refs/tags/v\(version.toString( includeZeroPatch: false, numberWidth: 2)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.fm.removeItem(at: URL(fileURLWithPath: "makefile.machine"))
     try env.fm.copyItem(at: URL(fileURLWithPath: "makefile.macosx_llvm_64bits"), to: URL(fileURLWithPath: "makefile.machine"))

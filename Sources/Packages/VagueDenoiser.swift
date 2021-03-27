@@ -1,22 +1,23 @@
 import BuildSystem
 
-struct VagueDenoiser: Package {
+public struct VagueDenoiser: Package {
+  public init() {}
 
   #if !os(macOS)
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("2")
   }
   #endif
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-VagueDenoiser/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-VagueDenoiser/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.launch("chmod", "+x", "configure")
     try env.launch(path: "./configure", "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)")
 

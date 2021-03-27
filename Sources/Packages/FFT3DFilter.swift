@@ -1,20 +1,21 @@
 import BuildSystem
 
-struct FFT3DFilter: Package {
+public struct FFT3DFilter: Package {
+  public init() {}
 
-//  var defaultVersion: PackageVersion {
+//  public var defaultVersion: PackageVersion {
 //    .stable("1")
 //  }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try replace(contentIn: "meson.build",
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")

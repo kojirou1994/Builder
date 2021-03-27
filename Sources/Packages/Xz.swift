@@ -1,11 +1,12 @@
 import BuildSystem
 
-struct Xz: Package {
-  var defaultVersion: PackageVersion {
+public struct Xz: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("5.2.5")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -17,7 +18,7 @@ struct Xz: Package {
     try env.make("install")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
   }
 }

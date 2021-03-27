@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct Flac: Package {
-  var defaultVersion: PackageVersion {
+public struct Flac: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.3.3")
   }
 
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [
       .library(name: "libFLAC", headers: ["FLAC"])
     ]
   }
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     /*
      add -mfpu=neon to cflags and ldflags on arm
      */
@@ -32,7 +33,7 @@ struct Flac: Package {
     try env.make("install")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     var versionString = version.toString(includeZeroPatch: false)
     if version < "1.0.3" {
       versionString += "-src"
@@ -55,7 +56,7 @@ struct Flac: Package {
    --enable-64-bit-words
    */
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     if ogg {
       return .packages(.init(Ogg.self))
     } else {
@@ -63,7 +64,7 @@ struct Flac: Package {
     }
   }
 
-  var tag: String {
+  public var tag: String {
     var str = ""
     if cpplibs {
       str.append("CPPLIBS")

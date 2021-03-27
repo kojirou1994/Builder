@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct Mbedtls: Package {
-  var defaultVersion: PackageVersion {
+public struct Mbedtls: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("2.25.0")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/heads/development.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
-  func supports(target: BuildTriple) -> Bool {
+  public func supports(target: BuildTriple) -> Bool {
     switch target.system {
     case .tvOS, .tvSimulator, .watchOS, .watchSimulator:
       // fork() is not supported
@@ -23,7 +24,7 @@ struct Mbedtls: Package {
     }
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     // enable pthread
     try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")

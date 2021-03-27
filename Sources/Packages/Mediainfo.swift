@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct Mediainfo: Package {
-  var defaultVersion: PackageVersion {
+public struct Mediainfo: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("21.03")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     let versionString = version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)
     return .tarball(url: "https://old.mediaarea.net/download/binary/mediainfo/\(versionString)/MediaInfo_CLI_\(versionString)_GNU_FromSource.tar.xz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     // build alone
     try env.changingDirectory("ZenLib/Project/GNU/Library", block: { _ in
       try env.launch(path: "autogen.sh")

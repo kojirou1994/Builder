@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct Sdl2: Package {
+public struct Sdl2: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("2.0.14")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://libsdl.org/release/SDL2-\(version.toString()).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,

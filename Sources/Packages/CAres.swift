@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct CAres: Package {
-  var defaultVersion: PackageVersion {
+public struct CAres: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.17.1")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/c-ares/c-ares/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://c-ares.haxx.se/download/c-ares-\(version.toString()).tar.gz")
   }
 
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [
       .bin("acountry"),
       .bin("adig"),
@@ -27,7 +28,7 @@ struct CAres: Package {
     ]
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build") { _ in
       try env.cmake(
         toolType: .ninja,

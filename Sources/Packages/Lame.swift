@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct Lame: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct Lame: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
 
     try replace(contentIn: "include/libmp3lame.sym", matching: "lame_init_old\n", with: "")
 
@@ -18,11 +19,11 @@ struct Lame: Package {
     try env.make("install")
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("3.100")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     let versionString = version.toString(includeZeroPatch: false)
     return .tarball(url: "https://nchc.dl.sourceforge.net/project/lame/lame/\(versionString)/lame-\(versionString).tar.gz")
   }

@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct x265: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct x265: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
 
     let srcDir = "../source"
 
@@ -85,18 +86,18 @@ struct x265: Package {
     })
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("3.5")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://bitbucket.org/multicoreware/x265_git/get/\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
   @Flag(inversion: .prefixedEnableDisable)
   var cli: Bool = false
 
-  var tag: String {
+  public var tag: String {
     cli ? "ENABLE_CLI" : ""
   }
 }

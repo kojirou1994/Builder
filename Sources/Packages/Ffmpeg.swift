@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct Ffmpeg: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct Ffmpeg: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
     try env.configure(configureOptions(env: env))
 
     try env.make()
@@ -9,19 +10,19 @@ struct Ffmpeg: Package {
     try env.make("install")
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("4.3.1")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString()).tar.xz")
   }
 
-  var buildInfo: String {
+  public var buildInfo: String {
     """
     Autodetect: \(autodetect)
     DisabledCompoennts: \(disabledComponents)
@@ -111,7 +112,7 @@ struct Ffmpeg: Package {
     return r.sorted()
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     var deps = [PackageDependency]()
     dependencyOptions.forEach { dependency in
       switch dependency {
@@ -139,7 +140,7 @@ struct Ffmpeg: Package {
     return .packages(deps)
   }
 
-  mutating func validate() throws {
+  public mutating func validate() throws {
     if let path = configureFile {
       configureFile = URL(fileURLWithPath: path).path
     }

@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct Fribidi: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct Fribidi: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
 
     try env.configure(
@@ -14,11 +15,11 @@ struct Fribidi: Package {
     try env.make("install")
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.0.10")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/fribidi/fribidi/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 }

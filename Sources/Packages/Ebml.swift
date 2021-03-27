@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct Ebml: Package {
-  var defaultVersion: PackageVersion {
+public struct Ebml: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.4.2")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-\(version.toString()).tar.xz")
   }
   
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [.library(name: "libebml", headers: ["ebml"])]
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     // build alone
     if env.libraryType.buildStatic {
       try env.changingDirectory("build_static", block: { _ in

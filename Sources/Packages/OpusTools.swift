@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct OpusTools: Package {
+public struct OpusTools: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("0.2")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-tools-\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
@@ -19,7 +20,7 @@ struct OpusTools: Package {
     try env.make("install")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(
       .init(Flac.self),
       .init(Ogg.self),

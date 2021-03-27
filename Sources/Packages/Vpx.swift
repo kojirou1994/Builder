@@ -1,19 +1,20 @@
 import BuildSystem
 
-struct Vpx: Package {
-  var defaultVersion: PackageVersion {
+public struct Vpx: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.10.0")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.changingDirectory("mac_build", block: { _ in
       try env.launch(

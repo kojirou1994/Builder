@@ -1,12 +1,13 @@
 import BuildSystem
 
-struct x264: Package {
+public struct x264: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("r3027")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     let needGas = env.target.arch != .x86_64
 
@@ -52,7 +53,7 @@ struct x264: Package {
     case ffms
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     var deps = [PackageDependency]()
     if lsmash {
       deps.append(.init(Lsmash.self))
@@ -72,7 +73,7 @@ struct x264: Package {
   @Flag(inversion: .prefixedEnableDisable)
   var cli: Bool = false
 
-  var tag: String {
+  public var tag: String {
     [
       cli ? "CLI" : "",
       lsmash ? "LSMASH" : "",

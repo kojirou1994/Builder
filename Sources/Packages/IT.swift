@@ -1,22 +1,23 @@
 import BuildSystem
 
-struct IT: Package {
+public struct IT: Package {
+  public init() {}
 
   #if os(macOS)
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.2")
   }
   #endif
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-IT/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-IT/archive/refs/tags/v\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.launch("chmod", "+x", "configure")
     try env.launch(path: "./configure", "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)")
 

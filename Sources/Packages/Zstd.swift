@@ -1,15 +1,16 @@
 import BuildSystem
 
-struct Zstd: Package {
-  var defaultVersion: PackageVersion {
+public struct Zstd: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.4.9")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/facebook/zstd/archive/refs/heads/dev.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/facebook/zstd/archive/refs/tags/v\(version).tar.gz")
   }
 
@@ -47,7 +48,7 @@ struct Zstd: Package {
    // PROGRAMS LINK SHARED
    ZSTD_PROGRAMS_LINK_SHARED:BOOL=OFF
    */
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build/cmake/build", block: { _ in
       try env.cmake(
         toolType: .ninja,

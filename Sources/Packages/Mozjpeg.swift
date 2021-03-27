@@ -1,20 +1,21 @@
 import BuildSystem
 
-struct Mozjpeg: Package {
+public struct Mozjpeg: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("4.0.3")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [
       .library(
         name: "libjpeg",
@@ -27,7 +28,7 @@ struct Mozjpeg: Package {
     ]
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     switch env.target.arch {
     case .arm64:

@@ -1,17 +1,18 @@
 import BuildSystem
 
-struct Zvbi: Package {
+public struct Zvbi: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("0.2.35")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     let versionString = version.toString()
     return .tarball(url: "https://nchc.dl.sourceforge.net/project/zapping/zvbi/\(versionString)/zvbi-\(versionString).tar.bz2")
   }
 
-  func supports(target: BuildTriple) -> Bool {
+  public func supports(target: BuildTriple) -> Bool {
     switch target.system {
     case .macOS, .linuxGNU:
       return true
@@ -19,7 +20,7 @@ struct Zvbi: Package {
     }
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.autoreconf()
 

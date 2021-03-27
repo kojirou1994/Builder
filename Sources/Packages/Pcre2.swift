@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct Pcre2: Package {
+public struct Pcre2: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("10.36")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://ftp.pcre.org/pub/pcre/pcre2-\(version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)).tar.bz2")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),

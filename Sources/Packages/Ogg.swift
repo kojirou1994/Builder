@@ -1,23 +1,24 @@
 import BuildSystem
 
-struct Ogg: Package {
+public struct Ogg: Package {
+  public init() {}
   /*
    1.3.4 always fail?
    https://gitlab.xiph.org/xiph/ogg/-/issues/2298
    */
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.3.3")
   }
 
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [.library(name: "libogg", headers: ["ogg"])]
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(version.toString()).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
 
     try env.configure(

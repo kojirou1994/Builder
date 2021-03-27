@@ -1,23 +1,24 @@
 import BuildSystem
 
-struct Eedi3: Package {
+public struct Eedi3: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("4")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-EEDI3/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-EEDI3/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
   /*
    Requires Boost unless specify -Dopencl=false.
    */
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try replace(contentIn: "meson.build",
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")

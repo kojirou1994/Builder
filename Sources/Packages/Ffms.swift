@@ -1,8 +1,9 @@
 import BuildSystem
 
-struct Ffms: Package {
+public struct Ffms: Package {
+  public init() {}
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.launch(path: "./autogen.sh")
     try env.configure()
 
@@ -13,7 +14,7 @@ struct Ffms: Package {
     .repository(url: "https://github.com/FFMS/ffms2", requirement: .branch("master"))
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(Ffmpeg.minimalDecoder))
   }
 

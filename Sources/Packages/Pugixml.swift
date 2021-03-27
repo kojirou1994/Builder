@@ -1,20 +1,21 @@
 import BuildSystem
 
-struct Pugixml: Package {
+public struct Pugixml: Package {
+  public init() {}
   
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.11.4")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/zeux/pugixml/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/zeux/pugixml/archive/refs/tags/v\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build", block: { _ in
       try env.cmake(
         toolType: .ninja,

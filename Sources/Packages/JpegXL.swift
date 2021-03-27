@@ -1,15 +1,16 @@
 import BuildSystem
 
-struct JpegXL: Package {
-  var defaultVersion: PackageVersion {
+public struct JpegXL: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .head
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://gitlab.com/wg1/jpeg-xl/-/archive/master/jpeg-xl-master.tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.launch(path: "deps.sh")
 

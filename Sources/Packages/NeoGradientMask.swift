@@ -1,12 +1,13 @@
 import BuildSystem
 
-struct NeoGradientMask: Package {
+public struct NeoGradientMask: Package {
+  public init() {}
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/HomeOfAviSynthPlusEvolution/neo_Gradient_Mask/archive/refs/heads/master.zip")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build", block: { _ in
       try env.cmake(toolType: .ninja, "..")
 

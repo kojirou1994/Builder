@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct Gcrypt: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct Gcrypt: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
     try env.autogen()
 
     try env.configure(
@@ -16,19 +17,19 @@ struct Gcrypt: Package {
     try env.make("install")
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.8.7")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-\(version.toString()).tar.bz2")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(GpgError.self))
   }
 
-  func supports(target: BuildTriple) -> Bool {
+  public func supports(target: BuildTriple) -> Bool {
     switch target.system {
     case .macOS:
       return true

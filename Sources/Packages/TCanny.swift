@@ -1,23 +1,24 @@
 import BuildSystem
 
-struct TCanny: Package {
+public struct TCanny: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("12")
   }
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/heads/master.zip")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
   /*
    Requires Boost unless specify -Dopencl=false.
    */
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try replace(contentIn: "meson.build",
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")

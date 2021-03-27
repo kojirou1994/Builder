@@ -1,11 +1,12 @@
 import BuildSystem
 
-struct Matroska: Package {
-  var defaultVersion: PackageVersion {
+public struct Matroska: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("1.6.3")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     let ext: String
     if version >= "1.4.8" {
       ext = "xz"
@@ -18,7 +19,7 @@ struct Matroska: Package {
     return .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-\(version.toString()).tar.\(ext)")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     if env.libraryType.buildStatic {
       try env.changingDirectory("build_static", block: { _ in
         try env.cmake(
@@ -45,7 +46,7 @@ struct Matroska: Package {
     }
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(Ebml.self))
   }
 

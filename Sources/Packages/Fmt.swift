@@ -1,11 +1,12 @@
 import BuildSystem
 
-struct Fmt: Package {
-  var defaultVersion: PackageVersion {
+public struct Fmt: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("7.1.3")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     // build alone
     if env.libraryType.buildStatic {
       try env.changingDirectory("build_static", block: { _ in
@@ -34,7 +35,7 @@ struct Fmt: Package {
 
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://github.com/fmtlib/fmt/archive/refs/tags/\(version.toString()).tar.gz")
   }
 }

@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct Opusenc: Package {
+public struct Opusenc: Package {
+  public init() {}
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("0.2.1")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/libopusenc-\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
@@ -21,7 +22,7 @@ struct Opusenc: Package {
     try env.make("install")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(Opus.self))
   }
 

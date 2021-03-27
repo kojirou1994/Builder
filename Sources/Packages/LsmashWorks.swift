@@ -1,16 +1,17 @@
 import BuildSystem
 
-struct LsmashWorks: Package {
+public struct LsmashWorks: Package {
+  public init() {}
 
-  var headPackageSource: PackageSource? {
+  public var headPackageSource: PackageSource? {
     .tarball(url: "https://github.com/VFR-maniac/L-SMASH-Works/archive/refs/heads/master.zip")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(.init(Lsmash.self))
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
 
     try env.changingDirectory("VapourSynth", block: { _ in
       try env.configure(

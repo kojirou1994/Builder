@@ -1,15 +1,16 @@
 import BuildSystem
 
-struct Mkvtoolnix: Package {
-  var defaultVersion: PackageVersion {
+public struct Mkvtoolnix: Package {
+  public init() {}
+  public var defaultVersion: PackageVersion {
     .stable("55.0.0")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     return .tarball(url: "https://mkvtoolnix.download/sources/mkvtoolnix-\(version.toString()).tar.xz")
   }
   
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.launch(path: "autogen.sh")
 
     try env.configure(
@@ -24,7 +25,7 @@ struct Mkvtoolnix: Package {
     try env.launch("rake", "install")
   }
 
-  func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
     .blend(packages: [
             .init(Vorbis.self), .init(Ebml.self),
             .init(Matroska.self), .init(Pugixml.self),

@@ -1,18 +1,19 @@
 import BuildSystem
 
-struct Opus: Package {
+public struct Opus: Package {
+  public init() {}
 
-  static var name: String { "opus" }
+  public static var name: String { "opus" }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.3.1")
   }
 
-  var products: [BuildProduct] {
+  public var products: [BuildProduct] {
     [BuildProduct.library(name: "libopus", headers: ["opus"])]
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     let includeZeroPatch: Bool
     if version < "1.1" {
       includeZeroPatch = true
@@ -22,7 +23,7 @@ struct Opus: Package {
     return .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-\(version.toString(includeZeroPatch: includeZeroPatch)).tar.gz")
   }
 
-  func build(with env: BuildEnvironment) throws {
+  public func build(with env: BuildEnvironment) throws {
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,

@@ -1,7 +1,8 @@
 import BuildSystem
 
-struct GpgError: Package {
-  func build(with env: BuildEnvironment) throws {
+public struct GpgError: Package {
+  public init() {}
+  public func build(with env: BuildEnvironment) throws {
     //    try env.autoreconf()
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -13,11 +14,11 @@ struct GpgError: Package {
     try env.make("install")
   }
 
-  var defaultVersion: PackageVersion {
+  public var defaultVersion: PackageVersion {
     .stable("1.42")
   }
 
-  func stablePackageSource(for version: Version) -> PackageSource? {
+  public func stablePackageSource(for version: Version) -> PackageSource? {
     .tarball(url: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-\(version.toString(includeZeroPatch: false)).tar.bz2")
   }
 
