@@ -320,7 +320,7 @@ extension Builder {
 
     if !dependencies.isEmpty {
       print("Dependencies:")
-      print(package.dependencies)
+      print(dependencies)
     }
 
     try dependencies.packages.forEach { depPackage in
