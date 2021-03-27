@@ -35,6 +35,18 @@ extension Version {
     }
     return str
   }
+
+  public var nextMajor: Self {
+    .init(major + 1, 0, 0)
+  }
+
+  public var nextMinor: Self {
+    .init(major, minor + 1, 0)
+  }
+
+  public var nextPatch: Self {
+    .init(major, minor, patch + 1)
+  }
 }
 
 public enum PackageVersion: CustomStringConvertible, Equatable {
