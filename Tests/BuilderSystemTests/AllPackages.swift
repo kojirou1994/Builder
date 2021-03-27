@@ -1,7 +1,7 @@
-@testable import build_cli
 import BuildSystem
+import Packages
 
-let packages: [Package.Type] = [
+let allPackages: [Package.Type] = [
 AddGrain.self,
 Aribb24.self,
 Ass.self,
@@ -26,7 +26,7 @@ Eedi3.self,
 FFT3DFilter.self,
 FdkAac.self,
 Ffmpeg.self,
-Ffms.self,
+Ffms2.self,
 Flac.self,
 Flash3kyuuDeband.self,
 Fmt.self,

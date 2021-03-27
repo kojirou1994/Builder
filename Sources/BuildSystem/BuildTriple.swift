@@ -118,6 +118,13 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
+  public var isApple: Bool {
+    switch self {
+    case .linuxGNU: return false
+    default: return true
+    }
+  }
+
   var isSimulator: Bool {
     switch self {
     case  .tvSimulator, .iphoneSimulator,

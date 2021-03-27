@@ -26,7 +26,7 @@ final class BuilderSystemTests: XCTestCase {
 
   func testGetSDKPath() {
     let launcher = TSCExecutableLauncher(outputRedirection: .none)
-    for system in BuildTargetSystem.allCases {
+    for system in BuildTargetSystem.allCases where system.isApple {
       XCTAssertNoThrow(try launcher.launch(executable: AnyExecutable(
                                             executableName: "xcrun",
                                             arguments: ["--sdk", system.sdkName, "--show-sdk-path"]),
