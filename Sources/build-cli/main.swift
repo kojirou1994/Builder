@@ -2,6 +2,7 @@ import ArgumentParser
 import Foundation
 import URLFileManager
 import BuildSystem
+import Packages
 
 struct BuildCli: ParsableCommand {
   static var configuration: CommandConfiguration {

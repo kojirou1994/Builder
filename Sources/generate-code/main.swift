@@ -59,3 +59,20 @@ let packageNames = try fm.contentsOfDirectory(at: packageDirectory)
 try BuildCliCommand.allCases.forEach { cmd in
   try cmd.generate(packageNames: packageNames, outputDirectory: sourceDirectory)
 }
+
+let testAllPackagesFileURL =
+  URL(fileURLWithPath: #filePath)
+  .deletingLastPathComponent() // target
+  .deletingLastPathComponent() // source
+  .deletingLastPathComponent() //package
+  .appendingPathComponent("Tests/BuilderSystemTests/AllPackages.swift")
+
+try """
+@testable import build_cli
+import BuildSystem
+
+let packages: [Package.Type] = [
+\(packageNames.map {"\($0).self,"}.joined(separator: "\n"))
+]
+"""
+  .write(to: testAllPackagesFileURL, atomically: true, encoding: .utf8)

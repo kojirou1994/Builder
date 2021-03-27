@@ -39,9 +39,14 @@ let package = Package(
         .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.linux])),
       ]),
     .target(
-      name: "build-cli",
+      name: "Packages",
       dependencies: [
         .target(name: "BuildSystem"),
+      ]),
+    .target(
+      name: "build-cli",
+      dependencies: [
+        .target(name: "Packages"),
       ]),
     .target(
       name: "generate-code",
@@ -52,6 +57,7 @@ let package = Package(
       name: "BuilderSystemTests",
       dependencies: [
         .target(name: "BuildSystem"),
+        .target(name: "Packages"),
       ]),
   ]
 )
