@@ -13,12 +13,12 @@ struct GpgError: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.41.tar.bz2")
+  var defaultVersion: PackageVersion {
+    .stable("1.42")
   }
 
-  var version: PackageVersion {
-    .stable("1.41")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-\(version.toString(includeZeroPatch: false)).tar.bz2")
   }
 
 }

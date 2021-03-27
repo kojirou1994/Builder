@@ -4,21 +4,22 @@ struct Opus: Package {
 
   static var name: String { "opus" }
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.3.1")
-  }
-
-  var source: PackageSource {
-    packageSource(for: version)!
   }
 
   var products: [BuildProduct] {
     [BuildProduct.library(name: "libopus", headers: ["opus"])]
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://archive.mozilla.org/pub/opus/opus-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let includeZeroPatch: Bool
+    if version < "1.1" {
+      includeZeroPatch = true
+    } else {
+      includeZeroPatch = false
+    }
+    return .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-\(version.toString(includeZeroPatch: includeZeroPatch)).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

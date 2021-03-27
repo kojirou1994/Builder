@@ -33,6 +33,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
   var package: T
 
   public mutating func run() throws {
+    dump(builderOptions.packageVersion)
     if info {
       print(package)
     } else {
@@ -49,7 +50,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
         libraryType: builderOptions.library, target: .init(arch: arch, system: system),
         rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
 
-      try builder.startBuild(package: package, version: builderOptions.version)
+      try builder.startBuild(package: package, version: builderOptions.packageVersion)
     }
   }
 }
@@ -96,7 +97,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
           libraryType: builderOptions.library, target: target,
           rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
 
-        let prefix = try builder.startBuild(package: package, version: builderOptions.version)
+        let prefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
 
         builtPackages[target.system, default: []].append((target.arch, prefix))
       } catch {
@@ -242,12 +243,24 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   }
 }
 
+import Version
+import ArgumentParser
+
+extension Version: ExpressibleByArgument {
+  public init?(argument: String) {
+    self.init(tolerant: argument)
+  }
+}
+
 struct BuilderOptions: ParsableArguments {
   @Option(name: .shortAndLong, help: "Library type, available: \(PackageLibraryBuildType.allCases.map(\.rawValue).joined(separator: ", "))")
   var library: PackageLibraryBuildType = .statik
 
   @Option(help: "Customize the package version, if supported.")
-  var version: String?
+  var version: Version?
+
+  @Flag(help: "Build from HEAD")
+  var head: Bool = false
 
   @Flag(help: "Clean all built packages")
   var clean: Bool = false
@@ -263,4 +276,18 @@ struct BuilderOptions: ParsableArguments {
 
   @Flag(help: "Enable bitcode.")
   var enableBitcode: Bool = false
+
+  func validate() throws {
+    try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
+  }
+
+  var packageVersion: PackageVersion? {
+    if head {
+      return .head
+    }
+    if let v = version {
+      return .stable(v)
+    }
+    return nil
+  }
 }

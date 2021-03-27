@@ -1,8 +1,21 @@
 import BuildSystem
 
 struct Matroska: Package {
-  var version: PackageVersion {
-    .stable("1.6.2")
+  var defaultVersion: PackageVersion {
+    .stable("1.6.3")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let ext: String
+    if version >= "1.4.8" {
+      ext = "xz"
+    } else if version >= "0.7.0" {
+      ext = "bz2"
+    } else {
+      // older version not important
+      ext = "gz"
+    }
+    return .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-\(version.toString()).tar.\(ext)")
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -32,12 +45,8 @@ struct Matroska: Package {
     }
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-1.6.2.tar.xz")
-  }
-
-  var dependencies: PackageDependency {
-    .packages(Ebml.defaultPackage)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Ebml.self))
   }
 
 }

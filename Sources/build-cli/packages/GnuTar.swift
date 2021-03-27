@@ -1,26 +1,22 @@
 import BuildSystem
 
 struct GnuTar: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.34")
   }
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
+  
   var products: [BuildProduct] {
     [
       .bin("tar"),
     ]
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-\(v).tar.gz")
-    default:
-      return nil
-    }
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-latest.tar.xz")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

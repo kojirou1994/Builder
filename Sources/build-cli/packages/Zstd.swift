@@ -1,18 +1,16 @@
 import BuildSystem
 
 struct Zstd: Package {
-  var version: PackageVersion {
-    .stable("1.4.8")
+  var defaultVersion: PackageVersion {
+    .stable("1.4.9")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/facebook/zstd/archive/refs/heads/dev.zip")
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://github.com/facebook/zstd/archive/v\(v).tar.gz",
-                    filename: "zstd-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/facebook/zstd/archive/refs/tags/v\(version).tar.gz")
   }
 
   /*

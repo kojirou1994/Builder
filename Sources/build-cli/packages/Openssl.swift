@@ -1,17 +1,12 @@
 import BuildSystem
 
 struct Openssl: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.1.1i")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://www.openssl.org/source/openssl-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://www.openssl.org/source/openssl-\(version).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

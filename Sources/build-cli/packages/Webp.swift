@@ -1,8 +1,16 @@
 import BuildSystem
 
 struct Webp: Package {
-  var version: PackageVersion {
-    .stable("1.1.0")
+  var defaultVersion: PackageVersion {
+    .stable("1.2.0")
+  }
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
   var products: [BuildProduct] {
@@ -44,11 +52,4 @@ struct Webp: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.1.0.tar.gz")
-  }
-
-//  var dependencies: [Package] {
-//    [Mozjpeg.new(), Png.new()]
-//  }
 }

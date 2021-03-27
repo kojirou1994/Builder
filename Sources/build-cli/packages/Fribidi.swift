@@ -14,7 +14,11 @@ struct Fribidi: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/fribidi/fribidi/releases/download/v1.0.10/fribidi-1.0.10.tar.xz")
+  var defaultVersion: PackageVersion {
+    .stable("1.0.10")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/fribidi/fribidi/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 }

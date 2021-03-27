@@ -1,6 +1,19 @@
 import BuildSystem
 
 struct Pugixml: Package {
+  
+  var defaultVersion: PackageVersion {
+    .stable("1.11.4")
+  }
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/zeux/pugixml/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/zeux/pugixml/archive/refs/tags/v\(version.toString(includeZeroPatch: false)).tar.gz")
+  }
+
   func build(with env: BuildEnvironment) throws {
     try env.changingDirectory("build", block: { _ in
       try env.cmake(
@@ -12,12 +25,5 @@ struct Pugixml: Package {
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
     })
-  }
-
-  var source: PackageSource {
-    .tarball(url: "https://github.com/zeux/pugixml/releases/download/v1.11.4/pugixml-1.11.4.tar.gz")
-  }
-  var version: PackageVersion {
-    .stable("1.11.4")
   }
 }

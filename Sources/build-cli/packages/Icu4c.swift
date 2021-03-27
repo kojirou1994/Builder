@@ -1,12 +1,16 @@
 import BuildSystem
 
 struct Icu4c: Package {
-  var version: PackageVersion {
-    .stable("67.1")
+  var defaultVersion: PackageVersion {
+    .stable("68.2")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/unicode-org/icu/archive/refs/tags/release-\(version.toString(includeZeroMinor: false, includeZeroPatch: false, versionSeparator: "-")).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("source", block: { _ in
+    try env.changingDirectory("icu4c/source", block: { _ in
       try env.autoreconf()
 
       try env.configure(
@@ -23,7 +27,4 @@ struct Icu4c: Package {
     })
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/unicode-org/icu/releases/download/release-67-1/icu4c-67_1-src.tgz", filename: "icu.tgz")
-  }
 }

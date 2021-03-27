@@ -1,20 +1,16 @@
 import BuildSystem
 
 struct Ninja: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.10.2")
   }
-  var source: PackageSource {
-    packageSource(for: version)!
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/heads/master.zip")
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://github.com/ninja-build/ninja/archive/v\(v).tar.gz", filename: "ninja-\(v).tar.gz")
-    default:
-      return nil
-    }
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -30,6 +26,5 @@ struct Ninja: Package {
       try env.make("install")
     }
   }
-
 
 }

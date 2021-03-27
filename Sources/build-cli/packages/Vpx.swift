@@ -1,8 +1,16 @@
 import BuildSystem
 
 struct Vpx: Package {
-  var version: PackageVersion {
-    .stable("1.9.0")
+  var defaultVersion: PackageVersion {
+    .stable("1.10.0")
+  }
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -21,10 +29,6 @@ struct Vpx: Package {
 
       try env.make("install")
     })
-  }
-
-  var source: PackageSource {
-    .tarball(url: "https://github.com/webmproject/libvpx/archive/v1.9.0.tar.gz", filename: "libvpx-1.9.0.tar.gz")
   }
 
 }

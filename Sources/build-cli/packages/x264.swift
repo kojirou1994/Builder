@@ -2,7 +2,7 @@ import BuildSystem
 
 struct x264: Package {
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("r3027")
   }
 
@@ -52,13 +52,13 @@ struct x264: Package {
     case ffms
   }
 
-  var dependencies: PackageDependency {
-    var deps = [Package]()
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    var deps = [PackageDependency]()
     if lsmash {
-      deps.append(Lsmash.defaultPackage)
+      deps.append(.init(Lsmash.self))
     }
     if libav {
-      deps.append(Ffmpeg.minimalDecoder)
+      deps.append(.init(Ffmpeg.minimalDecoder))
     }
     return .packages(deps)
   }

@@ -1,21 +1,9 @@
 import BuildSystem
 
 struct BoringSSL: Package {
-  var version: PackageVersion {
-    .stable("master")
-  }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://github.com/google/boringssl/archive/master.zip")
-    default:
-      return nil
-    }
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/google/boringssl/archive/master.zip")
   }
 
   func build(with env: BuildEnvironment) throws {

@@ -2,17 +2,12 @@ import BuildSystem
 
 struct OpusTools: Package {
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("0.2")
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://archive.mozilla.org/pub/opus/opus-tools-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-tools-\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -24,13 +19,13 @@ struct OpusTools: Package {
     try env.make("install")
   }
 
-  var dependencies: PackageDependency {
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
     .packages(
-      Flac.defaultPackage,
-      Ogg.defaultPackage,
-      Opus.defaultPackage,
-      Opusenc.defaultPackage,
-      Opusfile.defaultPackage
+      .init(Flac.self),
+      .init(Ogg.self),
+      .init(Opus.self),
+      .init(Opusenc.self),
+      .init(Opusfile.self)
     )
   }
 

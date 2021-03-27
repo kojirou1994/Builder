@@ -1,21 +1,26 @@
 import ArgumentParser
+import Version
 
 public protocol Package: ParsableArguments, CustomStringConvertible {
 
   static var name: String { get }
   
-  var version: PackageVersion { get }
-  var source: PackageSource { get }
-  var dependencies: PackageDependency { get }
+  var defaultVersion: PackageVersion { get }
+
   var products: [BuildProduct] { get }
 
+  /// like a hash of a package
   var tag: String { get }
+  /// string description of package building
   var buildInfo: String { get }
 
   var supportsBitcode: Bool { get }
   func supports(target: BuildTriple) -> Bool
 
-  func packageSource(for version: PackageVersion) -> PackageSource?
+  var headPackageSource: PackageSource? { get }
+  func stablePackageSource(for version: Version) -> PackageSource?
+  func dependencies(for version: PackageVersion) -> PackageDependencies
+
   func build(with env: BuildEnvironment) throws
 
 }
@@ -24,28 +29,34 @@ public extension Package {
 
   var buildInfo: String { "" }
 
-  var version: PackageVersion {
-    // guess version from source
-//    fatalError("Unimplemented")
-    return .stable("unknown-version")
-  }
-
   var tag: String { "" }
 
   var description: String {
     """
     Name: \(name)
-    Version: \(version)
-    Source: \(source)
+    Default Version: \(defaultVersion)
+    Source: \(String(describing: packageSource(for: defaultVersion)))
     Dependencies:
-    \(dependencies)
+    \(dependencies(for: defaultVersion))
     Information:
     \(buildInfo)
     """
   }
 
-  var dependencies: PackageDependency {
-    .empty
+  var defaultVersion: PackageVersion { .head }
+
+  var headPackageSource: PackageSource? { nil }
+  func stablePackageSource(for version: Version) -> PackageSource? { nil }
+  
+  func dependencies(for version: PackageVersion) -> PackageDependencies { .empty }
+
+  func packageSource(for version: PackageVersion) -> PackageSource? {
+    switch version {
+    case .stable(let v):
+      return stablePackageSource(for: v)
+    case .head:
+      return headPackageSource
+    }
   }
 
   var products: [BuildProduct] { [] }
@@ -54,15 +65,14 @@ public extension Package {
     String(describing: Self.self).lowercased()
   }
 
-  var name: String {
-    Self.name
-  }
+  var name: String { Self.name }
 
   static var defaultPackage: Self {
     try! {
       do {
         return try parse([])
       } catch {
+        assertionFailure("Package must have default settings.")
         throw BuilderError.invalidDefaultPackage(name: String(describing: Self.self))
       }
     }()
@@ -70,12 +80,6 @@ public extension Package {
 
   var supportsBitcode: Bool { true }
   func supports(target: BuildTriple) -> Bool { true }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? { nil }
-
-  var headSource: PackageSource? {
-    packageSource(for: .head)
-  }
 }
 
 extension Package {

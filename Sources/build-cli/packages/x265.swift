@@ -85,14 +85,12 @@ struct x265: Package {
     })
   }
 
-  var version: PackageVersion {
-    .stable("3.4")
+  var defaultVersion: PackageVersion {
+    .stable("3.5")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://bitbucket.org/multicoreware/x265_git/get/3.4.tar.gz")
-//          filename: nil)
-//    .branch(repo: "https://bitbucket.org/multicoreware/x265_git.git", revision: nil)
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://bitbucket.org/multicoreware/x265_git/get/\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
   @Flag(inversion: .prefixedEnableDisable)

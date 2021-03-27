@@ -1,21 +1,16 @@
 import BuildSystem
 
 struct P7Zip: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("17.03")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/jinfeihan57/p7zip/archive/refs/heads/master.zip")
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://github.com/jinfeihan57/p7zip/archive/v\(v).tar.gz", filename: "p7zip-\(v).tar.bz2")
-    default:
-      return nil
-    }
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/jinfeihan57/p7zip/archive/refs/tags/v\(version.toString( includeZeroPatch: false, numberWidth: 2)).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

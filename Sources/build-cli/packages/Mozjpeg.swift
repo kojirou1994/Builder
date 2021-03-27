@@ -1,12 +1,17 @@
 import BuildSystem
 
 struct Mozjpeg: Package {
-  var version: PackageVersion {
-    .stable("4.0.0")
+
+  var defaultVersion: PackageVersion {
+    .stable("4.0.3")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/v4.0.0.tar.gz", filename: "mozjpeg-4.0.0.tar.gz")
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
   var products: [BuildProduct] {
@@ -21,6 +26,7 @@ struct Mozjpeg: Package {
         ])
     ]
   }
+
   func build(with env: BuildEnvironment) throws {
 
     switch env.target.arch {
@@ -47,7 +53,7 @@ struct Mozjpeg: Package {
     }
   }
 
-//  var dependencies: PackageDependency {
-//    .packages(Png.defaultPackage)
-//  }
+  //  var dependencies: PackageDependency {
+  //    .packages(Png.defaultPackage)
+  //  }
 }

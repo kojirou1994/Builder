@@ -1,7 +1,7 @@
 import BuildSystem
 
 struct Flac: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.3.3")
   }
 
@@ -32,8 +32,18 @@ struct Flac: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://downloads.xiph.org/releases/flac/flac-1.3.3.tar.xz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    var versionString = version.toString(includeZeroPatch: false)
+    if version < "1.0.3" {
+      versionString += "-src"
+    }
+    let suffix: String
+    if version < "1.3.0" {
+      suffix = "gz"
+    } else {
+      suffix = "xz"
+    }
+    return .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
   }
 
   @Flag
@@ -45,15 +55,22 @@ struct Flac: Package {
    --enable-64-bit-words
    */
 
-  var dependencies: PackageDependency {
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
     if ogg {
-      return .packages(Ogg.defaultPackage)
+      return .packages(.init(Ogg.self))
     } else {
       return .empty
     }
   }
 
   var tag: String {
-    "\(cpplibs)\(ogg)"
+    var str = ""
+    if cpplibs {
+      str.append("CPPLIBS")
+    }
+    if ogg {
+      str.append("OGG")
+    }
+    return str
   }
 }

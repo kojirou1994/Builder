@@ -1,6 +1,14 @@
 import BuildSystem
 
 struct Png: Package {
+  var defaultVersion: PackageVersion {
+    .stable("1.6.37")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/\(version)/libpng-\(version.toString()).tar.xz")
+  }
+
   func build(with env: BuildEnvironment) throws {
     
     try env.configure(
@@ -15,7 +23,4 @@ struct Png: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz")
-  }
 }

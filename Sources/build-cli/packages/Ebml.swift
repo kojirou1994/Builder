@@ -1,12 +1,12 @@
 import BuildSystem
 
 struct Ebml: Package {
-  var version: PackageVersion {
-    .stable("1.4.1")
+  var defaultVersion: PackageVersion {
+    .stable("1.4.2")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-1.4.1.tar.xz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-\(version.toString()).tar.xz")
   }
   
   var products: [BuildProduct] {

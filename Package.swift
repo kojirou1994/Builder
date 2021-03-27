@@ -18,6 +18,7 @@ let package = Package(
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "0.8.0"),
     .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
     .package(url: "https://github.com/apple/swift-crypto.git", from: "1.0.0"),
+    .package(url: "https://github.com/mxcl/Version.git", from: "2.0.0"),
   ],
   targets: [
     .target(
@@ -29,6 +30,7 @@ let package = Package(
       name: "BuildSystem",
       dependencies: [
         .target(name: "XcodeExecutable"),
+        .product(name: "Version", package: "Version"),
         .product(name: "URLFileManager", package: "URLFileManager"),
         .product(name: "ExecutableLauncher", package: "Executable"),
         .product(name: "Logging", package: "swift-log"),

@@ -1,11 +1,16 @@
 import BuildSystem
 
 struct CAres: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.17.1")
   }
-  var source: PackageSource {
-    packageSource(for: version)!
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/c-ares/c-ares/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://c-ares.haxx.se/download/c-ares-\(version.toString()).tar.gz")
   }
 
   var products: [BuildProduct] {
@@ -20,15 +25,6 @@ struct CAres: Package {
           "ares_rules.h", "ares_version.h",
           "ares.h"]),
     ]
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://c-ares.haxx.se/download/c-ares-\(v).tar.gz")
-    default:
-      return nil
-    }
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -46,6 +42,5 @@ struct CAres: Package {
       try env.make(toolType: .ninja, "install")
     }
   }
-
 
 }

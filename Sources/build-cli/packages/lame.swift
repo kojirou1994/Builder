@@ -18,8 +18,13 @@ struct Lame: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://netcologne.dl.sourceforge.net/project/lame/lame/3.100/lame-3.100.tar.gz")
+  var defaultVersion: PackageVersion {
+    .stable("3.100")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let versionString = version.toString(includeZeroPatch: false)
+    return .tarball(url: "https://nchc.dl.sourceforge.net/project/lame/lame/\(versionString)/lame-\(versionString).tar.gz")
   }
 
 }

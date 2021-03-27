@@ -1,7 +1,7 @@
 import BuildSystem
 
 struct Fmt: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("7.1.3")
   }
 
@@ -34,7 +34,7 @@ struct Fmt: Package {
 
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/fmtlib/fmt/archive/7.1.3.tar.gz", filename: "fmt-7.1.3.tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/fmtlib/fmt/archive/refs/tags/\(version.toString()).tar.gz")
   }
 }

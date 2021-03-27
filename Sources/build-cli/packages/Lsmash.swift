@@ -1,23 +1,40 @@
 import BuildSystem
 
 struct Lsmash: Package {
+
+  var defaultVersion: PackageVersion {
+    .stable("2.14.5")
+  }
+
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/tags/v\(version.toString(includeZeroPatch: true)).tar.gz")
+  }
+
   func build(with env: BuildEnvironment) throws {
-    if env.libraryType.buildShared {
-      // send warning
-    }
+
+    #if os(macOS)
+    try replace(contentIn: "configure", matching: ",--version-script,liblsmash.ver", with: "")
+    #endif
+
     try env.configure(
-//      env.libraryType.buildStatic.configureEnableFlag("static", defaultEnabled: true)
-//      env.libraryType.buildShared.configureEnableFlag("shared", defaultEnabled: false)
+      configureEnableFlag(env.libraryType.buildStatic, "static", defaultEnabled: true),
+      configureEnableFlag(env.libraryType.buildShared, "shared", defaultEnabled: false)
     )
+
+    try env.make()
 
     try env.make(enableCli ? "install" : "install-lib")
   }
 
-  var source: PackageSource {
-    .branch(repo: "https://github.com/l-smash/l-smash", revision: nil)
-  }
-
   @Flag()
   var enableCli: Bool = false
+
+  var tag: String {
+    enableCli ? "CLI" : ""
+  }
 
 }

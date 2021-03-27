@@ -2,17 +2,12 @@ import BuildSystem
 
 struct Opusfile: Package {
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("0.12")
   }
 
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://downloads.xiph.org/releases/opus/opusfile-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opusfile-\(version.toString(includeZeroPatch: false)).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {
@@ -24,8 +19,8 @@ struct Opusfile: Package {
     try env.make("install")
   }
 
-  var dependencies: PackageDependency {
-    .packages(Openssl.defaultPackage, Opus.defaultPackage, Ogg.defaultPackage)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Openssl.self), .init(Opus.self), .init(Ogg.self))
   }
 
 }

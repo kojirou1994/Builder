@@ -8,6 +8,7 @@ import Crypto
 #else
 #error("Unsupported platform!")
 #endif
+import Version
 
 struct Builder {
   init(builderDirectoryURL: URL,
@@ -38,7 +39,7 @@ struct Builder {
     }
     
     self.env = .init(
-      version: .head, source: .branch(repo: ""),
+      version: .head, source: .repository(url: "", requirement: .branch("main")),
       prefix: .init(root: productsDirectoryURL),
       dependencyMap: .init(),
       safeMode: false,
@@ -60,15 +61,33 @@ struct Builder {
   let joinDependency: Bool
   let cleanAll: Bool
 
-  func checkout(source: PackageSource, directoryName: String) throws -> URL {
+  func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
     switch source.requirement {
-    case .revisionItem(let revision):
+    case .repository(let requirement):
       try env.launch("git", "clone", source.url, safeDirName)
       return URL(fileURLWithPath: safeDirName)
-    case let .tarball(filename: filename, sha256: sha256):
-      let url = URL(string: source.url)!
-      let filename = filename ?? url.lastPathComponent
+    case .tarball(sha256: _):
+      let url = try URL(string: source.url).unwrap("Invalid url string: \(source.url)")
+      let lastPathComponent = url.lastPathComponent
+      var tarballExtension: String?
+      for ext in [".tar.gz", ".tar.bz2", ".tar.xz"] {
+        if lastPathComponent.hasSuffix(ext) {
+          tarballExtension = ext
+          break
+        }
+      }
+      if tarballExtension == nil, case let ext = url.pathExtension, !ext.isEmpty {
+        tarballExtension = ext
+      }
+      let versionString: String
+      switch version {
+      case .head:
+        versionString = UUID().uuidString
+      case .stable(let v):
+        versionString = v.toString()
+      }
+      let filename = "\(package.name)-\(versionString)\(tarballExtension ?? "")"
       let dstFileURL = downloadCacheDirectory.appendingPathComponent(filename)
       if !URLFileManager.default.fileExistance(at: dstFileURL).exists {
         let tmpFileURL = dstFileURL.appendingPathExtension("tmp")
@@ -88,7 +107,6 @@ struct Builder {
       } else {
         return env.fm.currentDirectory
       }
-    default: fatalError()
     }
   }
 }
@@ -131,21 +149,14 @@ extension Builder {
   ///   - dependencyMap: all dependencies for the package
   /// - Throws:
   /// - Returns: package installed prefix
-  func build(package: Package, version: String? = nil,
+  func build(package: Package, version: PackageVersion? = nil,
              prefix: PackagePath? = nil,
              dependencyMap: PackageDependencyMap) throws -> PackagePath {
 
-    var usedSource = package.source
-    var usedVersion = package.version
+    let usedVersion = version ?? package.defaultVersion
 
-    if let v = version {
-      if let s = package.packageSource(for: .stable(v)) {
-        print("Using custom version: \(v), source: \(s)")
-        usedSource = s
-        usedVersion = .stable(v)
-      } else {
-        print("Invalid custom version: \(v), use default source!")
-      }
+    guard let usedSource = package.packageSource(for: usedVersion) else {
+      fatalError()
     }
 
     let usedPrefix: PackagePath
@@ -237,7 +248,7 @@ extension Builder {
       // Start building
       try env.changingDirectory(tmpWorkDirURL) { _ in
 
-        let srcDir = try checkout(source: usedSource, directoryName: package.name)
+        let srcDir = try checkout(package: package, version: usedVersion, source: usedSource, directoryName: package.name)
 
         try env.changingDirectory(srcDir) { _ in
           try package.build(with: env)
@@ -264,7 +275,7 @@ public func replace(contentIn file: String, matching string: String, with newStr
 }
 
 extension Builder {
-  func startBuild(package: Package, version: String?) throws -> PackagePath {
+  func startBuild(package: Package, version: PackageVersion?) throws -> PackagePath {
     if cleanAll {
       print("Cleaning products directory...")
       try? env.removeItem(at: productsDirectoryURL)
@@ -276,21 +287,17 @@ extension Builder {
 
     let dependencyPrefix: PackagePath?
     if joinDependency {
-      let usedVersion: PackageVersion
-      if let v = version,
-         package.packageSource(for: .stable(v)) != nil {
-        usedVersion = .stable(v)
-      } else {
-        usedVersion = package.version
-      }
+      let usedVersion: PackageVersion = version ?? package.defaultVersion
       dependencyPrefix = formPrefix(package: package, version: usedVersion, suffix: "dependency")
-      try env.removeItem(at: dependencyPrefix!.root)
+      if env.fm.fileExistance(at: dependencyPrefix!.root).exists {
+        print("Removing dependency directory")
+        try env.removeItem(at: dependencyPrefix!.root)
+      }
     } else {
       dependencyPrefix = nil
     }
 
     let summary = try buildDeps(package: package, buildSelf: false, prefix: dependencyPrefix)
-
 
     let prefix = try build(package: package, version: version, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
@@ -303,8 +310,9 @@ extension Builder {
   }
 
   // return deps map
-  private func buildDeps(package: Package, buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
-    let dependencies = package.dependencies
+  private func buildDeps(package: Package,
+                         buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
+    let dependencies = package.dependencies(for: package.defaultVersion)
 
     print("Building \(package.name)")
 
@@ -316,8 +324,8 @@ extension Builder {
     }
 
     try dependencies.packages.forEach { depPackage in
-      let summary = try buildDeps(package: depPackage, buildSelf: true, prefix: prefix)
-      dependencyMap.add(package: depPackage, prefix: summary.prefix!)
+      let summary = try buildDeps(package: depPackage.package, buildSelf: true, prefix: prefix)
+      dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
       dependencyMap.merge(summary.dependencyMap)
     }
 

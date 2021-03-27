@@ -1,12 +1,16 @@
 import BuildSystem
 
 struct Mbedtls: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("2.25.0")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/heads/development.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v\(version.toString()).tar.gz")
   }
 
   func supports(target: BuildTriple) -> Bool {
@@ -16,15 +20,6 @@ struct Mbedtls: Package {
       return false
     default:
       return true
-    }
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/mbedtls-\(v).tar.gz")
-    default:
-      return nil
     }
   }
 
@@ -60,7 +55,7 @@ struct Mbedtls: Package {
         cmakeOnFlag(false, "ENABLE_TESTING"),
         cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT"),
         cmakeOnFlag(false, "ENABLE_PROGRAMS")
-        )
+      )
       /*
        dependency:
        tls -> x509 & crypto

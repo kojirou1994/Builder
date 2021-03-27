@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "2954e55faee5bfee928e844bb09e97fcfa8d24af",
-          "version": "0.2.0"
+          "revision": "616073f64e13340576005db4186a0246705e4999",
+          "version": "0.2.1"
         }
       },
       {
@@ -62,6 +62,15 @@
           "branch": null,
           "revision": "0e14b98abcd39ab0f2da51c44ee4a0cd7add2966",
           "version": "0.1.2"
+        }
+      },
+      {
+        "package": "Version",
+        "repositoryURL": "https://github.com/mxcl/Version.git",
+        "state": {
+          "branch": null,
+          "revision": "a94b48f36763c05629fc102837398505032dead9",
+          "version": "2.0.0"
         }
       }
     ]

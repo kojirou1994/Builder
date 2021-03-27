@@ -1,6 +1,15 @@
 import BuildSystem
 
 struct Aribb24: Package {
+
+  var defaultVersion: PackageVersion {
+    .stable("1.0.3")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/nkoriyama/aribb24/archive/refs/tags/v\(version.toString()).tar.gz")
+  }
+
   func build(with env: BuildEnvironment) throws {
     try env.launch(path: "bootstrap")
     try env.configure(
@@ -12,11 +21,7 @@ struct Aribb24: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/nkoriyama/aribb24/archive/v1.0.3.tar.gz", filename: "aribb24-1.0.3.tar.gz")
-  }
-
-  var dependencies: PackageDependency {
-    .packages(Png.defaultPackage)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Png.self))
   }
 }

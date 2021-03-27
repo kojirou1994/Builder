@@ -17,11 +17,16 @@ struct Freetype: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://downloads.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.xz")
+  var defaultVersion: PackageVersion {
+    .stable("2.10.4")
   }
 
-  var dependencies: PackageDependency {
-    .packages(Png.defaultPackage)
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let versionString = version.toString(includeZeroPatch: false)
+    return .tarball(url: "https://downloads.sourceforge.net/project/freetype/freetype2/\(versionString)/freetype-\(versionString).tar.xz")
+  }
+
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Png.self))
   }
 }

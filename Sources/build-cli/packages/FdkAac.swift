@@ -2,17 +2,12 @@ import BuildSystem
 
 struct FdkAac: Package {
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("2.0.1")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    guard let v = version.stableVersion else { return nil }
-    return .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-\(v).tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-\(version).tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

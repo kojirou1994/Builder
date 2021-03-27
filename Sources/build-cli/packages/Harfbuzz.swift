@@ -21,11 +21,19 @@ struct Harfbuzz: Package {
     })
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/2.7.4.tar.gz", filename: "harfbuzz-2.7.4.tar.gz")
+  var defaultVersion: PackageVersion {
+    .stable("2.7.4")
   }
 
-  var dependencies: PackageDependency {
-    .packages(Freetype.defaultPackage, Icu4c.defaultPackage)
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/refs/heads/master.zip")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/\(version.toString()).tar.gz")
+  }
+
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Freetype.self), .init(Icu4c.self))
   }
 }

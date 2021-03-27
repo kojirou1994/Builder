@@ -1,7 +1,7 @@
 import BuildSystem
 
 struct Xml2: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("2.9.10")
   }
 
@@ -21,7 +21,7 @@ struct Xml2: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "http://xmlsoft.org/sources/libxml2-2.9.10.tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "http://xmlsoft.org/sources/libxml2-\(version.toString()).tar.gz")
   }
 }

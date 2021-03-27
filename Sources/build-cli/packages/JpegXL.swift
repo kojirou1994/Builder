@@ -1,21 +1,12 @@
 import BuildSystem
 
 struct JpegXL: Package {
-  var version: PackageVersion {
-    .stable("master")
+  var defaultVersion: PackageVersion {
+    .head
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://gitlab.com/wg1/jpeg-xl/-/archive/master/jpeg-xl-master.tar.gz")
-    default:
-      return nil
-    }
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://gitlab.com/wg1/jpeg-xl/-/archive/master/jpeg-xl-master.tar.gz")
   }
 
   func build(with env: BuildEnvironment) throws {

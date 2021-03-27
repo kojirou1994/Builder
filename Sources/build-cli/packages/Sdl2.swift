@@ -1,6 +1,15 @@
 import BuildSystem
 
 struct Sdl2: Package {
+
+  var defaultVersion: PackageVersion {
+    .stable("2.0.14")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://libsdl.org/release/SDL2-\(version.toString()).tar.gz")
+  }
+
   func build(with env: BuildEnvironment) throws {
     try env.configure(
       env.libraryType.staticConfigureFlag,
@@ -11,11 +20,4 @@ struct Sdl2: Package {
     try env.make("install")
   }
 
-  var version: PackageVersion {
-    .stable("2.0.14")
-  }
-
-  var source: PackageSource {
-    .tarball(url: "https://libsdl.org/release/SDL2-2.0.14.tar.gz")
-  }
 }

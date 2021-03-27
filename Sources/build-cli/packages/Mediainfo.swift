@@ -1,21 +1,13 @@
 import BuildSystem
 
 struct Mediainfo: Package {
-  var version: PackageVersion {
-    .stable("20.09")
+  var defaultVersion: PackageVersion {
+    .stable("21.03")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://mediaarea.net/download/binary/mediainfo/\(v)/MediaInfo_CLI_\(v)_GNU_FromSource.tar.bz2", filename: "MediaInfo_CLI_GNU_FromSource.tar.bz2")
-    default:
-      return nil
-    }
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let versionString = version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)
+    return .tarball(url: "https://old.mediaarea.net/download/binary/mediainfo/\(versionString)/MediaInfo_CLI_\(versionString)_GNU_FromSource.tar.xz")
   }
 
   func build(with env: BuildEnvironment) throws {

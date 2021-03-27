@@ -16,16 +16,16 @@ struct Gcrypt: Package {
     try env.make("install")
   }
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("1.8.7")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.7.tar.bz2")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-\(version.toString()).tar.bz2")
   }
 
-  var dependencies: PackageDependency {
-    .packages(GpgError.defaultPackage)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(GpgError.self))
   }
 
   func supports(target: BuildTriple) -> Bool {

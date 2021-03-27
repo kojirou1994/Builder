@@ -4,15 +4,21 @@ struct Ffmpeg: Package {
   func build(with env: BuildEnvironment) throws {
     try env.configure(configureOptions(env: env))
 
+    try env.make()
+
     try env.make("install")
   }
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("4.3.1")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-4.3.1.tar.xz")
+  var headPackageSource: PackageSource? {
+    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString()).tar.xz")
   }
 
   var buildInfo: String {
@@ -105,28 +111,28 @@ struct Ffmpeg: Package {
     return r.sorted()
   }
 
-  var dependencies: PackageDependency {
-    var deps = [Package]()
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    var deps = [PackageDependency]()
     dependencyOptions.forEach { dependency in
       switch dependency {
       case .libopus:
-        deps.append(Opus.defaultPackage)
+        deps.append(.init(Opus.self))
       case .libvorbis:
-        deps.append(Vorbis.defaultPackage)
+        deps.append(.init(Vorbis.self))
       case .libfdkaac:
-        deps.append(FdkAac.defaultPackage)
+        deps.append(.init(FdkAac.self))
       case .libx264:
-        deps.append(x264.defaultPackage)
+        deps.append(.init(x264.self))
       case .libx265:
-        deps.append(x265.defaultPackage)
+        deps.append(.init(x265.self))
       case .libwebp:
-        deps.append(Webp.defaultPackage)
+        deps.append(.init(Webp.self))
       case .libaribb24:
-        deps.append(Aribb24.defaultPackage)
+        deps.append(.init(Aribb24.self))
       case .libopencore:
-        deps.append(Opencore.defaultPackage)
+        deps.append(.init(Opencore.self))
       case .libass:
-        deps.append(Ass.defaultPackage)
+        deps.append(.init(Ass.self))
       case .apple: break
       }
     }

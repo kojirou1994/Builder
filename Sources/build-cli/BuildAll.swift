@@ -7,6 +7,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Ass>.self,
       PackageBuildAllCommand<BoringSSL>.self,
       PackageBuildAllCommand<CAres>.self,
+      PackageBuildAllCommand<Dupd>.self,
       PackageBuildAllCommand<Ebml>.self,
       PackageBuildAllCommand<FdkAac>.self,
       PackageBuildAllCommand<Ffmpeg>.self,

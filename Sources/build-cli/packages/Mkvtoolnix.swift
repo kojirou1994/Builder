@@ -1,28 +1,19 @@
 import BuildSystem
 
 struct Mkvtoolnix: Package {
-  var version: PackageVersion {
-    .stable("52.0.0")
+  var defaultVersion: PackageVersion {
+    .stable("55.0.0")
   }
 
-  var source: PackageSource {
-    packageSource(for: version)!
-  }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return .tarball(url: "https://mkvtoolnix.download/sources/mkvtoolnix-\(v).tar.xz")
-    default:
-      return nil
-    }
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    return .tarball(url: "https://mkvtoolnix.download/sources/mkvtoolnix-\(version.toString()).tar.xz")
   }
   
   func build(with env: BuildEnvironment) throws {
     try env.launch(path: "autogen.sh")
 
     try env.configure(
-//      env.libraryType.staticConfigureFlag,
+      env.libraryType.staticConfigureFlag,
 //      env.libraryType.sharedConfigureFlag,
 //      "--without-boost",
       "--with-qt=no",
@@ -33,12 +24,12 @@ struct Mkvtoolnix: Package {
     try env.launch("rake", "install")
   }
 
-  var dependencies: PackageDependency {
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
     .blend(packages: [
-            Vorbis.defaultPackage, Ebml.defaultPackage,
-            Matroska.defaultPackage, Pugixml.defaultPackage,
-            Pcre2.defaultPackage, Fmt.defaultPackage,
-            Flac.defaultPackage, Jpcre2.defaultPackage],
+            .init(Vorbis.self), .init(Ebml.self),
+            .init(Matroska.self), .init(Pugixml.self),
+            .init(Pcre2.self), .init(Fmt.self),
+            .init(Flac.self), .init(Jpcre2.self)],
            brewFormulas: ["docbook-xsl"])
   }
 }

@@ -2,12 +2,13 @@ import BuildSystem
 
 struct Zvbi: Package {
 
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("0.2.35")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://raw.githubusercontent.com/cntrump/build_ffmpeg_brew/master/zvbi-0.2.35.tar.bz2")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    let versionString = version.toString()
+    return .tarball(url: "https://nchc.dl.sourceforge.net/project/zapping/zvbi/\(versionString)/zvbi-\(versionString).tar.bz2")
   }
 
   func supports(target: BuildTriple) -> Bool {

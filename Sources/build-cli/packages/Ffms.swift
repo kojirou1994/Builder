@@ -10,11 +10,11 @@ struct Ffms: Package {
   }
 
   var source: PackageSource {
-    .branch(repo: "https://github.com/FFMS/ffms2", revision: nil)
+    .repository(url: "https://github.com/FFMS/ffms2", requirement: .branch("master"))
   }
 
-  var dependencies: PackageDependency {
-    .packages(Ffmpeg.minimalDecoder)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Ffmpeg.minimalDecoder))
   }
 
 }

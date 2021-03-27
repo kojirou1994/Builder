@@ -1,6 +1,15 @@
 import BuildSystem
 
 struct Vorbis: Package {
+
+  var defaultVersion: PackageVersion {
+    .stable("1.3.7")
+  }
+
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    return .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-\(version.toString()).tar.xz")
+  }
+
   func build(with env: BuildEnvironment) throws {
 
     try env.autoreconf()
@@ -18,12 +27,8 @@ struct Vorbis: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz")
-  }
-
-  var dependencies: PackageDependency {
-    .packages(Ogg.defaultPackage)
+  func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Ogg.self))
   }
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the examples.")
@@ -31,5 +36,12 @@ struct Vorbis: Package {
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the documentation.")
   var docs: Bool = false
+
+  var tag: String {
+    [
+      examples ? "examples" : "",
+      docs ? "docs" : "",
+    ].joined()
+  }
 
 }

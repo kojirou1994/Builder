@@ -1,7 +1,7 @@
 import BuildSystem
 
 struct Xz: Package {
-  var version: PackageVersion {
+  var defaultVersion: PackageVersion {
     .stable("5.2.5")
   }
 
@@ -17,7 +17,7 @@ struct Xz: Package {
     try env.make("install")
   }
 
-  var source: PackageSource {
-    .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-5.2.5.tar.gz")
+  func stablePackageSource(for version: Version) -> PackageSource? {
+    .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
   }
 }
