@@ -15,3 +15,9 @@ struct BuildCli: ParsableCommand {
 }
 
 BuildCli.main()
+
+
+let packages: [Package.Type] = [Aribb24.self, CAres.self]
+packages.forEach { package in
+  let v = package.defaultPackage
+}

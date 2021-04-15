@@ -11,7 +11,7 @@ public struct Ffmpeg: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    .stable("4.3.1")
+    .stable("4.4")
   }
 
   public var headPackageSource: PackageSource? {
@@ -19,7 +19,7 @@ public struct Ffmpeg: Package {
   }
 
   public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString()).tar.xz")
+    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
   }
 
   public var buildInfo: String {
@@ -82,7 +82,7 @@ public struct Ffmpeg: Package {
       switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
-           .libass:
+           .libass, .libsvtav1, .librav1e:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
@@ -134,6 +134,10 @@ public struct Ffmpeg: Package {
         deps.append(.init(Opencore.self))
       case .libass:
         deps.append(.init(Ass.self))
+      case .libsvtav1:
+        deps.append(.init(SvtAv1.self))
+      case .librav1e:
+        deps.append(.init(Rav1e.self))
       case .apple: break
       }
     }
@@ -253,6 +257,8 @@ extension Ffmpeg {
     case libaribb24
     case libopencore
     case libass
+    case libsvtav1
+    case librav1e
 
     case apple
 
