@@ -87,6 +87,19 @@ extension BuildEnvironment {
     try block(url)
   }
 
+  /// some package ignore the library setting, call this method to remove extra library files
+  /// - Throws: remove file error
+  public func autoRemoveUnneedLibraryFiles() throws {
+    let searchExtension: String
+    switch libraryType {
+    case .all: return
+    case .shared: searchExtension = "a"
+    case .statik: searchExtension = target.system.sharedLibraryExtension
+    }
+    let dstFiles = try fm.contentsOfDirectory(at: prefix.lib)
+      .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame }
+    try dstFiles.forEach { try removeItem(at: $0) }
+  }
 
   public func removeItem(at url: URL) throws {
     try retry(body: try fm.removeItem(at: url))
