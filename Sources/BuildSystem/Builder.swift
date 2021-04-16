@@ -10,12 +10,17 @@ import Crypto
 #endif
 import Version
 
+public enum RebuildLevel: String, ExpressibleByArgument {
+  case package
+  case tree
+}
+
 struct Builder {
   init(builderDirectoryURL: URL,
        cc: String, cxx: String,
        libraryType: PackageLibraryBuildType,
        target: BuildTriple,
-       rebuildDependnecy: Bool, joinDependency: Bool, cleanAll: Bool,
+       rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = builderDirectoryURL
     self.srcRootDirectoryURL = builderDirectoryURL.appendingPathComponent("working")
@@ -25,9 +30,9 @@ struct Builder {
     self.cleanAll = cleanAll
     self.joinDependency = joinDependency
     if joinDependency {
-      self.rebuildDependnecy = false
+      self.rebuildLevel = nil
     } else {
-      self.rebuildDependnecy = rebuildDependnecy
+      self.rebuildLevel = rebuildLevel
     }
 
     let sdkPath: String?
@@ -57,7 +62,8 @@ struct Builder {
   let downloadCacheDirectory: URL
   let productsDirectoryURL: URL
 
-  let rebuildDependnecy: Bool
+  let rebuildLevel: RebuildLevel?
+
   let joinDependency: Bool
   let cleanAll: Bool
 
@@ -150,6 +156,7 @@ extension Builder {
   /// - Throws:
   /// - Returns: package installed prefix
   func build(package: Package, version: PackageVersion? = nil,
+             isDependency: Bool,
              prefix: PackagePath? = nil,
              dependencyMap: PackageDependencyMap) throws -> PackagePath {
 
@@ -165,9 +172,12 @@ extension Builder {
     } else {
       usedPrefix = formPrefix(package: package, version: usedVersion)
       if env.fm.fileExistance(at: usedPrefix.root).exists { // Already built
-        if rebuildDependnecy {
+        logger.info("Built package existed.")
+        switch (rebuildLevel, isDependency) {
+        case (.tree, _), (.package, false):
+          logger.info("Rebuilding required, removing built package.")
           try env.removeItem(at: usedPrefix.root)
-        } else {
+        default:
           return usedPrefix
         }
       }
@@ -256,6 +266,7 @@ extension Builder {
       }
     } catch {
       // build failed, remove if installed
+      logger.error("Building failed, removing install prefix if has installed any files.")
       try? env.removeItem(at: usedPrefix.root)
       throw error
     }
@@ -297,9 +308,9 @@ extension Builder {
       dependencyPrefix = nil
     }
 
-    let summary = try buildDeps(package: package, buildSelf: false, prefix: dependencyPrefix)
+    let summary = try buildPackageAndDependencies(package: package, buildSelf: false, prefix: dependencyPrefix)
 
-    let prefix = try build(package: package, version: version, dependencyMap: summary.dependencyMap)
+    let prefix = try build(package: package, version: version, isDependency: false, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
     return prefix
   }
@@ -310,8 +321,9 @@ extension Builder {
   }
 
   // return deps map
-  private func buildDeps(package: Package,
-                         buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
+  private func buildPackageAndDependencies(
+    package: Package,
+    buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
     let dependencies = package.dependencies(for: package.defaultVersion)
 
     print("Building \(package.name)")
@@ -324,14 +336,14 @@ extension Builder {
     }
 
     try dependencies.packages.forEach { depPackage in
-      let summary = try buildDeps(package: depPackage.package, buildSelf: true, prefix: prefix)
+      let summary = try buildPackageAndDependencies(package: depPackage.package, buildSelf: true, prefix: prefix)
       dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
       dependencyMap.merge(summary.dependencyMap)
     }
 
     dependencyMap.mergeBrewDependency(try parseBrewDeps(dependencies.brewFormulas))
 
-    let prefix = try buildSelf ? build(package: package, prefix: prefix, dependencyMap: dependencyMap) : nil
+    let prefix = try buildSelf ? build(package: package, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
 
     return .init(prefix: prefix, dependencyMap: dependencyMap)
   }

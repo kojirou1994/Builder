@@ -48,7 +48,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
         builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
         cc: cc, cxx: cxx,
         libraryType: builderOptions.library, target: .init(arch: arch, system: system),
-        rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
+        rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
 
       try builder.startBuild(package: package, version: builderOptions.packageVersion)
     }
@@ -95,7 +95,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
           builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
           cc: "clang", cxx: "clang++",
           libraryType: builderOptions.library, target: target,
-          rebuildDependnecy: builderOptions.rebuildDependnecy, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
+          rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
 
         let prefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
 
@@ -268,8 +268,8 @@ struct BuilderOptions: ParsableArguments {
   @Flag(help: "Install all dependencies together with target package.")
   var joinDependency: Bool = false
 
-  @Flag(help: "Alawys rebuild dependencies")
-  var rebuildDependnecy: Bool = false
+  @Option(help: "Rebuild level, package or tree.")
+  var rebuildLevel: RebuildLevel?
 
   @Option(help: "Specify build/cache directory")
   var buildPath: String = "./builder"
