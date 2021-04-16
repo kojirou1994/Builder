@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PackagePath {
+public struct PackagePath: Hashable {
   public let root: URL
 
   public var bin: URL {

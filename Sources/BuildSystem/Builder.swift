@@ -176,7 +176,7 @@ extension Builder {
     // MARK: Setup Build Environment
     var environment = env.environment
     do {
-      let allPrefixes = dependencyMap.allPrefixes
+      let allPrefixes = Set(dependencyMap.allPrefixes)
 
       // PKG_CONFIG_PATH
       environment["PKG_CONFIG_PATH"] = allPrefixes.map(\.pkgConfig.path).joined(separator: ":")
