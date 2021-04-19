@@ -32,6 +32,9 @@ public struct Ffmpeg: Package {
   }
 
   @Option
+  private var extraVersion: String?
+
+  @Option
   private var preset: Preset?
 
   @Flag
@@ -51,6 +54,8 @@ public struct Ffmpeg: Package {
     var licenses = Set<FFmpegLicense>()
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
+//    r.insert(configureEnableFlag(true, "pthreads"))
+    extraVersion.map { _ = r.insert("--extra-version=\($0)") }
 
     // static/shared library
     if env.libraryType == .statik {
@@ -61,6 +66,9 @@ public struct Ffmpeg: Package {
 
     // MARK: External library
     Set(dependencyOptions).forEach { dependency in
+      guard dependency.supportsFFmpegVersion(env.version) else {
+        return
+      }
       if dependency.isNonFree {
         licenses.insert(.nonfree)
       }
@@ -98,15 +106,22 @@ public struct Ffmpeg: Package {
       r.insert(configureEnableFlag(false, comp.rawValue))
     }
 
-    r.insert("--extra-cflags=\(env.environment[.cflags])")
-    r.insert("--extra-ldflags=\(env.environment[.ldflags])")
-    r.insert("--extra-libs=-ldl -lpthread -lm -lz")
+//    r.insert("--extra-cflags=\(env.environment[.cflags])")
+//    r.insert("--extra-ldflags=\(env.environment[.ldflags])")
+
+    if env.target.system == .linuxGNU {
+      r.insert("--extra-libs=-ldl -lpthread -lm -lz")
+    }
+
     return r.sorted()
   }
 
   public func dependencies(for version: PackageVersion) -> PackageDependencies {
     var deps = [PackageDependency]()
     dependencyOptions.forEach { dependency in
+      guard dependency.supportsFFmpegVersion(version) else {
+        return
+      }
       switch dependency {
       case .libopus:
         deps.append(.init(Opus.self))
@@ -146,6 +161,7 @@ public struct Ffmpeg: Package {
     dependencyOptions.map(\.rawValue).sorted().joined()
       + disabledComponents.map(\.rawValue).sorted().joined()
       + (autodetect ? "autodetect" : "")
+      + (extraVersion ?? "")
   }
 
   public mutating func validate() throws {
@@ -275,6 +291,18 @@ extension Ffmpeg {
       default:
         return false
       }
+    }
+
+    func supportsFFmpegVersion(_ version: PackageVersion) -> Bool {
+      switch self {
+      case .libsvtav1:
+        if case .stable(let stableVersion) = version {
+          return "4.4"... ~= stableVersion
+        }
+      default:
+        break
+      }
+      return true
     }
 
     /*
