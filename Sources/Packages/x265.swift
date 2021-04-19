@@ -103,7 +103,7 @@ public struct x265: Package {
   }
 
   public func stablePackageSource(for version: Version) -> PackageSource? {
-    .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString()))
+    .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
   }
 
   public var headPackageSource: PackageSource? {
