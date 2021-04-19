@@ -16,7 +16,8 @@ public struct Ass: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(false, "fontconfig")
+      configureEnableFlag(false, "fontconfig"),
+      configureEnableFlag(env.target.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true)
     )
 
     try env.make()
