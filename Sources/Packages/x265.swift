@@ -72,12 +72,24 @@ public struct x265: Package {
         "-o", "libx265.a",
         "libx265_main.a", "libx265_main10.a", "libx265_main12.a")
       #elseif os(Linux)
-      try env.launch(
-        "ar", "cr",
-        "libx265.a",
-        "libx265_main.a", "libx265_main10.a",
-        "libx265_main12.a")
-      try env.launch("ranlib", "libx265.a")
+//      try env.launch(
+//        "ar", "cr",
+//        "libx265.a",
+//        "libx265_main.a", "libx265_main10.a",
+//        "libx265_main12.a")
+//      try env.launch("ranlib", "libx265.a")
+      let scriptFileURL = URL(fileURLWithPath: "ar_script")
+      try """
+      CREATE libx265.a
+      ADDLIB libx265_main.a
+      ADDLIB libx265_main10.a
+      ADDLIB libx265_main12.a
+      SAVE
+      END
+      """.write(to: scriptFileURL, atomically: true, encoding: .utf8)
+      let fh = try FileHandle(forReadingFrom: scriptFileURL)
+      try AnyExecutable(executableName: "ar", arguments: ["-M"])
+        .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
       #else
       #error("Unsupported OS!")
       #endif
