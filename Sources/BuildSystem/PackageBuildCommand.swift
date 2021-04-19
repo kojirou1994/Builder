@@ -5,6 +5,9 @@ import URLFileManager
 import KwiftUtility
 import XcodeExecutable
 import Logging
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 extension Version {
   var testGroup: [Version] {
