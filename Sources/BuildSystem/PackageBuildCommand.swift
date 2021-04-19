@@ -16,6 +16,7 @@ extension Version {
 }
 
 public struct PackageCheckUpdateCommand<T: Package>: ParsableCommand {
+
   public static var configuration: CommandConfiguration {
     .init(commandName: T.name,
           abstract: "",
@@ -99,6 +100,9 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
   var builderOptions: BuilderOptions
 
   @OptionGroup
+  var installOptions: InstallOptions
+
+  @OptionGroup
   var package: T
 
   public mutating func run() throws {
@@ -118,9 +122,71 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
 
       let installedPrefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
       builder.logger.info("Package is installed at: \(installedPrefix.root.path)")
+
+      if let installContent = installOptions.installContent {
+        builder.logger.info("Installing \(installContent)")
+        let fm: URLFileManager = .init()
+        let installSources: [URL]
+        switch installContent {
+        case .bin:
+          installSources = [installedPrefix.bin]
+        case .lib:
+          installSources = [installedPrefix.include, installedPrefix.lib]
+        case .all:
+          installSources = try fm.contentsOfDirectory(at: installedPrefix.root)
+        }
+
+        let installDestPrefix = URL(fileURLWithPath: installOptions.installPrefix)
+
+        installSources.forEach { installSource in
+          guard let enumerator = fm.enumerator(at: installSource, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) else {
+            // show error
+            return
+          }
+          for case let url as URL in enumerator {
+            if try! url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile! {
+              let relativePath = url.path.dropFirst(installedPrefix.root.path.count)
+                .drop(while: {"/" == $0 })
+
+              let destURL = installDestPrefix.appendingPathComponent(String(relativePath))
+
+              if installOptions.uninstall {
+                do {
+                  if fm.fileExistance(at: destURL).exists {
+                    print("removing \(destURL.path)")
+                    try fm.removeItem(at: destURL)
+                  }
+                } catch {
+                  print("uninstall failed: \(error.localizedDescription)")
+                }
+              } else {
+                print("\(relativePath) --> \(destURL.path)")
+                try! fm.createDirectory(at: destURL.deletingLastPathComponent())
+                do {
+                  if fm.fileExistance(at: destURL).exists, installOptions.forceInstall {
+                    try fm.removeItem(at: destURL)
+                  }
+                  switch installOptions.installMethod {
+                  case .link:
+                    try fm.createSymbolicLink(at: url, withDestinationURL: destURL)
+                  case .copy:
+                    try fm.copyItem(at: url, to: destURL)
+                  }
+                } catch {
+                  print("install failed: \(error.localizedDescription)")
+                }
+              }
+
+            }
+          }
+        }
+
+      }
     }
   }
 }
+
+import ArgumentParser
 
 public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   public static var configuration: CommandConfiguration {
@@ -143,7 +209,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   @Flag(help: "Auto pack xcframework, if package supports.")
   var autoPackXC: Bool = false
 
-  @Flag(inversion: .prefixedEnableDisable, help: "If enabled, program will create framework to pack xcframework.")
+  @Flag(name: [.short], inversion: .prefixedEnableDisable, help: "If enabled, program will create framework to pack xcframework.")
   var autoModulemap: Bool = true
 
   public mutating func run() throws {
@@ -365,4 +431,38 @@ struct BuilderOptions: ParsableArguments {
     }
     return nil
   }
+}
+
+import ArgumentParser
+
+public enum InstallContent: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
+  case all
+  case bin
+  case lib
+
+  public var description: String { rawValue }
+}
+
+public enum InstallMethod: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
+  case link
+  case copy
+
+  public var description: String { rawValue }
+}
+
+struct InstallOptions: ParsableArguments {
+  @Option(help: "Install content type, available: \(InstallContent.allCases.map(\.rawValue).joined(separator: ", "))")
+  var installContent: InstallContent?
+
+  @Option(help: "Install method, available: \(InstallMethod.allCases.map(\.rawValue).joined(separator: ", "))")
+  var installMethod: InstallMethod = .link
+
+  @Option(help: "Install prefix")
+  var installPrefix: String = "/usr/local"
+
+  @Flag
+  var forceInstall: Bool = false
+
+  @Flag
+  var uninstall: Bool = false
 }
