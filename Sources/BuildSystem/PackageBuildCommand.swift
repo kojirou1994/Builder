@@ -168,7 +168,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
                   }
                   switch installOptions.installMethod {
                   case .link:
-                    try fm.createSymbolicLink(at: url, withDestinationURL: destURL)
+                    try fm.createSymbolicLink(at: destURL, withDestinationURL: url)
                   case .copy:
                     try fm.copyItem(at: url, to: destURL)
                   }
