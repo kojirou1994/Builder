@@ -1,7 +1,16 @@
 import BuildSystem
 
 public struct Freetype: Package {
+
+  @Flag
+  var withHarfbuzz: Bool = false
+
+  public var tag: String {
+    (withHarfbuzz ? "harfbuzz" : "")
+  }
+
   public init() {}
+
   public func build(with env: BuildEnvironment) throws {
 
     try env.launch(path: "autogen.sh")
@@ -10,8 +19,9 @@ public struct Freetype: Package {
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
       "--enable-freetype-config",
-      "--without-harfbuzz",
-      "--without-brotli"
+      configureWithFlag(true, "png"),
+      configureWithFlag(withHarfbuzz, "harfbuzz"),
+      configureWithFlag(false, "brotli")
     )
 
     try env.make()
@@ -28,6 +38,10 @@ public struct Freetype: Package {
   }
 
   public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Png.self))
+    .packages(
+      .init(Png.self),
+//      .init(Brotli.self), // google shit
+      withHarfbuzz ? .init(Harfbuzz.self) : nil
+    )
   }
 }

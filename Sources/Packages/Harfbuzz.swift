@@ -7,14 +7,14 @@ public struct Harfbuzz: Package {
       try env.meson(
         "--default-library=\(env.libraryType.mesonFlag)",
         env.libraryType == .statik ? "-Db_lundef=false" : nil,
-        "-Dcairo=disabled",
-        "-Dcoretext=enabled",
-        "-Dfreetype=enabled",
-        "-Dglib=disabled",
-        "-Dgobject=disabled",
-        "-Dgraphite=disabled",
-        "-Dicu=enabled",
-        "-Dintrospection=disabled"
+        mesonFeatureFlag(false, "cairo"),
+        mesonFeatureFlag(true, "coretext"),
+        mesonFeatureFlag(true, "freetype"),
+        mesonFeatureFlag(false, "glib"),
+        mesonFeatureFlag(false, "gobject"),
+        mesonFeatureFlag(false, "graphite"),
+        mesonFeatureFlag(true, "icu"),
+        mesonFeatureFlag(false, "introspection")
       )
 
       try env.launch("ninja")

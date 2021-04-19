@@ -1,7 +1,9 @@
 import BuildSystem
 
 public struct Ffmpeg: Package {
+
   public init() {}
+
   public func build(with env: BuildEnvironment) throws {
     try env.configure(configureOptions(env: env))
 
@@ -30,19 +32,13 @@ public struct Ffmpeg: Package {
   }
 
   @Option
-  private var configure: [String] = []
-
-  @Option
   private var preset: Preset?
-
-  @Option
-  private var configureFile: String?
 
   @Flag
   var dependencyOptions: [FFmpegDependeny] = []
 
-  @Flag
-  var licenseOptions: [FFmpegLicense] = []
+//  @Flag
+//  var licenseOptions: [FFmpegLicense] = []
 
   @Flag
   var disabledComponents: [DisableComponents] = []
@@ -51,12 +47,8 @@ public struct Ffmpeg: Package {
   var autodetect: Bool = false
 
   private func configureOptions(env: BuildEnvironment) throws -> [String] {
-    var r = Set(configure)
-    var licenses = Set(licenseOptions)
-
-    if let path = configureFile {
-      r.formUnion(try String(contentsOfFile: path).components(separatedBy: .newlines))
-    }
+    var r = Set<String>()
+    var licenses = Set<FFmpegLicense>()
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
 
@@ -82,8 +74,10 @@ public struct Ffmpeg: Package {
       switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
-           .libass, .libsvtav1, .librav1e:
+           .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
+      case .libsdl2:
+        r.formUnion(configureEnableFlag(true, "sdl"))
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
@@ -106,8 +100,8 @@ public struct Ffmpeg: Package {
       r.insert(configureEnableFlag(false, comp.rawValue))
     }
 
-    r.insert("--extra-cflags=\(env.environment["CFLAGS", default: ""])")
-    r.insert("--extra-ldflags=\(env.environment["LDLAGS", default: ""])")
+    r.insert("--extra-cflags=\(env.environment[.cflags])")
+    r.insert("--extra-ldflags=\(env.environment[.ldflags])")
 
     return r.sorted()
   }
@@ -138,16 +132,25 @@ public struct Ffmpeg: Package {
         deps.append(.init(SvtAv1.self))
       case .librav1e:
         deps.append(.init(Rav1e.self))
+      case .libsdl2:
+        deps.append(.init(Sdl2.self))
+      case .libmp3lame:
+        deps.append(.init(Lame.self))
+      case .libaom:
+        deps.append(.init(Aom.self))
       case .apple: break
       }
     }
     return .packages(deps)
   }
 
+  public var tag: String {
+    dependencyOptions.map(\.rawValue).sorted().joined()
+      + disabledComponents.map(\.rawValue).sorted().joined()
+      + (autodetect ? "autodetect" : "")
+  }
+
   public mutating func validate() throws {
-    if let path = configureFile {
-      configureFile = URL(fileURLWithPath: path).path
-    }
     switch preset {
     case .allYeah:
       print("FFMPEG ALL YEAH!")
@@ -259,6 +262,9 @@ extension Ffmpeg {
     case libass
     case libsvtav1
     case librav1e
+    case libsdl2
+    case libmp3lame
+    case libaom
 
     case apple
 
@@ -345,7 +351,6 @@ extension Ffmpeg {
  lzma
  mediafoundation
  schannel
- sdl2
  securetransport
  sndio
  xlib
@@ -393,7 +398,7 @@ extension Ffmpeg {
  gnutls
  jni
  ladspa
- libaom
+ 
  libass
  libbluray
  libbs2b

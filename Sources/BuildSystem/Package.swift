@@ -4,7 +4,7 @@ import Version
 public protocol Package: ParsableArguments, CustomStringConvertible {
 
   static var name: String { get }
-  
+
   var defaultVersion: PackageVersion { get }
 
   var products: [BuildProduct] { get }
@@ -62,7 +62,7 @@ public extension Package {
   var products: [BuildProduct] { [] }
 
   static var name: String {
-    String(describing: Self.self).lowercased()
+    String(describing: Self.self).convertedToSnakeCase(separator: "-")
   }
 
   var name: String { Self.name }

@@ -1,0 +1,36 @@
+import BuildSystem
+
+public struct Aom: Package {
+  public init() {}
+
+  public var defaultVersion: PackageVersion {
+    .stable("3.0.0")
+  }
+
+  public func stablePackageSource(for version: Version) -> PackageSource? {
+    .repository(url: "https://aomedia.googlesource.com/aom", requirement: .tag("v\(version.toString())"))
+  }
+
+  public func build(with env: BuildEnvironment) throws {
+    try env.changingDirectory(env.randomFilename) { _ in
+      try env.cmake(
+        toolType: .ninja,
+        "..",
+//        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_RPATH"),
+        cmakeOnFlag(false, "ENABLE_DOCS"),
+        cmakeOnFlag(true, "ENABLE_EXAMPLES"),
+        cmakeOnFlag(false, "ENABLE_TESTDATA"),
+        cmakeOnFlag(false, "ENABLE_TESTS"),
+        cmakeOnFlag(false, "ENABLE_TOOLS"),
+        cmakeOnFlag(env.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        nil
+      )
+
+      try env.make(toolType: .ninja)
+      try env.make(toolType: .ninja, "install")
+    }
+
+    try env.autoRemoveUnneedLibraryFiles()
+  }
+
+}

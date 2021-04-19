@@ -3,7 +3,7 @@ import Logging
 import KwiftUtility
 
 public class BuildEnvironment {
-  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: [String : String], libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
+  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
     self.version = version
     self.source = source
     self.prefix = prefix
@@ -37,7 +37,7 @@ public class BuildEnvironment {
   public let cxx: String
 
   /// the environment will be used to run processes
-  public var environment: [String : String]
+  public var environment: EnvironmentValues
 
   public let parallelJobs: Int? = 8
   public let libraryType: PackageLibraryBuildType
@@ -49,7 +49,7 @@ public class BuildEnvironment {
   public let deployTarget: String?
 
   var launcher: BuilderLauncher {
-    .init(environment: environment)
+    .init(environment: environment.values)
   }
 
   public var host: BuildTriple { .native }
@@ -85,6 +85,32 @@ extension BuildEnvironment {
       print("Back to:", oldDir)
     }
     try block(url)
+  }
+
+  private static let safeFilenameChars: StaticString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+  public var randomFilename: String {
+    let length = 6
+    var random = SystemRandomNumberGenerator()
+    return "build-cli-" + Self.safeFilenameChars.withUTF8Buffer { buffer -> String in
+      assert(!buffer.isEmpty)
+      if #available(OSX 11.0, *) {
+        return String(unsafeUninitializedCapacity: length) { strBuffer -> Int in
+          for index in strBuffer.indices {
+            strBuffer[index] = buffer.randomElement(using: &random).unsafelyUnwrapped
+          }
+          return length
+        }
+      } else {
+        var string = ""
+        string.reserveCapacity(length)
+        for _ in 0..<length {
+          let char = Character(Unicode.Scalar(buffer.randomElement(using: &random).unsafelyUnwrapped))
+          string.append(char)
+        }
+        return string
+      }
+    }
   }
 
   /// some package ignore the library setting, call this method to remove extra library files
@@ -152,8 +178,8 @@ extension BuildEnvironment {
 
   public func cmake(toolType: MakeToolType, _ arguments: [String?]) throws {
     var cmakeArguments = [
-      "-DCMAKE_INSTALL_PREFIX=\(prefix.root.path)",
-      "-DCMAKE_BUILD_TYPE=Release"
+      cmakeDefineFlag(prefix.root.path, "CMAKE_INSTALL_PREFIX"),
+      cmakeDefineFlag("Release", "CMAKE_BUILD_TYPE")
     ]
     arguments.forEach { argument in
       argument.map { cmakeArguments.append($0) }
@@ -173,6 +199,8 @@ extension BuildEnvironment {
     if let sysroot = sdkPath {
       cmakeArguments.append(cmakeDefineFlag(sysroot, "CMAKE_OSX_SYSROOT"))
     }
+    cmakeArguments.append(cmakeDefineFlag(dependencyMap.allPrefixes.map(\.root.path).joined(separator: ";"), "CMAKE_PREFIX_PATH"))
+
     try launch("cmake", cmakeArguments)
   }
 

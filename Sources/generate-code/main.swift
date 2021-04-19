@@ -8,11 +8,13 @@ func ident(_ count: Int) -> String {
 enum BuildCliCommand: CaseIterable {
   case build
   case buildAll
+  case checkUpdate
 
   var commandName: String {
     switch self {
     case .build: return "Build"
     case .buildAll: return "BuildAll"
+    case .checkUpdate: return "CheckUpdate"
     }
   }
 
@@ -20,6 +22,7 @@ enum BuildCliCommand: CaseIterable {
     switch self {
     case .build: return "PackageBuildCommand"
     case .buildAll: return "PackageBuildAllCommand"
+    case .checkUpdate: return "PackageCheckUpdateCommand"
     }
   }
 
@@ -50,7 +53,10 @@ let packageDirectory = sourceDirectory
 
 let fm = URLFileManager.default
 
-let packageNames = try fm.contentsOfDirectory(at: packageDirectory)
+let packageNames = try fm
+  .enumerator(at: packageDirectory, options: [.skipsHiddenFiles], errorHandler: nil)
+  .unsafelyUnwrapped
+  .compactMap { $0 as? URL }
   .map { $0.lastPathComponent}
   .filter { $0.hasSuffix(".swift") }
   .map { String($0.dropLast(6)) }

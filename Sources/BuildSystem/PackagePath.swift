@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PackagePath: Hashable {
+public struct PackagePath: Hashable, CustomStringConvertible {
   public let root: URL
 
   public var bin: URL {
@@ -26,5 +26,9 @@ public struct PackagePath: Hashable {
     var result = root
     pathComponents.forEach { result.appendPathComponent($0) }
     return result
+  }
+
+  public var description: String {
+    root.path
   }
 }

@@ -48,7 +48,7 @@ public struct PackageDependencyMap {
     }
   }
 
-  var allPrefixes: [PackagePath] {
+  public var allPrefixes: [PackagePath] {
     var r = [PackagePath]()
     r.reserveCapacity(brewDependencies.count + packageDependencies.count)
     r.append(contentsOf: packageDependencies.values)

@@ -15,23 +15,33 @@ public struct Cmake: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build") { _ in
-      try env.cmake(
-        toolType: .ninja,
-        "..",
-        cmakeOnFlag(true, "SPHINX_HTML"),
-        cmakeOnFlag(true, "SPHINX_MAN"),
-        cmakeDefineFlag(env.dependencyMap["sphinx-doc"].bin.appendingPathComponent("sphinx-build").path, "SPHINX_EXECUTABLE")
+    try env.changingDirectory(env.randomFilename) { _ in
+      try env.launch(
+        path: "../bootstrap",
+        "--prefix=\(env.prefix.root.path)",
+//        --no-system-libs
+        "--parallel=\(env.parallelJobs ?? 8)",
+//        --datadir=/share/cmake
+//        --docdir=/share/doc/cmake
+//        --mandir=/share/man
+//        --sphinx-build=#{Formula["sphinx-doc"].opt_bin}/sphinx-build
+//        --sphinx-html
+//        --sphinx-man
+
+//        on_macos do
+//        args += %w[
+        "--system-zlib",
+        "--system-bzip2",
+        "--system-curl"
+//        cmakeOnFlag(true, "SPHINX_HTML"),
+//        cmakeOnFlag(true, "SPHINX_MAN"),
+//        cmakeDefineFlag(env.dependencyMap["sphinx-doc"].bin.appendingPathComponent("sphinx-build").path, "SPHINX_EXECUTABLE")
       )
 
-      try env.make(toolType: .ninja)
+      try env.make()
 
-      try env.make(toolType: .ninja, "install")
+      try env.make("install")
     }
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .blend(packages: [], brewFormulas: ["cmake", "sphinx-doc"])
   }
 
 }

@@ -25,8 +25,16 @@ public struct Rav1e: Package {
     try env.launch("cargo", "install", "--root",
                    env.prefix.root.path,
                    "--path", ".")
-    try env.launch("cargo", "cinstall", "--prefix",
-                   env.prefix.root.path)
+    var types: [String?] = []
+    switch env.libraryType {
+    case .shared, .statik:
+      types.append("--library-type")
+      types.append(env.libraryType == .shared ? "cdylib" : "staticlib")
+    default: break
+    }
+    try env.launch("cargo",
+                   ["cinstall", "--prefix",
+                    env.prefix.root.path] + types)
   }
 
 

@@ -1,7 +1,13 @@
 import Foundation
 
 public struct PackagePatch {
+  public init(url: String, sha256: String) {
+    self.url = url
+    self.sha256 = sha256
+  }
 
+  public let url: String
+  public let sha256: String
 }
 
 public struct PackageSource: CustomStringConvertible {
@@ -10,7 +16,6 @@ public struct PackageSource: CustomStringConvertible {
   enum Requirement {
     // url is git repo
     case repository(RepositoryRequirement)
-
 
     // url is download link
     case tarball(sha256: String?)

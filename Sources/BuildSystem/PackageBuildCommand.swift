@@ -4,6 +4,72 @@ import ExecutableLauncher
 import URLFileManager
 import KwiftUtility
 import XcodeExecutable
+import Logging
+
+extension Version {
+  var testGroup: [Version] {
+    [nextPatch, nextMinor, nextMajor]
+  }
+}
+
+public struct PackageCheckUpdateCommand<T: Package>: ParsableCommand {
+  public static var configuration: CommandConfiguration {
+    .init(commandName: T.name,
+          abstract: "",
+          discussion: "")
+  }
+
+  public init() {}
+
+  public func run() throws {
+    let logger = Logger(label: "check-update")
+    logger.info("Checking update info for package \(T.name)")
+    let defaultPackage = T.defaultPackage
+    let stableVersion = try defaultPackage.defaultVersion.stableVersion.unwrap("No stable version")
+    logger.info("Current version: \(stableVersion)")
+    let session = URLSession(configuration: .ephemeral)
+
+    var failedVersions = Set<Version>()
+    var updateVersions = Set<Version>()
+    
+    func test(versions: [Version]) -> [Version] {
+      Set(versions).compactMap { version in
+        if !failedVersions.contains(version),
+           !updateVersions.contains(version),
+           let source = defaultPackage.packageSource(for: .stable(version)) {
+          logger.info("Testing version \(version)")
+          switch source.requirement {
+          case .repository:
+            break
+          case .tarball(sha256: _):
+            do {
+              var request = URLRequest(url: URL(string: source.url)!)
+              request.httpMethod = "HEAD"
+              let response = try session.syncResultTask(with: request).get()
+              let statusCode = (response.response as! HTTPURLResponse).statusCode
+              try preconditionOrThrow(200..<300 ~= statusCode, "status code: \(statusCode)")
+              logger.info("New version: \(version)")
+              updateVersions.insert(version)
+              return version
+            } catch {
+              logger.error("\(error)")
+            }
+          }
+        }
+        failedVersions.insert(version)
+        return nil
+      }
+    }
+
+    var testVersions = stableVersion.testGroup
+    while case let newVersions = test(versions: testVersions),
+          !newVersions.isEmpty {
+      testVersions = newVersions.flatMap(\.testGroup)
+    }
+
+    logger.info("All valid new versions: \(updateVersions.sorted())")
+  }
+}
 
 public struct PackageBuildCommand<T: Package>: ParsableCommand {
   public static var configuration: CommandConfiguration {
@@ -48,9 +114,11 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
         builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
         cc: cc, cxx: cxx,
         libraryType: builderOptions.library, target: .init(arch: arch, system: system),
+        ignoreTag: builderOptions.ignoreTag, dependencyLevelLimit: builderOptions.dependencyLevel,
         rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
 
-      try builder.startBuild(package: package, version: builderOptions.packageVersion)
+      let installedPrefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
+      builder.logger.info("Package is installed at: \(installedPrefix.root.path)")
     }
   }
 }
@@ -95,6 +163,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
           builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
           cc: "clang", cxx: "clang++",
           libraryType: builderOptions.library, target: target,
+          ignoreTag: builderOptions.ignoreTag, dependencyLevelLimit: builderOptions.dependencyLevel,
           rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
 
         let prefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
@@ -265,6 +334,12 @@ struct BuilderOptions: ParsableArguments {
   @Flag(help: "Clean all built packages")
   var clean: Bool = false
 
+  @Flag(help: "Ignore package's tag.")
+  var ignoreTag: Bool = false
+
+  @Option(help: "Dependency level limit, must > 0.")
+  var dependencyLevel: UInt?
+
   @Flag(help: "Install all dependencies together with target package.")
   var joinDependency: Bool = false
 
@@ -279,6 +354,7 @@ struct BuilderOptions: ParsableArguments {
 
   func validate() throws {
     try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
+    try preconditionOrThrow((dependencyLevel ?? 1) > 0, ValidationError("dependencyLevel must > 0"))
   }
 
   var packageVersion: PackageVersion? {

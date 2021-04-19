@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "535d6b9ae5f7264dd3969b707858e1c9057351a9",
-          "version": "0.4.2"
+          "revision": "f7d92913386d1a84e2c9a25285aaf2eb7bae099b",
+          "version": "0.4.5"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "616073f64e13340576005db4186a0246705e4999",
-          "version": "0.2.1"
+          "revision": "ab6339b6a33b69886b3cf2254d3326eddfe58eb0",
+          "version": "0.2.2"
         }
       },
       {

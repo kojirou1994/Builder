@@ -9,6 +9,13 @@ import Crypto
 #error("Unsupported platform!")
 #endif
 import Version
+import ExecutableLauncher
+
+extension ContiguousPipeline: CustomStringConvertible {
+  public var description: String {
+    processes.map { ([$0.executableURL!.path] + ($0.arguments ?? [])).joined(separator: " ") }.joined(separator: " | ")
+  }
+}
 
 public enum RebuildLevel: String, ExpressibleByArgument {
   case package
@@ -20,6 +27,7 @@ struct Builder {
        cc: String, cxx: String,
        libraryType: PackageLibraryBuildType,
        target: BuildTriple,
+       ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = builderDirectoryURL
@@ -28,7 +36,9 @@ struct Builder {
     self.logger = Logger(label: "Builder")
     self.productsDirectoryURL = builderDirectoryURL.appendingPathComponent("products")
     self.cleanAll = cleanAll
+    self.ignoreTag = ignoreTag
     self.joinDependency = joinDependency
+    self.dependencyLevelLimit = dependencyLevelLimit ?? UInt.max
     if joinDependency {
       self.rebuildLevel = nil
     } else {
@@ -49,7 +59,7 @@ struct Builder {
       dependencyMap: .init(),
       safeMode: false,
       cc: cc, cxx: cxx,
-      environment: ProcessInfo.processInfo.environment,
+      environment: .init(),
       libraryType: libraryType, target: target, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget)
 
   }
@@ -63,16 +73,25 @@ struct Builder {
   let productsDirectoryURL: URL
 
   let rebuildLevel: RebuildLevel?
+  let dependencyLevelLimit: UInt
 
+  let ignoreTag: Bool
   let joinDependency: Bool
   let cleanAll: Bool
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
+    let srcDirURL: URL
+
     switch source.requirement {
     case .repository(let requirement):
-      try env.launch("git", "clone", source.url, safeDirName)
-      return URL(fileURLWithPath: safeDirName)
+      switch requirement {
+      case .branch(let branch), .tag(let branch):
+        try env.launch("git", "clone", "-b", branch, "--depth", "1", "--recursive", source.url, safeDirName)
+      case .revision(_):
+        fatalError("Useless api")
+      }
+      srcDirURL = URL(fileURLWithPath: safeDirName)
     case .tarball(sha256: _):
       let url = try URL(string: source.url).unwrap("Invalid url string: \(source.url)")
       let lastPathComponent = url.lastPathComponent
@@ -109,11 +128,23 @@ struct Builder {
 
       let contents = try env.fm.contentsOfDirectory(at: env.fm.currentDirectory, options: [.skipsHiddenFiles])
       if contents.count == 1, env.fm.fileExistance(at: contents[0]) == .directory {
-        return contents[0]
+        srcDirURL = contents[0]
       } else {
-        return env.fm.currentDirectory
+        srcDirURL = env.fm.currentDirectory
       }
     }
+
+    // Apply patches
+    try source.patches.forEach { patch in
+      logger.info("Applying patch \(patch)")
+      let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [patch.url]))
+        .append(AnyExecutable(executableName: "patch", arguments: ["-ruN", "-d", srcDirURL.path, "--verbose"]))
+      print(patcher)
+      try patcher.run()
+      patcher.waitUntilExit()
+    }
+
+    return srcDirURL
   }
 }
 
@@ -128,7 +159,7 @@ extension Builder {
 
     var versionTag = version.description
     var tag = package.tag
-    if !tag.isEmpty {
+    if !ignoreTag, !tag.isEmpty {
       let tagHash = tag.withUTF8 { buffer in
         SHA256.hash(data: buffer)
           .hexString(uppercase: false, prefix: "")
@@ -183,23 +214,30 @@ extension Builder {
       }
     }
 
+    enum CommonEnvKey: String {
+      case pkgConfigPath = "PKG_CONFIG_PATH"
+      case path = "PATH"
+      case cflags = "CFLAGS"
+      case ldflags = "LDFLAGS"
+    }
+
     // MARK: Setup Build Environment
     var environment = env.environment
     do {
       let allPrefixes = Set(dependencyMap.allPrefixes)
 
       // PKG_CONFIG_PATH
-      environment["PKG_CONFIG_PATH"] = allPrefixes.map(\.pkgConfig.path).joined(separator: ":")
+      environment[.pkgConfigPath] = allPrefixes.map(\.pkgConfig.path).joined(separator: ":")
 
       // PATH
       var paths = allPrefixes.map(\.bin.path)
-      paths.append(contentsOf: environment["PATH", default: ""].split(separator: ":").map(String.init))
+      paths.append(contentsOf: environment[.path].split(separator: ":").map(String.init))
 
-      environment["PATH"] = paths.joined(separator: ":")
+      environment[.path] = paths.joined(separator: ":")
 
       // ARCH
-      var cflags = environment["CFLAGS", default: ""].split(separator: " ").map(String.init)
-      var ldlags = environment["LDLAGS", default: ""].split(separator: " ").map(String.init)
+      var cflags = environment[.cflags].split(separator: " ").map(String.init)
+      var ldlags = environment[.ldflags].split(separator: " ").map(String.init)
       if env.isBuildingCross {
         switch env.target.system {
         case .macCatalyst:
@@ -237,13 +275,15 @@ extension Builder {
         cflags.append("-I\(prefix.include.path)")
         ldlags.append("-L\(prefix.lib.path)")
       }
-      
-      environment["CFLAGS"] = cflags.joined(separator: " ")
-      environment["CXXFLAGS"] = cflags.joined(separator: " ")
-      environment["LDLAGS"] = ldlags.joined(separator: " ")
 
-      environment["CC"] = env.cc
-      environment["CXX"] = env.cxx
+      cflags.append("-O2")
+      
+      environment[.cflags] = cflags.joined(separator: " ")
+      environment[.cxxflags] = cflags.joined(separator: " ")
+      environment[.ldflags] = ldlags.joined(separator: " ")
+
+      environment[.cc] = env.cc
+      environment[.cxx] = env.cxx
     }
 
     let env = newBuildEnvironment(
@@ -297,8 +337,8 @@ extension Builder {
     try env.mkdir(downloadCacheDirectory)
 
     let dependencyPrefix: PackagePath?
+    let usedVersion: PackageVersion = version ?? package.defaultVersion
     if joinDependency {
-      let usedVersion: PackageVersion = version ?? package.defaultVersion
       dependencyPrefix = formPrefix(package: package, version: usedVersion, suffix: "dependency")
       if env.fm.fileExistance(at: dependencyPrefix!.root).exists {
         print("Removing dependency directory")
@@ -308,7 +348,7 @@ extension Builder {
       dependencyPrefix = nil
     }
 
-    let summary = try buildPackageAndDependencies(package: package, buildSelf: false, prefix: dependencyPrefix)
+    let summary = try buildPackageAndDependencies(package: package, version: usedVersion, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
 
     let prefix = try build(package: package, version: version, isDependency: false, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
@@ -318,15 +358,17 @@ extension Builder {
   struct BuildSummary {
     let prefix: PackagePath?
     let dependencyMap: PackageDependencyMap
+    let level: Int
   }
 
   // return deps map
   private func buildPackageAndDependencies(
-    package: Package,
-    buildSelf: Bool, prefix: PackagePath?) throws -> BuildSummary {
-    let dependencies = package.dependencies(for: package.defaultVersion)
+    package: Package, version: PackageVersion,
+    buildSelf: Bool, prefix: PackagePath?, parentLevel: Int) throws -> BuildSummary {
 
-    print("Building \(package.name)")
+    logger.info("Building \(package.name)")
+    let currentLevel = parentLevel + 1
+    let dependencies = package.dependencies(for: version)
 
     var dependencyMap: PackageDependencyMap = .init()
 
@@ -335,23 +377,30 @@ extension Builder {
       print(dependencies)
     }
 
-    try dependencies.packages.forEach { depPackage in
-      let summary = try buildPackageAndDependencies(package: depPackage.package, buildSelf: true, prefix: prefix)
-      dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
-      dependencyMap.merge(summary.dependencyMap)
+    if currentLevel <= dependencyLevelLimit {
+      try dependencies.packages.forEach { depPackage in
+        let summary = try buildPackageAndDependencies(
+          package: depPackage.package,
+          // TODO: Optional specific dependency's version
+          version: depPackage.package.defaultVersion,
+          buildSelf: true, prefix: prefix, parentLevel: currentLevel)
+        dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
+        dependencyMap.merge(summary.dependencyMap)
+      }
+      dependencyMap.mergeBrewDependency(try parseBrewDeps(dependencies.brewFormulas))
+    } else {
+      logger.info("Dependency level limit reached, dependencies are ignored.")
     }
-
-    dependencyMap.mergeBrewDependency(try parseBrewDeps(dependencies.brewFormulas))
 
     let prefix = try buildSelf ? build(package: package, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
 
-    return .init(prefix: prefix, dependencyMap: dependencyMap)
+    return .init(prefix: prefix, dependencyMap: dependencyMap, level: currentLevel)
   }
 
   func newBuildEnvironment(
     version: PackageVersion, source: PackageSource,
     dependencyMap: PackageDependencyMap,
-    environment: [String : String],
+    environment: EnvironmentValues,
     prefix: PackagePath) -> BuildEnvironment {
     .init(
       version: version, source: source,

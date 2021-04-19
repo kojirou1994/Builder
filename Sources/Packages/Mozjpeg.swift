@@ -24,7 +24,12 @@ public struct Mozjpeg: Package {
           "jerror.h",
           "jmorecfg.h",
           "jpeglib.h",
-        ])
+        ]),
+      .library(
+        name: "libturbojpeg",
+        headers: [
+          "turbojpeg.h"
+        ]),
     ]
   }
 
@@ -32,20 +37,20 @@ public struct Mozjpeg: Package {
 
     switch env.target.arch {
     case .arm64:
-      env.environment["CFLAGS", default: ""].append(" -funwind-tables -Wall")
+      env.environment.append("-funwind-tables -Wall", for: .cflags)
     case .armv7:
-      env.environment["CFLAGS", default: ""].append(" -mfloat-abi=softfp -Wall")
+      env.environment.append("-mfloat-abi=softfp -Wall", for: .cflags)
     default: break
     }
 
-    try env.changingDirectory("build_dir") { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
         env.libraryType.staticCmakeFlag,
         env.libraryType.sharedCmakeFlag,
-        cmakeOnFlag(false, "PNG_SUPPORTED"),
-        cmakeOnFlag(false, "WITH_TURBOJPEG"),
+        cmakeOnFlag(true, "PNG_SUPPORTED"),
+        cmakeOnFlag(true, "WITH_TURBOJPEG"),
         nil
       )
 
@@ -54,7 +59,7 @@ public struct Mozjpeg: Package {
     }
   }
 
-  //  var dependencies: PackageDependency {
-  //    .packages(Png.defaultPackage)
-  //  }
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Png.self))
+  }
 }

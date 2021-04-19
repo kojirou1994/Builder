@@ -17,12 +17,26 @@ public struct PackageDependency {
   }
 
   public let package: Package
+  // after target package is built, this package will be removed / ignored, not showing in dep tree
+  public let buildTimeOnly: Bool = false
   public let version: Range<Version>?
 }
 
+public enum ToolChain {
+  case rust
+}
+/*
+ .otherPackage(bin: "cargo-cinstall", package: .cargo("cargo-c"))
+ */
 public struct PackageDependencies: CustomStringConvertible {
+  internal init(packages: [PackageDependency?], brewFormulas: [String]) {
+    self.packages = packages.compactMap { $0 }
+    self.brewFormulas = brewFormulas
+  }
+
   let packages: [PackageDependency]
   let brewFormulas: [String]
+  let toolschains: [ToolChain] = []
 
   public var isEmpty: Bool {
     packages.isEmpty && brewFormulas.isEmpty
@@ -36,11 +50,11 @@ public struct PackageDependencies: CustomStringConvertible {
     .init(packages: [], brewFormulas: formulas)
   }
 
-  public static func packages(_ packages: [PackageDependency]) -> Self {
+  public static func packages(_ packages: [PackageDependency?]) -> Self {
     .init(packages: packages, brewFormulas: [])
   }
 
-  public static func packages(_ packages: PackageDependency...) -> Self {
+  public static func packages(_ packages: PackageDependency?...) -> Self {
     .packages(packages)
   }
 

@@ -3,7 +3,7 @@ import BuildSystem
 public struct Icu4c: Package {
   public init() {}
   public var defaultVersion: PackageVersion {
-    .stable("68.2")
+    .stable("69.1")
   }
 
   public func stablePackageSource(for version: Version) -> PackageSource? {

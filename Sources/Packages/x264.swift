@@ -30,7 +30,7 @@ public struct x264: Package {
 //      configureEnableFlag(true, "lto"),
       configureEnableFlag(true, "strip"),
       configureEnableFlag(true, "pic"),
-      needGas ? "--extra-asflags=\(env.environment["CFLAGS", default: ""])" : nil,
+      needGas ? "--extra-asflags=\(env.environment[.cflags])" : nil,
 
       configureEnableFlag(false, "avs"),
       configureEnableFlag(libav, "swscale", defaultEnabled: true),
