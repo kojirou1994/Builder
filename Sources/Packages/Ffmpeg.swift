@@ -47,7 +47,7 @@ public struct Ffmpeg: Package {
   var autodetect: Bool = false
 
   private func configureOptions(env: BuildEnvironment) throws -> [String] {
-    var r = Set<String>()
+    var r = Set<String>(["--cc=\(env.cc)", "--cxx=\(env.cxx)"])
     var licenses = Set<FFmpegLicense>()
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
@@ -81,12 +81,10 @@ public struct Ffmpeg: Package {
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
-        #if os(macOS)
-        r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
-                                       "appkit", "avfoundation", "coreimage"))
-        #else
-        break
-        #endif
+        if env.target.system.isApple {
+          r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
+                                          "appkit", "avfoundation", "coreimage"))
+        }
       }
     }
 
