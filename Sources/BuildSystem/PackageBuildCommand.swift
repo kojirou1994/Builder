@@ -106,13 +106,9 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
     if info {
       print(package)
     } else {
-      #if canImport(Darwin)
-      let cc = ProcessInfo.processInfo.environment["CC"] ?? "clang"
-      let cxx = ProcessInfo.processInfo.environment["CXX"] ?? "clang++"
-      #else
-      let cc = ProcessInfo.processInfo.environment["CC"] ?? "gcc"
-      let cxx = ProcessInfo.processInfo.environment["CXX"] ?? "g++"
-      #endif
+      let cc = ProcessInfo.processInfo.environment["CC"] ?? BuildTargetSystem.native.cc
+      let cxx = ProcessInfo.processInfo.environment["CXX"] ?? BuildTargetSystem.native.cxx
+
       let builder = try Builder(
         builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
         cc: cc, cxx: cxx,

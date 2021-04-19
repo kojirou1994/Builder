@@ -214,13 +214,6 @@ extension Builder {
       }
     }
 
-    enum CommonEnvKey: String {
-      case pkgConfigPath = "PKG_CONFIG_PATH"
-      case path = "PATH"
-      case cflags = "CFLAGS"
-      case ldflags = "LDFLAGS"
-    }
-
     // MARK: Setup Build Environment
     var environment = env.environment
     do {

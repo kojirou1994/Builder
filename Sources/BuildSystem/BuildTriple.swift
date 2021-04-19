@@ -134,6 +134,31 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
+  /// recommended cc
+  var cc: String {
+    switch self {
+    case .macOS, .macCatalyst,
+         .tvOS, .tvSimulator,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator:
+      return "clang"
+    case .linuxGNU:
+      return "gcc"
+    }
+  }
+
+  var cxx: String {
+    switch self {
+    case .macOS, .macCatalyst,
+         .tvOS, .tvSimulator,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator:
+      return "clang++"
+    case .linuxGNU:
+      return "g++"
+    }
+  }
+
   var gnuTripleString: String {
     switch self {
     case .macOS, .macCatalyst:
