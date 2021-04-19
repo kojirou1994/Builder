@@ -100,7 +100,7 @@ public struct Ffmpeg: Package {
 
     r.insert("--extra-cflags=\(env.environment[.cflags])")
     r.insert("--extra-ldflags=\(env.environment[.ldflags])")
-
+    r.insert("--extra-libs=-ldl -lpthread -lm -lz")
     return r.sorted()
   }
 
