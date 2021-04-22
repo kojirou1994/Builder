@@ -13,7 +13,10 @@ public struct EnvironmentValues {
       values[key.string] ?? ""
     }
     set {
-      values[key.string] = newValue.isEmpty ? nil : newValue
+      values[key.string] = newValue
+    }
+    _modify {
+      yield &values[key.string, default: ""]
     }
   }
 

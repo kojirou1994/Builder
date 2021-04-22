@@ -10,7 +10,10 @@ public struct PackageDependencyMap {
       packageDependencies[key]
     }
     set {
-      #warning("check conflict")
+      if let existedPath = packageDependencies[key],
+         let newPath = newValue {
+        precondition(existedPath == newPath, "Conflicted!")
+      }
       packageDependencies[key] = newValue
     }
   }

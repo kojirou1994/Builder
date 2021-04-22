@@ -1,13 +1,23 @@
+import Foundation
+
 /*
  put encoded InstallSummary in prefix root path
  */
-public struct InstallSummary {
+public struct BuildSummary {
   public let target: BuildTriple
-  public let buildOn: BuildTriple = .native
-  public let time: Double
+  public let buildMachine: BuildTriple = .native
+  public let date: Date
+  /// built files
+  public let builtFiles: [String]
 }
 
-public enum InstallReason {
+public enum BuildReason {
   case user
   case dependency(package: String, buildTime: Bool)
+}
+
+public struct InstallSummary {
+  public let installContent: InstallContent
+  public let installedFiles: [String]
+  public let installMethod: InstallMethod
 }

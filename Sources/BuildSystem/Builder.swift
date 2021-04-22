@@ -23,18 +23,20 @@ public enum RebuildLevel: String, ExpressibleByArgument {
 }
 
 struct Builder {
-  init(builderDirectoryURL: URL,
+  init(workDirectoryURL: URL,
+       packagesDirectoryURL: URL,
        cc: String, cxx: String,
        libraryType: PackageLibraryBuildType,
        target: BuildTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
+       addLibInfoInPrefix: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
-    self.builderDirectoryURL = builderDirectoryURL
-    self.srcRootDirectoryURL = builderDirectoryURL.appendingPathComponent("working")
-    self.downloadCacheDirectory = builderDirectoryURL.appendingPathComponent("download")
+    self.builderDirectoryURL = workDirectoryURL
+    self.srcRootDirectoryURL = workDirectoryURL.appendingPathComponent("working")
+    self.downloadCacheDirectory = workDirectoryURL.appendingPathComponent("download")
     self.logger = Logger(label: "Builder")
-    self.productsDirectoryURL = builderDirectoryURL.appendingPathComponent("products")
+    self.productsDirectoryURL = packagesDirectoryURL
     self.cleanAll = cleanAll
     self.ignoreTag = ignoreTag
     self.joinDependency = joinDependency
@@ -44,6 +46,7 @@ struct Builder {
     } else {
       self.rebuildLevel = rebuildLevel
     }
+    self.addLibInfoInPrefix = addLibInfoInPrefix
 
     let sdkPath: String?
     if target.system.needSdkPath {
@@ -78,6 +81,8 @@ struct Builder {
   let ignoreTag: Bool
   let joinDependency: Bool
   let cleanAll: Bool
+  let prefixGenerator: PrefixGenerator? = nil
+  let addLibInfoInPrefix: Bool
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
@@ -148,34 +153,45 @@ struct Builder {
   }
 }
 
+typealias PrefixGenerator = (_ prefixRoot: URL, Package, PackageVersion, _ isJoinedDependency: Bool) -> URL
+
 extension Builder {
 
-  func formPrefix(package: Package, version: PackageVersion,
-                  suffix: String = "") -> PackagePath {
-    var prefix = env.prefix.root
+  private func formPrefix(package: Package, version: PackageVersion,
+                          isJoinedDependency: Bool = false) -> PackagePath {
+    let result: URL
+    if let generator = prefixGenerator {
+      result = generator(env.prefix.root, package, version, isJoinedDependency)
+    } else {
+      var prefix = env.prefix.root
 
-    // example root/curl/7.14-feature_hash/static-x86_64-macOS/
-    prefix.appendPathComponent(package.name.safeFilename())
+      // example root/curl/7.14-feature_hash/static-x86_64-macOS/
+      prefix.appendPathComponent(package.name.safeFilename())
 
-    var versionTag = version.description
-    var tag = package.tag
-    if !ignoreTag, !tag.isEmpty {
-      let tagHash = tag.withUTF8 { buffer in
-        SHA256.hash(data: buffer)
-          .hexString(uppercase: false, prefix: "")
+      var versionTag = version.description
+      var tag = package.tag
+      if !ignoreTag, !tag.isEmpty {
+        let tagHash = tag.withUTF8 { buffer in
+          SHA256.hash(data: buffer)
+            .hexString(uppercase: false, prefix: "")
+        }
+        versionTag.append("-")
+        versionTag.append(tagHash)
       }
-      versionTag.append("-")
-      versionTag.append(tagHash)
-    }
-    if !suffix.isEmpty {
-      versionTag.append("-")
-      versionTag.append(suffix)
-    }
-    prefix.appendPathComponent(versionTag.safeFilename())
+      if isJoinedDependency {
+        versionTag.append("-")
+        versionTag.append("dependency")
+      }
+      prefix.appendPathComponent(versionTag.safeFilename())
 
-    prefix.appendPathComponent("\(env.libraryType)-\(env.target.arch.rawValue)-\(env.target.system.rawValue)")
+      if addLibInfoInPrefix {
+        prefix.appendPathComponent("\(env.libraryType)-\(env.target.arch.rawValue)-\(env.target.system.rawValue)")
+      }
 
-    return .init(root: prefix)
+      result = prefix
+    }
+
+    return .init(root: result)
   }
 
   ///
@@ -220,13 +236,10 @@ extension Builder {
       let allPrefixes = Set(dependencyMap.allPrefixes)
 
       // PKG_CONFIG_PATH
-      environment[.pkgConfigPath] = allPrefixes.map(\.pkgConfig.path).joined(separator: ":")
+      environment[.pkgConfigPath] = allPrefixes.lazy.map(\.pkgConfig.path).joined(separator: ":")
 
       // PATH
-      var paths = allPrefixes.map(\.bin.path)
-      paths.append(contentsOf: environment[.path].split(separator: ":").map(String.init))
-
-      environment[.path] = paths.joined(separator: ":")
+      environment[.path] = (allPrefixes.map(\.bin.path) + environment[.path].split(separator: ":").map(String.init)).joined(separator: ":")
 
       // ARCH
       var cflags = environment[.cflags].split(separator: " ").map(String.init)
@@ -332,7 +345,7 @@ extension Builder {
     let dependencyPrefix: PackagePath?
     let usedVersion: PackageVersion = version ?? package.defaultVersion
     if joinDependency {
-      dependencyPrefix = formPrefix(package: package, version: usedVersion, suffix: "dependency")
+      dependencyPrefix = formPrefix(package: package, version: usedVersion, isJoinedDependency: true)
       if env.fm.fileExistance(at: dependencyPrefix!.root).exists {
         print("Removing dependency directory")
         try env.removeItem(at: dependencyPrefix!.root)

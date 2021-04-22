@@ -7,19 +7,29 @@ extension Version: ExpressibleByStringLiteral {
 }
 
 public struct PackageDependency {
-  public init(_ package: Package, version: Range<Version>? = nil) {
+  public init(_ package: Package, options: Options = .init()) {
     self.package = package
-    self.version = version
+    self.options = options
   }
-  public init<T: Package>(_ package: T.Type, version: Range<Version>? = nil) {
+  public init<T: Package>(_ package: T.Type, options: Options = .init()) {
     self.package = T.defaultPackage
-    self.version = version
+    self.options = options
   }
 
   public let package: Package
-  // after target package is built, this package will be removed / ignored, not showing in dep tree
-  public let buildTimeOnly: Bool = false
-  public let version: Range<Version>?
+  public let options: Options
+
+  public struct Options {
+    public init(buildTimeOnly: Bool = false, version: Range<Version>? = nil) {
+      self.buildTimeOnly = buildTimeOnly
+      self.version = version
+    }
+
+    // after target package is built, this package will be removed / ignored, not showing in dep tree
+    public let buildTimeOnly: Bool
+    public let version: Range<Version>?
+  }
+
 }
 
 public enum ToolChain {

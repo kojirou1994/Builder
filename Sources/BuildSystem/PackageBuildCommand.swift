@@ -105,20 +105,20 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
   @OptionGroup
   var package: T
 
+  @Flag(inversion: .prefixedEnableDisable, help: "Add library target/type info in prefix")
+  var prefixLibInfo: Bool = true
+
+  var target: BuildTriple {
+    .init(arch: arch, system: system)
+  }
+
   public mutating func run() throws {
     dump(builderOptions.packageVersion)
     if info {
       print(package)
     } else {
-      let cc = ProcessInfo.processInfo.environment["CC"] ?? BuildTargetSystem.native.cc
-      let cxx = ProcessInfo.processInfo.environment["CXX"] ?? BuildTargetSystem.native.cxx
-
-      let builder = try Builder(
-        builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
-        cc: cc, cxx: cxx,
-        libraryType: builderOptions.library, target: .init(arch: arch, system: system),
-        ignoreTag: builderOptions.ignoreTag, dependencyLevelLimit: builderOptions.dependencyLevel,
-        rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: deployTarget)
+      let builder = try Builder(options: builderOptions, target: target,
+                                addLibInfoInPrefix: prefixLibInfo, deployTarget: deployTarget)
 
       let installedPrefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
       builder.logger.info("Package is installed at: \(installedPrefix.root.path)")
@@ -134,17 +134,19 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
           installSources = [installedPrefix.include, installedPrefix.lib]
         case .all:
           installSources = try fm.contentsOfDirectory(at: installedPrefix.root)
+        case .pkgconfig:
+          installSources = [installedPrefix.pkgConfig]
         }
 
         let installDestPrefix = URL(fileURLWithPath: installOptions.installPrefix)
 
         installSources.forEach { installSource in
-          guard let enumerator = fm.enumerator(at: installSource, includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles]) else {
+          guard let enumerator = fm.enumerator(at: installSource, options: [.skipsHiddenFiles]) else {
             // show error
             return
           }
           for case let url as URL in enumerator {
-            if try! url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile! {
+            if fm.fileExistance(at: url) == .file {
               let relativePath = url.path.dropFirst(installedPrefix.root.path.count)
                 .drop(while: {"/" == $0 })
 
@@ -163,7 +165,8 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
                 print("\(relativePath) --> \(destURL.path)")
                 try! fm.createDirectory(at: destURL.deletingLastPathComponent())
                 do {
-                  if fm.fileExistance(at: destURL).exists, installOptions.forceInstall {
+                  if fm.isDeletableFile(at: destURL), installOptions.forceInstall {
+                    print("removing existed \(destURL.path)")
                     try fm.removeItem(at: destURL)
                   }
                   switch installOptions.installMethod {
@@ -209,6 +212,9 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   @Flag(help: "Auto pack xcframework, if package supports.")
   var autoPackXC: Bool = false
 
+  @Flag(help: "Keep temp files when packing xcframeworks.")
+  var keepTemp: Bool = false
+
   @Flag(name: [.short], inversion: .prefixedEnableDisable, help: "If enabled, program will create framework to pack xcframework.")
   var autoModulemap: Bool = true
 
@@ -224,12 +230,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
       }
       do {
         print("Building \(target)")
-        let builder = try Builder(
-          builderDirectoryURL: URL(fileURLWithPath: builderOptions.buildPath),
-          cc: "clang", cxx: "clang++",
-          libraryType: builderOptions.library, target: target,
-          ignoreTag: builderOptions.ignoreTag, dependencyLevelLimit: builderOptions.dependencyLevel,
-          rebuildLevel: builderOptions.rebuildLevel, joinDependency: builderOptions.joinDependency, cleanAll: builderOptions.clean, enableBitcode: builderOptions.enableBitcode, deployTarget: nil)
+        let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)
 
         let prefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
 
@@ -250,12 +251,12 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
 
     let fm = URLFileManager.default
 
-    func packXCFramework(libraryName: String, headers: [String]?) throws {
+    func packXCFramework(libraryName: String, headers: [String]?, isStatic: Bool) throws {
       print("Packing xcframework from \(libraryName)...")
 
-      #warning("maybe other library format")
-      let libraryFilename = libraryName + ".a"
-      let output = "\(libraryName).xcframework"
+      let ext = isStatic ? "a" : "dylib"
+      let libraryFilename = libraryName + "." + ext
+      let output = "\(libraryName)_\(isStatic ? "static" : "dynamic").xcframework"
 
       if case let outputURL = URL(fileURLWithPath: output),
          fm.fileExistance(at: outputURL).exists {
@@ -358,6 +359,13 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         .launch(use: TSCExecutableLauncher(outputRedirection: .none))
     }
 
+    func packXCFramework(libraryName: String, headers: [String]?) throws {
+      try packXCFramework(libraryName: libraryName, headers: headers, isStatic: builderOptions.library.buildStatic)
+      if builderOptions.library == .all {
+        try packXCFramework(libraryName: libraryName, headers: headers, isStatic: false)
+      }
+    }
+
     if let libraryName = packXc {
       try packXCFramework(libraryName: libraryName, headers: nil)
     }
@@ -412,7 +420,10 @@ struct BuilderOptions: ParsableArguments {
   var rebuildLevel: RebuildLevel?
 
   @Option(help: "Specify build/cache directory")
-  var buildPath: String = "./builder"
+  var workPath: String = "./BuildSystemWorks"
+
+  @Option(help: "Specify package storage directory")
+  var packagePath: String = "./Packages"
 
   @Flag(help: "Enable bitcode.")
   var enableBitcode: Bool = false
@@ -433,12 +444,29 @@ struct BuilderOptions: ParsableArguments {
   }
 }
 
+extension Builder {
+  init(options: BuilderOptions, target: BuildTriple, addLibInfoInPrefix: Bool, deployTarget: String?) throws {
+    let cc = ProcessInfo.processInfo.environment["CC"] ?? BuildTargetSystem.native.cc
+    let cxx = ProcessInfo.processInfo.environment["CXX"] ?? BuildTargetSystem.native.cxx
+
+    try self.init(
+      workDirectoryURL: URL(fileURLWithPath: options.workPath),
+      packagesDirectoryURL: URL(fileURLWithPath: options.packagePath),
+      cc: cc, cxx: cxx,
+      libraryType: options.library, target: target,
+      ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
+      rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
+      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, enableBitcode: options.enableBitcode, deployTarget: deployTarget)
+  }
+}
+
 import ArgumentParser
 
 public enum InstallContent: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
   case all
   case bin
   case lib
+  case pkgconfig
 
   public var description: String { rawValue }
 }
