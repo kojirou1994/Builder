@@ -15,7 +15,7 @@ public struct Ninja: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build") { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .make, 
         ".."
@@ -26,6 +26,10 @@ public struct Ninja: Package {
 
       try env.make("install")
     }
+  }
+
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(.init(Cmake.self))
   }
 
 }

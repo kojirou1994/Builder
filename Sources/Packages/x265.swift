@@ -116,4 +116,12 @@ public struct x265: Package {
   public var tag: String {
     cli ? "ENABLE_CLI" : ""
   }
+
+  public func dependencies(for version: PackageVersion) -> PackageDependencies {
+    .packages(
+      .init(Cmake.self, options: .init(buildTimeOnly: true)),
+      .init(Ninja.self, options: .init(buildTimeOnly: true)),
+      .init(Nasm.self, options: .init(buildTimeOnly: true))
+      )
+  }
 }
