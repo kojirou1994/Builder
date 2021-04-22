@@ -4,6 +4,7 @@ import URLFileManager
 import BuildSystem
 import Packages
 
+@main
 struct BuildCli: ParsableCommand {
   static var configuration: CommandConfiguration {
     .init(subcommands: [
@@ -14,5 +15,3 @@ struct BuildCli: ParsableCommand {
     ])
   }
 }
-
-BuildCli.main()

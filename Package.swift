@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 
 import PackageDescription
 
@@ -43,12 +43,12 @@ let package = Package(
       dependencies: [
         .target(name: "BuildSystem"),
       ]),
-    .target(
+    .executableTarget(
       name: "build-cli",
       dependencies: [
         .target(name: "Packages"),
       ]),
-    .target(
+    .executableTarget(
       name: "generate-code",
       dependencies: [
         .product(name: "URLFileManager", package: "URLFileManager"),
