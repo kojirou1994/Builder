@@ -13,6 +13,8 @@ public struct PackagePatch {
 public struct PackageSource: CustomStringConvertible {
   public let url: String
   let requirement: Requirement
+  let mirrors: [String]
+
   enum Requirement {
     // url is git repo
     case repository(RepositoryRequirement)
@@ -38,14 +40,16 @@ public struct PackageSource: CustomStringConvertible {
   public var patches: [PackagePatch]
 
   public static func repository(url: String, requirement: RepositoryRequirement,
-                                patches: [PackagePatch] = []) -> Self {
-    .init(url: url, requirement: .repository(requirement), patches: patches)
+                                patches: [PackagePatch] = [],
+                                mirrors: [String] = []) -> Self {
+    .init(url: url, requirement: .repository(requirement), patches: patches, mirrors: mirrors)
   }
 
   public static func tarball(url: String,
                              sha256: String? = nil,
-                             patches: [PackagePatch] = []) -> Self {
-    .init(url: url, requirement: .tarball(sha256: sha256), patches: patches)
+                             patches: [PackagePatch] = [],
+                             mirrors: [String] = []) -> Self {
+    .init(url: url, requirement: .tarball(sha256: sha256), patches: patches, mirrors: mirrors)
   }
 
   public var description: String {
