@@ -52,6 +52,7 @@ let package = Package(
       name: "generate-code",
       dependencies: [
         .product(name: "URLFileManager", package: "URLFileManager"),
+        .product(name: "Precondition", package: "Kwift"),
       ]),
     .testTarget(
       name: "BuilderSystemTests",

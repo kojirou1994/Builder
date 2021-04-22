@@ -1,5 +1,6 @@
 import Foundation
 import URLFileManager
+import Precondition
 
 func ident(_ count: Int) -> String {
   .init(repeating: " " as Character, count: count * 2)
@@ -55,7 +56,7 @@ let fm = URLFileManager.default
 
 let packageNames = try fm
   .enumerator(at: packageDirectory, options: [.skipsHiddenFiles], errorHandler: nil)
-  .unsafelyUnwrapped
+  .unwrap()
   .compactMap { $0 as? URL }
   .map { $0.lastPathComponent}
   .filter { $0.hasSuffix(".swift") }
