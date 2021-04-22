@@ -300,6 +300,7 @@ extension Builder {
 
     let tmpWorkDirURL = srcRootDirectoryURL.appendingPathComponent(package.name + UUID().uuidString)
 
+    try env.fm.createDirectory(at: usedPrefix.root)
     do {
       // Start building
       try env.changingDirectory(tmpWorkDirURL) { _ in
