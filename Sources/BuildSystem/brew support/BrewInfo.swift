@@ -36,7 +36,7 @@ public struct BrewInfo: Codable {
       }
     }
     public let kegOnly: Bool
-    public let license: String
+    public let license: String?
 
     public let name: String
 //    public let oldname: String
@@ -48,7 +48,7 @@ public struct BrewInfo: Codable {
     public let requirements: [String]
     public let revision: Int
 
-    public let usesFromMacos: [String]
+//    public let usesFromMacos: [String]
 
     private enum CodingKeys: String, CodingKey {
 //      case aliases
@@ -72,7 +72,7 @@ public struct BrewInfo: Codable {
       case requirements
       case revision
 
-      case usesFromMacos = "uses_from_macos"
+//      case usesFromMacos = "uses_from_macos"
     }
   }
   private enum CodingKeys: String, CodingKey {

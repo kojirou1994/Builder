@@ -1,23 +1,19 @@
 import Foundation
 
-public struct PackagePatch {
-  public init(url: String, sha256: String) {
-    self.url = url
-    self.sha256 = sha256
-  }
-
-  public let url: String
-  public let sha256: String
+public enum PackagePatch {
+  case remote(url: String, sha256: String)
+  case raw(String)
 }
 
 public struct PackageSource: CustomStringConvertible {
   public let url: String
   let requirement: Requirement
+  public let patches: [PackagePatch]
   let mirrors: [String]
 
   enum Requirement {
     // url is git repo
-    case repository(RepositoryRequirement)
+    case repository(RepositoryRequirement?)
 
     // url is download link
     case tarball(sha256: String?)
@@ -37,9 +33,8 @@ public struct PackageSource: CustomStringConvertible {
     case revision(String)
     case branch(String)
   }
-  public var patches: [PackagePatch]
 
-  public static func repository(url: String, requirement: RepositoryRequirement,
+  public static func repository(url: String, requirement: RepositoryRequirement? = nil,
                                 patches: [PackagePatch] = [],
                                 mirrors: [String] = []) -> Self {
     .init(url: url, requirement: .repository(requirement), patches: patches, mirrors: mirrors)

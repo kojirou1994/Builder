@@ -1,17 +1,33 @@
 import BuildSystem
 
 public struct JpegXL: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("0.3.6")
+    "0.3.6"
   }
 
-  public var headPackageSource: PackageSource? {
-    .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("master"))
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("master"))
+    case .stable(let version):
+      source = .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("v\(version.toString())"))
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("v\(version.toString())"))
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true)),
+        .init(Mozjpeg.self),
+        .init(Ilmbase.self),
+        .init(Openexr.self),
+        .init(Giflib.self)
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -34,14 +50,5 @@ public struct JpegXL: Package {
     })
 
     try env.autoRemoveUnneedLibraryFiles()
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(
-      .init(Mozjpeg.self),
-      .init(Ilmbase.self),
-      .init(Openexr.self),
-      .init(Giflib.self)
-    )
   }
 }

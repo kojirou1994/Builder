@@ -1,22 +1,31 @@
 import BuildSystem
 
 public struct Vpx: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.10.0")
+    "1.10.0"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/webmproject/libvpx/archive/refs/tags/v\(version.toString()).tar.gz")
+    return .init(
+      source: source,
+      supportedLibraryType: .static
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
 
-    try env.changingDirectory("mac_build", block: { _ in
+    try env.changingDirectory(env.randomFilename, block: { _ in
       try env.launch(
         path: "../configure",
         "--prefix=\(env.prefix.root.path)",
@@ -27,6 +36,8 @@ public struct Vpx: Package {
         configureEnableFlag(true, "pic"),
         configureEnableFlag(true, "vp9-highbitdepth")
       )
+
+      try env.make()
 
       try env.make("install")
     })

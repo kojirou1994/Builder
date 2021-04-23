@@ -1,16 +1,42 @@
 import BuildSystem
 
 public struct Flac: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.3.3")
+    "1.3.3"
   }
 
-  public var products: [BuildProduct] {
-    [
-      .library(name: "libFLAC", headers: ["FLAC"])
-    ]
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      var versionString = version.toString(includeZeroPatch: false)
+      if version < "1.0.3" {
+        versionString += "-src"
+      }
+      let suffix: String
+      if version < "1.3.0" {
+        suffix = "gz"
+      } else {
+        suffix = "xz"
+      }
+      source = .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
+    }
+
+    return .init(
+      source: source,
+      dependencies:
+        .init(packages: [ogg ? .init(Ogg.self) : nil], otherPackages: [.brewAutoConf]),
+      products: [
+        .library(name: "libFLAC", headers: ["FLAC"])
+      ]
+    )
   }
+
   public func build(with env: BuildEnvironment) throws {
     /*
      add -mfpu=neon to cflags and ldflags on arm
@@ -33,20 +59,6 @@ public struct Flac: Package {
     try env.make("install")
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    var versionString = version.toString(includeZeroPatch: false)
-    if version < "1.0.3" {
-      versionString += "-src"
-    }
-    let suffix: String
-    if version < "1.3.0" {
-      suffix = "gz"
-    } else {
-      suffix = "xz"
-    }
-    return .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
-  }
-
   @Flag
   var cpplibs: Bool = false
 
@@ -55,14 +67,6 @@ public struct Flac: Package {
   /*
    --enable-64-bit-words
    */
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    if ogg {
-      return .packages(.init(Ogg.self))
-    } else {
-      return .empty
-    }
-  }
 
   public var tag: String {
     var str = ""

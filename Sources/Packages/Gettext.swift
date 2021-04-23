@@ -1,28 +1,20 @@
 import BuildSystem
 
-public struct Zvbi: Package {
+public struct Gettext: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.2.35"
+    .stable("0.21")
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-
-    switch order.target.system {
-    case .macOS, .linuxGNU:
-      break
-    default: throw PackageRecipeError.unsupportedTarget
-    }
-
     let source: PackageSource
     switch order.version {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      let versionString = version.toString()
-      source = .tarball(url: "https://nchc.dl.sourceforge.net/project/zapping/zvbi/\(versionString)/zvbi-\(versionString).tar.bz2")
+      source = .tarball(url: "https://ftp.gnu.org/gnu/gettext/gettext-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
     return .init(
@@ -31,19 +23,28 @@ public struct Zvbi: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-
-    try env.autoreconf()
-
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      nil
+      "--with-included-glib",
+      "--with-included-libcroco",
+      "--with-included-libunistring",
+      "--with-included-libxml",
+      "--with-emacs",
+//      "--with-lispdir=#{elisp}",
+      "--disable-java",
+      "--disable-csharp",
+//      # Don't use VCS systems to create these archives
+      "--without-git",
+      "--without-cvs",
+      "--without-xz",
+      "--with-included-gettext"
     )
 
     try env.make()
 
-    try env.make("install")
+    try env.make(parallelJobs: 1, "install")
   }
 
 }

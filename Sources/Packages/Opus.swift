@@ -1,26 +1,32 @@
 import BuildSystem
 
 public struct Opus: Package {
+
   public init() {}
 
-  public static var name: String { "opus" }
-
   public var defaultVersion: PackageVersion {
-    .stable("1.3.1")
+    "1.3.1"
   }
 
-  public var products: [BuildProduct] {
-    [BuildProduct.library(name: "libopus", headers: ["opus"])]
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    let includeZeroPatch: Bool
-    if version < "1.1" {
-      includeZeroPatch = true
-    } else {
-      includeZeroPatch = false
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      let includeZeroPatch: Bool
+      if version < "1.1" {
+        includeZeroPatch = true
+      } else {
+        includeZeroPatch = false
+      }
+      source = .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-\(version.toString(includeZeroPatch: includeZeroPatch)).tar.gz")
     }
-    return .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-\(version.toString(includeZeroPatch: includeZeroPatch)).tar.gz")
+
+    return .init(
+      source: source,
+      products: [.library(name: "libopus", headers: ["opus"])]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

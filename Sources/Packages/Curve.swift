@@ -1,18 +1,28 @@
 import BuildSystem
 
 public struct Curve: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("3")
+    "3"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Curve/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Curve/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Curve/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-Curve/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

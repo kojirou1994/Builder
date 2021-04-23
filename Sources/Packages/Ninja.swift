@@ -1,17 +1,27 @@
 import BuildSystem
 
 public struct Ninja: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
     .stable("1.10.2")
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/tags/v\(version.toString()).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .packages(.init(Cmake.self, options: .init(buildTimeOnly: true))),
+      supportedLibraryType: nil
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -26,10 +36,6 @@ public struct Ninja: Package {
 
       try env.make("install")
     }
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Cmake.self))
   }
 
 }

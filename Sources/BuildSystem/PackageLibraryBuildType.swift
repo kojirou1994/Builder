@@ -1,5 +1,5 @@
 public enum PackageLibraryBuildType: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
-  case statik = "static"
+  case `static`
   case shared
   case all
 
@@ -19,7 +19,7 @@ public enum PackageLibraryBuildType: String, ExpressibleByArgument, CaseIterable
   }
 
   public var buildShared: Bool {
-    self != .statik
+    self != .static
   }
 
   public var staticConfigureFlag: String {

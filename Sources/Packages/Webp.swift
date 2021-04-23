@@ -1,31 +1,37 @@
 import BuildSystem
 
 public struct Webp: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.2.0")
+    "1.2.0"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/webmproject/libwebp/archive/refs/tags/v\(version.toString()).tar.gz")
-  }
-
-  public var products: [BuildProduct] {
-    [
-      .bin("cwebp"),
-      .bin("dwebp"),
-      .bin("img2webp"),
-      .bin("webpinfo"),
-      .bin("webpmux"),
-      .library(name: "libwebp", headers: ["webp/decode.h", "webp/encode.h", "webp/types.h"]),
-      .library(name: "libwebpdecoder", headers: ["webp/decode.h", "webp/types.h"]),
-      .library(name: "libwebpdemux", headers: ["webp/decode.h", "webp/demux.h", "webp/mux_types.h", "webp/types.h"]),
-      .library(name: "libwebpmux", headers: ["webp/mux_types.h", "webp/mux.h", "webp/types.h"]),
-    ]
+    return .init(
+      source: source,
+      products:
+        [
+          .bin("cwebp"),
+          .bin("dwebp"),
+          .bin("img2webp"),
+          .bin("webpinfo"),
+          .bin("webpmux"),
+          .library(name: "libwebp", headers: ["webp/decode.h", "webp/encode.h", "webp/types.h"]),
+          .library(name: "libwebpdecoder", headers: ["webp/decode.h", "webp/types.h"]),
+          .library(name: "libwebpdemux", headers: ["webp/decode.h", "webp/demux.h", "webp/mux_types.h", "webp/types.h"]),
+          .library(name: "libwebpmux", headers: ["webp/mux_types.h", "webp/mux.h", "webp/types.h"]),
+        ]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

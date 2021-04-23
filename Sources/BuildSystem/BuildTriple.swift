@@ -106,6 +106,10 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
+  public func libraryExtension(shared: Bool) -> String {
+    shared ? sharedLibraryExtension : "a"
+  }
+
   public var sharedLibraryExtension: String {
     switch self {
     case .macOS, .macCatalyst,

@@ -1,14 +1,29 @@
 import BuildSystem
 
 public struct NeoGradientMask: Package {
+
   public init() {}
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/HomeOfAviSynthPlusEvolution/neo_Gradient_Mask/archive/refs/heads/master.zip")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/HomeOfAviSynthPlusEvolution/neo_Gradient_Mask/archive/refs/heads/master.zip")
+    case .stable:
+      throw PackageRecipeError.unsupportedVersion
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build", block: { _ in
+    try env.changingDirectory(env.randomFilename, block: { _ in
       try env.cmake(toolType: .ninja, "..")
 
       try env.make(toolType: .ninja)

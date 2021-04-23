@@ -1,14 +1,27 @@
 import BuildSystem
 
 public struct Vorbis: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("1.3.7")
+    "1.3.7"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    return .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-\(version.toString()).tar.xz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-\(version.toString()).tar.xz")
+    }
+
+    return .init(
+      source: source,
+      dependencies:
+        .init(packages: [.init(Ogg.self)], otherPackages: [.brewAutoConf])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -26,10 +39,6 @@ public struct Vorbis: Package {
       "--with-ogg-includes=\(env.dependencyMap[Ogg.self].include.path)"
     )
     try env.make("install")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Ogg.self))
   }
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the examples.")

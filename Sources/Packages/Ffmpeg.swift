@@ -16,19 +16,29 @@ public struct Ffmpeg: Package {
     .stable("4.4")
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2")
+    case .stable(let version):
+      source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
+    }
+
+    return .init(source: source)
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
-  }
+  public func encode(to encoder: Encoder) throws {
+    enum Keys: String, CodingKey {
+      case preset, dependencyOptions, disabledComponents, autodetect
+    }
 
-  public var buildInfo: String {
-    """
-    Autodetect: \(autodetect)
-    DisabledCompoennts: \(disabledComponents)
-    """
+    var container = encoder.container(keyedBy: Keys.self)
+    try container.encode(autodetect, forKey: .autodetect)
+    try container.encode(dependencyOptions, forKey: .dependencyOptions)
+    try container.encode(preset, forKey: .preset)
+    try container.encodeIfPresent(disabledComponents, forKey: .disabledComponents)
+
   }
 
   @Option
@@ -39,9 +49,6 @@ public struct Ffmpeg: Package {
 
   @Flag
   var dependencyOptions: [FFmpegDependeny] = []
-
-//  @Flag
-//  var licenseOptions: [FFmpegLicense] = []
 
   @Flag
   var disabledComponents: [DisableComponents] = []
@@ -58,7 +65,7 @@ public struct Ffmpeg: Package {
     extraVersion.map { _ = r.insert("--extra-version=\($0)") }
 
     // static/shared library
-    if env.libraryType == .statik {
+    if env.libraryType == .static {
       r.insert("--pkg-config-flags=--static")
     }
     r.formUnion([env.libraryType.staticConfigureFlag,
@@ -174,7 +181,7 @@ public struct Ffmpeg: Package {
     }
   }
 
-  enum Preset: String, ExpressibleByArgument, CustomStringConvertible {
+  enum Preset: String, ExpressibleByArgument, CustomStringConvertible, Encodable {
     case allYeah
 //    case minimalDecoder
 
@@ -191,7 +198,7 @@ public struct Ffmpeg: Package {
 }
 
 extension Ffmpeg {
-  enum DisableComponents: String, EnumerableFlag, CustomStringConvertible {
+  enum DisableComponents: String, EnumerableFlag, CustomStringConvertible, Encodable {
     // Individual component options
     case encoders
     case decoders
@@ -264,7 +271,7 @@ extension Ffmpeg {
     }
   }
 
-  enum FFmpegDependeny: String, EnumerableFlag, CustomStringConvertible {
+  enum FFmpegDependeny: String, EnumerableFlag, CustomStringConvertible, Encodable {
     case libopus
     case libfdkaac = "libfdk-aac"
     case libvorbis

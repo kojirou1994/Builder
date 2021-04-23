@@ -1,27 +1,40 @@
 import BuildSystem
 
 public struct Matroska: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.6.3")
+    "1.6.3"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    let ext: String
-    if version >= "1.4.8" {
-      ext = "xz"
-    } else if version >= "0.7.0" {
-      ext = "bz2"
-    } else {
-      // older version not important
-      ext = "gz"
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      let ext: String
+      if version >= "1.4.8" {
+        ext = "xz"
+      } else if version >= "0.7.0" {
+        ext = "bz2"
+      } else {
+        // older version not important
+        ext = "gz"
+      }
+      source = .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-\(version.toString()).tar.\(ext)")
     }
-    return .tarball(url: "https://dl.matroska.org/downloads/libmatroska/libmatroska-\(version.toString()).tar.\(ext)")
+
+    return .init(
+      source: source,
+      dependencies: .packages(.init(Ebml.self))
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
     if env.libraryType.buildStatic {
-      try env.changingDirectory("build_static", block: { _ in
+      try env.changingDirectory(env.randomFilename, block: { _ in
         try env.cmake(
           toolType: .ninja,
           ".."
@@ -33,7 +46,7 @@ public struct Matroska: Package {
     }
 
     if env.libraryType.buildShared {
-      try env.changingDirectory("build_shared", block: { _ in
+      try env.changingDirectory(env.randomFilename, block: { _ in
         try env.cmake(
           toolType: .ninja,
           "..",
@@ -44,10 +57,6 @@ public struct Matroska: Package {
         try env.make(toolType: .ninja, "install")
       })
     }
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Ebml.self))
   }
 
 }

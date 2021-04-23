@@ -7,8 +7,16 @@ public struct Aom: Package {
     .stable("3.0.0")
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .repository(url: "https://aomedia.googlesource.com/aom", requirement: .tag("v\(version.toString())"))
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .repository(url: "https://aomedia.googlesource.com/aom")
+    case .stable(let version):
+      source = .repository(url: "https://aomedia.googlesource.com/aom", requirement: .tag("v\(version.toString())"))
+    }
+
+    return .init(source: source)
   }
 
   public func build(with env: BuildEnvironment) throws {

@@ -1,12 +1,40 @@
 import BuildSystem
 
 public struct Fish: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("3.2.2")
+    "3.2.2"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/fish-shell/fish-shell/releases/download/\(version.toString())/fish-\(version.toString()).tar.xz")
+    }
+
+    return .init(
+      source: source,
+      dependencies:
+        .packages(
+          .init(Cmake.self, options: .init(buildTimeOnly: true)),
+          .init(Pcre2.self),
+          .init(Ninja.self, options: .init(buildTimeOnly: true)),
+          .init(Gettext.self)
+        ),
+      supportedLibraryType: nil
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    env.environment.append("-lintl -liconv", for: .ldflags)
+    if env.target.system.isApple {
+      env.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
+    }
     try env.changingDirectory(env.randomFilename, block: { _ in
       try env.cmake(
         toolType: .ninja,
@@ -19,15 +47,4 @@ public struct Fish: Package {
     })
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/fish-shell/fish-shell/releases/download/\(version.toString())/fish-\(version.toString()).tar.xz")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(
-      .init(Cmake.self, options: .init(buildTimeOnly: true)),
-      .init(Pcre2.self),
-      .init(Ninja.self)
-    )
-  }
 }

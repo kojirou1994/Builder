@@ -1,14 +1,27 @@
 import BuildSystem
 
 public struct Opencore: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("0.1.5")
+    "0.1.5"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://deac-riga.dl.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-\(version).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://deac-riga.dl.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-\(version).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies:
+        .init(otherPackages: [.brewAutoConf])
+    )
   }
   
   public func build(with env: BuildEnvironment) throws {

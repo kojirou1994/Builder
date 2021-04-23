@@ -11,9 +11,14 @@ public struct BuildSummary {
   public let builtFiles: [String]
 }
 
+public enum DependencyTime {
+  case runTime
+  case buildTime
+}
+
 public enum BuildReason {
   case user
-  case dependency(package: String, buildTime: Bool)
+  case dependency(package: String, time: DependencyTime)
 }
 
 public struct InstallSummary {

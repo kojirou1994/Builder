@@ -1,24 +1,43 @@
 import BuildSystem
 
-enum OpensslError: Error {
-  case unsupportedTarget(BuildTriple)
-}
-
 public struct Openssl: Package {
   public init() {}
   public var defaultVersion: PackageVersion {
     .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["i"]))
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    var versionString = version.toString(includeZeroMinor: true, includeZeroPatch: true, includePrerelease: false, includeBuildMetadata: false)
-    if !version.prereleaseIdentifiers.isEmpty {
-      versionString += "-"
-      versionString += version.prereleaseIdentifiers.joined(separator: ".")
-    } else if !version.buildMetadataIdentifiers.isEmpty {
-      versionString += version.buildMetadataIdentifiers.joined(separator: ".")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
+    switch order.target.system {
+    case .macOS, .linuxGNU:
+      switch order.target.arch {
+      case .arm64, .x86_64:
+        break
+      default:
+        throw PackageRecipeError.unsupportedTarget
+      }
+    default:
+      throw PackageRecipeError.unsupportedTarget
     }
-    return .tarball(url: "https://www.openssl.org/source/openssl-\(versionString).tar.gz")
+
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      var versionString = version.toString(includeZeroMinor: true, includeZeroPatch: true, includePrerelease: false, includeBuildMetadata: false)
+      if !version.prereleaseIdentifiers.isEmpty {
+        versionString += "-"
+        versionString += version.prereleaseIdentifiers.joined(separator: ".")
+      } else if !version.buildMetadataIdentifiers.isEmpty {
+        versionString += version.buildMetadataIdentifiers.joined(separator: ".")
+      }
+      source = .tarball(url: "https://www.openssl.org/source/openssl-\(versionString).tar.gz")
+    }
+
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -26,25 +45,12 @@ public struct Openssl: Package {
     let os: String
     switch env.target.system {
     case .macOS:
-      switch env.target.arch {
-      case .arm64:
-        os = "darwin64-arm64-cc"
-      case .x86_64:
-        os = "darwin64-x86_64-cc"
-      default:
-        throw OpensslError.unsupportedTarget(env.target)
-      }
+      os = "darwin64-\(env.target.arch.clangTripleString)-cc"
     case .linuxGNU:
-      switch env.target.arch {
-      case .arm64:
-        os = "linux-aarch64"
-      case .x86_64:
-        os = "linux-x86_64" //"linux-x86_64-clang"
-      default:
-        throw OpensslError.unsupportedTarget(env.target)
-      }
+      //"linux-x86_64-clang"
+      os = "linux-\(env.target.arch.gnuTripleString)"
     default:
-      throw OpensslError.unsupportedTarget(env.target)
+      os = env.target.clangTripleString
     }
 
     try env.launch(
@@ -60,7 +66,7 @@ public struct Openssl: Package {
     if env.safeMode {
       try env.launch("make", "test")
     }
-    try env.make("install")
+    try env.make(parallelJobs: 1, "install")
   }
 
 }

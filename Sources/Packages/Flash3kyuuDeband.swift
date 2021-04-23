@@ -3,16 +3,18 @@ import BuildSystem
 public struct Flash3kyuuDeband: Package {
   public init() {}
 
-//  public var defaultVersion: PackageVersion {
-//    .stable("2.0.0")
-//  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/SAPikachu/flash3kyuu_deband/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/SAPikachu/flash3kyuu_deband/archive/refs/tags/\(version.toString()).tar.gz")
+    }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/SAPikachu/flash3kyuu_deband/archive/refs/heads/master.zip")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/SAPikachu/flash3kyuu_deband/archive/refs/tags/\(version.toString()).tar.gz")
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

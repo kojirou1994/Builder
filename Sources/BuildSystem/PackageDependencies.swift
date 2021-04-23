@@ -20,62 +20,90 @@ public struct PackageDependency {
   public let options: Options
 
   public struct Options {
-    public init(buildTimeOnly: Bool = false, version: Range<Version>? = nil) {
-      self.buildTimeOnly = buildTimeOnly
+    public init(buildTimeOnly: Bool = false,
+                target: BuildTriple? = nil,
+                version: Range<Version>? = nil) {
+      self.time = buildTimeOnly ? .buildTime : .runTime
+      self.target = target
       self.version = version
     }
 
     // after target package is built, this package will be removed / ignored, not showing in dep tree
-    public let buildTimeOnly: Bool
+    public let time: DependencyTime
+    /// override the default build target, useful for building tools
+    public let target: BuildTriple?
     public let version: Range<Version>?
   }
 
 }
 
-public enum ToolChain {
-  case rust
+internal enum OtherPackageManager {
+  case cargo
+  case brew
+  case pip
+}
+
+public struct OtherPackages {
+
+  internal let manager: OtherPackageManager
+  internal let names: [String]
+
+  public static var brewAutoConf: Self {
+    .brew(["autoconf", "automake"])
+  }
+
+  public static func brew(_ names: [String]) -> Self {
+    .init(manager: .brew, names: names)
+  }
+
+  public static func pip(_ names: [String]) -> Self {
+    .init(manager: .pip, names: names)
+  }
+
+  public static func cargo(_ names: [String]) -> Self {
+    .init(manager: .cargo, names: names)
+  }
 }
 /*
  .otherPackage(bin: "cargo-cinstall", package: .cargo("cargo-c"))
  */
 public struct PackageDependencies: CustomStringConvertible {
-  internal init(packages: [PackageDependency?], brewFormulas: [String]) {
+  public init(packages: [PackageDependency?] = [], otherPackages: [OtherPackages] = []) {
     self.packages = packages.compactMap { $0 }
-    self.brewFormulas = brewFormulas
+    self.otherPackages = otherPackages
   }
 
   let packages: [PackageDependency]
-  let brewFormulas: [String]
-  let toolschains: [ToolChain] = []
+  let otherPackages: [OtherPackages]
 
   public var isEmpty: Bool {
-    packages.isEmpty && brewFormulas.isEmpty
+    packages.isEmpty && otherPackages.isEmpty
   }
 
   public static var empty: Self {
-    .init(packages: [], brewFormulas: [])
+    .init(packages: [], otherPackages: [])
   }
 
   public static func brew(_ formulas: [String]) -> Self {
-    .init(packages: [], brewFormulas: formulas)
+    .init(packages: [], otherPackages: [.init(manager: .brew, names: formulas)])
   }
 
   public static func packages(_ packages: [PackageDependency?]) -> Self {
-    .init(packages: packages, brewFormulas: [])
+    .init(packages: packages, otherPackages: [])
   }
 
   public static func packages(_ packages: PackageDependency?...) -> Self {
     .packages(packages)
   }
 
-  public static func blend(packages: [PackageDependency], brewFormulas: [String]) -> Self {
-    .init(packages: packages, brewFormulas: brewFormulas)
+  public static func blend(packages: [PackageDependency?], brewFormulas: [String?]) -> Self {
+    .init(packages: packages, otherPackages: [.init(manager: .brew, names: brewFormulas.compactMap {$0})])
   }
 
   public var description: String {
     """
      - packages: \(packages.map(\.package.name).sorted().joined(separator: ", "))
-     - brew formulas: \(brewFormulas.sorted().joined(separator: ", "))
+     - others: \(otherPackages)
     """
   }
 }

@@ -1,9 +1,25 @@
 import BuildSystem
 
 public struct Xz: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("5.2.5")
+    "5.2.5"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -18,7 +34,4 @@ public struct Xz: Package {
     try env.make("install")
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
-  }
 }

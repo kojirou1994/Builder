@@ -1,7 +1,28 @@
 import BuildSystem
 
 public struct Lame: Package {
+
   public init() {}
+
+  public var defaultVersion: PackageVersion {
+    "3.100"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      let versionString = version.toString(includeZeroPatch: false)
+      source = .tarball(url: "https://nchc.dl.sourceforge.net/project/lame/lame/\(versionString)/lame-\(versionString).tar.gz")
+    }
+
+    return .init(
+      source: source
+    )
+  }
+
   public func build(with env: BuildEnvironment) throws {
 
     try replace(contentIn: "include/libmp3lame.sym", matching: "lame_init_old\n", with: "")
@@ -17,15 +38,6 @@ public struct Lame: Package {
     )
 
     try env.make("install")
-  }
-
-  public var defaultVersion: PackageVersion {
-    .stable("3.100")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    let versionString = version.toString(includeZeroPatch: false)
-    return .tarball(url: "https://nchc.dl.sourceforge.net/project/lame/lame/\(versionString)/lame-\(versionString).tar.gz")
   }
 
 }

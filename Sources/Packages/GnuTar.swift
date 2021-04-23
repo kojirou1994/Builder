@@ -1,23 +1,29 @@
 import BuildSystem
 
 public struct GnuTar: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.34")
-  }
-  
-  public var products: [BuildProduct] {
-    [
-      .bin("tar"),
-    ]
+    "1.34"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-latest.tar.xz")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-latest.tar.xz")
+    case .stable(let version):
+      source = .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-\(version.toString(includeZeroPatch: false)).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://ftp.gnu.org/gnu/tar/tar-\(version.toString(includeZeroPatch: false)).tar.gz")
+    return .init(
+      source: source,
+      products: [
+        .bin("tar"),
+      ],
+      supportedLibraryType: nil
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

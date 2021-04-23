@@ -1,18 +1,28 @@
 import BuildSystem
 
 public struct Lsmash: Package {
+
   public init() {}
 
+  @Flag()
+  var enableCli: Bool = false
+
   public var defaultVersion: PackageVersion {
-    .stable("2.14.5")
+    "2.14.5"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/tags/v\(version.toString(includeZeroPatch: true)).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/l-smash/l-smash/archive/refs/tags/v\(version.toString(includeZeroPatch: true)).tar.gz")
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -30,9 +40,6 @@ public struct Lsmash: Package {
 
     try env.make(enableCli ? "install" : "install-lib")
   }
-
-  @Flag()
-  var enableCli: Bool = false
 
   public var tag: String {
     enableCli ? "CLI" : ""

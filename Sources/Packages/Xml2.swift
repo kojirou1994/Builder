@@ -1,9 +1,25 @@
 import BuildSystem
 
 public struct Xml2: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("2.9.10")
+    "2.9.10"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "http://xmlsoft.org/sources/libxml2-\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -20,9 +36,5 @@ public struct Xml2: Package {
     try env.make()
 
     try env.make("install")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "http://xmlsoft.org/sources/libxml2-\(version.toString()).tar.gz")
   }
 }

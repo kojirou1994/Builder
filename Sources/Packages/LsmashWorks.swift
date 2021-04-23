@@ -1,14 +1,22 @@
 import BuildSystem
 
 public struct LsmashWorks: Package {
+
   public init() {}
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/VFR-maniac/L-SMASH-Works/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/VFR-maniac/L-SMASH-Works/archive/refs/heads/master.zip")
+    case .stable:
+      throw PackageRecipeError.unsupportedVersion
+    }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Lsmash.self))
+    return .init(
+      source: source,
+      dependencies: .packages(.init(Lsmash.self))
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

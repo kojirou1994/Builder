@@ -1,19 +1,29 @@
 import BuildSystem
 
 public struct KNLMeansCL: Package {
+
   public init() {}
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/Khanattila/KNLMeansCL/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/Khanattila/KNLMeansCL/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/Khanattila/KNLMeansCL/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/Khanattila/KNLMeansCL/archive/refs/tags/v\(version.toString()).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    if env.version == .head || env.version.stableVersion! > "1.1.1" {
-      try env.changingDirectory("build", block: { _ in
+    if env.version > "1.1.1" {
+      try env.changingDirectory(env.randomFilename, block: { _ in
         try env.meson("..")
 
         try env.launch("ninja")

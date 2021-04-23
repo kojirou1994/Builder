@@ -5,17 +5,27 @@ public struct Openexr: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("2.5.5")
+    "2.5.5"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v\(version.toString()).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: dependencies(for: order.version)
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
     let srcRoot: String
-    if case .stable(let stableVersion) = env.version,
-       stableVersion < "3.0.0" {
+    if env.version < "3.0.0" {
       srcRoot = "OpenEXR/"
     } else {
       srcRoot = ""
@@ -43,8 +53,7 @@ public struct Openexr: Package {
   }
 
   public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    if case .stable(let stableVersion) = version,
-       stableVersion < "3.0.0" {
+    if version < "3.0.0" {
       return .packages(
         .init(Ilmbase.self)
       )

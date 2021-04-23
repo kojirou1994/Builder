@@ -1,7 +1,36 @@
 import BuildSystem
 
 public struct Gcrypt: Package {
+
   public init() {}
+
+  public var defaultVersion: PackageVersion {
+    "1.8.7"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
+    switch order.target.system {
+    case .macOS:
+      break
+    default:
+      throw PackageRecipeError.unsupportedTarget
+    }
+
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-\(version.toString()).tar.bz2")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(.init(GpgError.self))
+    )
+  }
+
   public func build(with env: BuildEnvironment) throws {
     try env.autogen()
 
@@ -17,24 +46,4 @@ public struct Gcrypt: Package {
     try env.make("install")
   }
 
-  public var defaultVersion: PackageVersion {
-    .stable("1.8.7")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-\(version.toString()).tar.bz2")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(GpgError.self))
-  }
-
-  public func supports(target: BuildTriple) -> Bool {
-    switch target.system {
-    case .macOS:
-      return true
-    default:
-      return false
-    }
-  }
 }

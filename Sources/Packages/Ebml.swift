@@ -1,23 +1,36 @@
 import BuildSystem
 
 public struct Ebml: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.4.2")
+    "1.4.2"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-\(version.toString()).tar.xz")
-  }
-  
-  public var products: [BuildProduct] {
-    [.library(name: "libebml", headers: ["ebml"])]
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://dl.matroska.org/downloads/libebml/libebml-\(version.toString()).tar.xz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      ),
+      products: [.library(name: "libebml", headers: ["ebml"])]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
     // build alone
     if env.libraryType.buildStatic {
-      try env.changingDirectory("build_static", block: { _ in
+      try env.changingDirectory(env.randomFilename, block: { _ in
         try env.cmake(
           toolType: .ninja,
           ".."
@@ -29,7 +42,7 @@ public struct Ebml: Package {
     }
 
     if env.libraryType.buildShared {
-      try env.changingDirectory("build_shared", block: { _ in
+      try env.changingDirectory(env.randomFilename, block: { _ in
         try env.cmake(
           toolType: .ninja,
           "..",

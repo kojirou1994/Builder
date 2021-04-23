@@ -7,12 +7,22 @@ public struct Nnedi3cl: Package {
     .stable("8")
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-NNEDI3CL/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    return .init(
+      source: source,
+      dependencies:
+        .init(packages:
+                [.init(Ninja.self, options: .init(buildTimeOnly: true))],
+              otherPackages: [.pip(["meson"])])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -20,7 +30,7 @@ public struct Nnedi3cl: Package {
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try env.changingDirectory("build", block: { _ in
+    try env.changingDirectory(env.randomFilename, block: { _ in
       try env.meson("..")
 
       try env.launch("ninja")

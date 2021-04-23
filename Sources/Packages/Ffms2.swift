@@ -5,26 +5,29 @@ public struct Ffms2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("2.40")
+    "2.40"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/FFMS/ffms2/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/FFMS/ffms2/archive/refs/tags/\(version.toString(includeZeroPatch: false)).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .init(packages: [.init(Ffmpeg.minimalDecoder)], otherPackages: [.brewAutoConf])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "./autogen.sh")
+    try env.autogen()
     try env.configure()
 
     try env.make("install")
-  }
-
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/FFMS/ffms2/archive/refs/heads/master.zip")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/FFMS/ffms2/archive/refs/tags/\(version.toString(includeZeroPatch: false)).tar.gz")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Ffmpeg.minimalDecoder))
   }
 
 }

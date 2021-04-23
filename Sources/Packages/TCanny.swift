@@ -1,18 +1,31 @@
 import BuildSystem
 
 public struct TCanny: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("12")
+    "12"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-TCanny/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .init(
+        packages: [
+          .init(Cmake.self, options: .init(buildTimeOnly: true))
+        ],
+        otherPackages: [.pip(["meson"])]
+      )
+    )
   }
 
   /*

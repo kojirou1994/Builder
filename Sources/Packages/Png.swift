@@ -1,13 +1,23 @@
 import BuildSystem
 
 public struct Png: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.6.37")
+    "1.6.37"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/\(version)/libpng-\(version.toString()).tar.xz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/\(version)/libpng-\(version.toString()).tar.xz")
+    }
+
+    return .init(source: source)
   }
 
   public func build(with env: BuildEnvironment) throws {

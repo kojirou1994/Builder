@@ -40,7 +40,7 @@ public struct PackageCheckUpdateCommand<T: Package>: ParsableCommand {
       Set(versions).compactMap { version in
         if !failedVersions.contains(version),
            !updateVersions.contains(version),
-           let source = defaultPackage.packageSource(for: .stable(version)) {
+           let source = try? defaultPackage.recipe(for: .init(version: .stable(version), target: .native)).source {
           logger.info("Testing version \(version)")
           switch source.requirement {
           case .repository:
@@ -224,10 +224,6 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     var unsupportedTargets = [BuildTriple]()
 
     for target in BuildTriple.allValid {
-      guard package.supports(target: target) else {
-        unsupportedTargets.append(target)
-        continue
-      }
       do {
         print("Building \(target)")
         let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)
@@ -371,16 +367,16 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     }
 
     if autoPackXC {
-      let products = package.products
-
-      try products.forEach { product in
-        switch product {
-        case let .library(name: libraryName, headers: headers):
-          try packXCFramework(libraryName: libraryName, headers: headers)
-        default:
-          break
-        }
-      }
+//      let products = package.products
+//
+//      try products.forEach { product in
+//        switch product {
+//        case let .library(name: libraryName, headers: headers):
+//          try packXCFramework(libraryName: libraryName, headers: headers)
+//        default:
+//          break
+//        }
+//      }
     }
   }
 }
@@ -396,7 +392,7 @@ extension Version: ExpressibleByArgument {
 
 struct BuilderOptions: ParsableArguments {
   @Option(name: .shortAndLong, help: "Library type, available: \(PackageLibraryBuildType.allCases.map(\.rawValue).joined(separator: ", "))")
-  var library: PackageLibraryBuildType = .statik
+  var library: PackageLibraryBuildType = .static
 
   @Option(help: "Customize the package version, if supported.")
   var version: Version?

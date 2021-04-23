@@ -1,13 +1,26 @@
 import BuildSystem
 
 public struct Icu4c: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("69.1")
+    "69.1"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/unicode-org/icu/archive/refs/tags/release-\(version.toString(includeZeroMinor: false, includeZeroPatch: false, versionSeparator: "-")).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/unicode-org/icu/archive/refs/tags/release-\(version.toString(includeZeroMinor: false, includeZeroPatch: false, versionSeparator: "-")).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .brew(["autoconf", "automake", "libtool"])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -15,7 +28,6 @@ public struct Icu4c: Package {
       try env.autoreconf()
 
       try env.configure(
-        //      configureEnableFlag(false, CommonOptions.dependencyTracking),
         env.libraryType.staticConfigureFlag,
         env.libraryType.sharedConfigureFlag,
         "--disable-samples",

@@ -7,12 +7,28 @@ public struct x264: Package {
 //    .stable("3027")
 //  }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
+    case .stable(let version):
+      throw PackageRecipeError.unsupportedVersion
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    nil
+    var deps = [PackageDependency]()
+    if lsmash {
+      deps.append(.init(Lsmash.self))
+    }
+    if libav {
+//      deps.append(.init(Ffmpeg.minimalDecoder))
+    }
+    deps.append(.init(Nasm.self, options: .init(buildTimeOnly: true)))
+
+    return .init(
+      source: source,
+      dependencies: .packages(deps)
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -54,17 +70,6 @@ public struct x264: Package {
   enum InputSupport: String, ExpressibleByArgument {
     case lavf
     case ffms
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    var deps = [PackageDependency]()
-    if lsmash {
-      deps.append(.init(Lsmash.self))
-    }
-    if libav {
-      deps.append(.init(Ffmpeg.minimalDecoder))
-    }
-    return .packages(deps)
   }
 
   @Flag(inversion: .prefixedEnableDisable)

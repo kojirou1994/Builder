@@ -3,6 +3,12 @@ import Precondition
 
 public struct ImageMagick: Package {
 
+  public init() {}
+
+  public var defaultVersion: PackageVersion {
+    "7.0.11-8"
+  }
+
   enum QuantumDepth: UInt8, ExpressibleByArgument, CustomStringConvertible, CaseIterable {
     case k8 = 8
     case k16 = 16
@@ -16,12 +22,6 @@ public struct ImageMagick: Package {
 
   public static var name: String { "imagemagick" }
 
-  public init() {}
-
-  public var defaultVersion: PackageVersion {
-    .stable("7.0.11-8")
-  }
-
   public var tag: String {
     [
       quantumDepth != .k16 ? quantumDepth.description : "",
@@ -29,8 +29,26 @@ public struct ImageMagick: Package {
     .joined(separator: "_")
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://download.imagemagick.org/ImageMagick/download/releases/ImageMagick-\(version.toString()).tar.xz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://download.imagemagick.org/ImageMagick/download/releases/ImageMagick-\(version.toString()).tar.xz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Webp.self),
+        .init(Freetype.self),
+        .init(JpegXL.self),
+        .init(Openexr.self),
+        .init(Mozjpeg.self),
+        .init(Xz.self)
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -69,17 +87,6 @@ public struct ImageMagick: Package {
     try env.make("install")
   }
 
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(
-      .init(Webp.self),
-      .init(Freetype.self),
-      .init(JpegXL.self),
-      .init(Openexr.self),
-      .init(Mozjpeg.self),
-      .init(Xz.self)
-    )
-  }
 }
 //# Avoid references to shim
 //inreplace Dir["**/*-config.in"], "@PKG_CONFIG@", Formula["pkg-config"].opt_bin/"pkg-config"

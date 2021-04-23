@@ -1,14 +1,26 @@
 import BuildSystem
 
 public struct FdkAac: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("2.0.1")
+    "2.0.1"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-\(version).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-\(version).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .init(otherPackages: [.brewAutoConf])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

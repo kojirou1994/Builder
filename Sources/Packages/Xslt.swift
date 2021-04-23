@@ -1,9 +1,26 @@
 import BuildSystem
 
 public struct Xslt: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
     .stable("1.1.34")
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "http://xmlsoft.org/sources/libxslt-\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(.init(Xml2.self), .init(Gcrypt.self))
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -18,13 +35,5 @@ public struct Xslt: Package {
     )
 
     try env.make("install")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "http://xmlsoft.org/sources/libxslt-\(version.toString()).tar.gz")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Xml2.self), .init(Gcrypt.self))
   }
 }

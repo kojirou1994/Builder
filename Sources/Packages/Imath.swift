@@ -5,11 +5,25 @@ public struct Imath: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("3.0.1")
+    "3.0.1"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v\(version.toString()).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

@@ -1,13 +1,26 @@
 import BuildSystem
 
 public struct Jpcre2: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("10.32.01")
+    "10.32.01"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/jpcre2/jpcre2/archive/refs/tags/\(version.toString(numberWidth: 2)).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/jpcre2/jpcre2/archive/refs/tags/\(version.toString(numberWidth: 2)).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .init(packages: [.init(Pcre2.self)], otherPackages: [.brewAutoConf])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -22,7 +35,4 @@ public struct Jpcre2: Package {
     try env.make("install")
   }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Pcre2.self))
-  }
 }

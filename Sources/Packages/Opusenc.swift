@@ -1,14 +1,26 @@
 import BuildSystem
 
 public struct Opusenc: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("0.2.1")
+    "0.2.1"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/libopusenc-\(version.toString(includeZeroPatch: false)).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/libopusenc-\(version.toString(includeZeroPatch: false)).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(.init(Opus.self))
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -20,10 +32,6 @@ public struct Opusenc: Package {
     
     try env.make()
     try env.make("install")
-  }
-
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Opus.self))
   }
 
 }

@@ -1,18 +1,31 @@
 import BuildSystem
 
 public struct Pcre2: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("10.36")
+    "10.36"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://ftp.pcre.org/pub/pcre/pcre2-\(version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)).tar.bz2")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://ftp.pcre.org/pub/pcre/pcre2-\(version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)).tar.bz2")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .brew(["autoconf", "automake", "libtool"])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
+    
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,

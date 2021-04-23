@@ -1,35 +1,45 @@
 import BuildSystem
 
 public struct CAres: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.17.1")
+    "1.17.1"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/c-ares/c-ares/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/c-ares/c-ares/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://c-ares.haxx.se/download/c-ares-\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://c-ares.haxx.se/download/c-ares-\(version.toString()).tar.gz")
-  }
-
-  public var products: [BuildProduct] {
-    [
-      .bin("acountry"),
-      .bin("adig"),
-      .bin("ahost"),
-      .library(
-        name: "libcares",
-        headers: [
-          "ares_build.h", "ares_dns.h",
-          "ares_rules.h", "ares_version.h",
-          "ares.h"]),
-    ]
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      ),
+      products: [
+        .bin("acountry"),
+        .bin("adig"),
+        .bin("ahost"),
+        .library(
+          name: "libcares",
+          headers: [
+            "ares_build.h", "ares_dns.h",
+            "ares_rules.h", "ares_version.h",
+            "ares.h"
+          ]),
+      ]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build") { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",

@@ -120,7 +120,7 @@ extension BuildEnvironment {
     switch libraryType {
     case .all: return
     case .shared: searchExtension = "a"
-    case .statik: searchExtension = target.system.sharedLibraryExtension
+    case .static: searchExtension = target.system.sharedLibraryExtension
     }
     let dstFiles = try fm.contentsOfDirectory(at: prefix.lib)
       .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame }
@@ -162,9 +162,10 @@ extension BuildEnvironment {
 // MARK: Common tools
 extension BuildEnvironment {
   public func make(toolType: MakeToolType = .make,
+                   parallelJobs: Int? = nil,
                    _ targets: String...) throws {
     try launch(MakeTool(toolType: toolType,
-                        parallelJobs: parallelJobs,
+                        parallelJobs: parallelJobs ?? self.parallelJobs,
                         targets: targets))
   }
 

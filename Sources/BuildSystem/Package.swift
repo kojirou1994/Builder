@@ -1,25 +1,58 @@
 import ArgumentParser
 import Version
 
-public protocol Package: ParsableArguments, CustomStringConvertible {
+public struct PackageOrder {
+  public init(version: PackageVersion, target: BuildTriple) {
+    self.version = version
+    self.target = target
+  }
+
+  public let version: PackageVersion
+  public let target: BuildTriple
+}
+
+public enum PackageRecipeError: Error {
+  case unsupportedVersion
+  case unsupportedTarget
+}
+
+public struct PackageRecipe {
+
+  public init(source: PackageSource,
+              dependencies: PackageDependencies = .empty,
+              supportsBitcode: Bool = true,
+              products: [BuildProduct] = [],
+              supportedLibraryType: PackageLibraryBuildType? = .all) {
+    self.source = source
+    self.dependencies = dependencies
+    self.supportsBitcode = supportsBitcode
+    self.products = products
+    self.supportedLibraryType = supportedLibraryType
+  }
+
+  public let source: PackageSource
+  public let dependencies: PackageDependencies
+  public let supportsBitcode: Bool
+  public let products: [BuildProduct]
+  public let supportedLibraryType: PackageLibraryBuildType?
+}
+
+/*
+ version -> dependency & source & patch -> build
+ */
+
+public protocol Package: ParsableArguments, CustomStringConvertible, Encodable {
 
   static var name: String { get }
 
   var defaultVersion: PackageVersion { get }
 
-  var products: [BuildProduct] { get }
-
-  /// like a hash of a package
+  /// tag is used to generate version suffix
   var tag: String { get }
-  /// string description of package building
-  var buildInfo: String { get }
 
-  var supportsBitcode: Bool { get }
-  func supports(target: BuildTriple) -> Bool
-
-  var headPackageSource: PackageSource? { get }
-  func stablePackageSource(for version: Version) -> PackageSource?
-  func dependencies(for version: PackageVersion) -> PackageDependencies
+  /// This method must throw PackageRecipeError
+  /// - Parameter order: information about the building
+  func recipe(for order: PackageOrder) throws -> PackageRecipe
 
   func build(with env: BuildEnvironment) throws
 
@@ -35,9 +68,9 @@ public extension Package {
     """
     Name: \(name)
     Default Version: \(defaultVersion)
-    Source: \(String(describing: packageSource(for: defaultVersion)))
+    Source: (String(describing: packageSource(for: defaultVersion)))
     Dependencies:
-    \(dependencies(for: defaultVersion))
+    (dependencies(for: defaultVersion))
     Information:
     \(buildInfo)
     """
@@ -45,21 +78,7 @@ public extension Package {
 
   var defaultVersion: PackageVersion { .head }
 
-  var headPackageSource: PackageSource? { nil }
-  func stablePackageSource(for version: Version) -> PackageSource? { nil }
-  
-  func dependencies(for version: PackageVersion) -> PackageDependencies { .empty }
-
-  func packageSource(for version: PackageVersion) -> PackageSource? {
-    switch version {
-    case .stable(let v):
-      return stablePackageSource(for: v)
-    case .head:
-      return headPackageSource
-    }
-  }
-
-  var products: [BuildProduct] { [] }
+  func encode(to encoder: Encoder) throws { }
 
   static var name: String {
     String(describing: Self.self).convertedToSnakeCase(separator: "-")
@@ -78,8 +97,6 @@ public extension Package {
     }()
   }
 
-  var supportsBitcode: Bool { true }
-  func supports(target: BuildTriple) -> Bool { true }
 }
 
 extension Package {

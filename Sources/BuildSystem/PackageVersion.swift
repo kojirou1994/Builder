@@ -71,3 +71,22 @@ public enum PackageVersion: CustomStringConvertible, Equatable {
     }
   }
 }
+
+extension PackageVersion: ExpressibleByStringLiteral {
+  public init(stringLiteral value: String) {
+    self = .stable(.init(tolerant: value)!)
+  }
+}
+
+extension PackageVersion: Comparable {
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    switch (lhs, rhs) {
+    case (_, .head):
+      return true
+    case let (.stable(lVer), .stable(rVer)):
+      return lVer < rVer
+    case (.head, .stable):
+      return false
+    }
+  }
+}

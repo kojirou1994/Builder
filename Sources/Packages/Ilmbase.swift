@@ -5,14 +5,29 @@ public struct Ilmbase: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("2.5.5")
+    "2.5.5"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    if version < "3.0.0" {
-      return .tarball(url: "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v\(version.toString()).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      if version < "3.0.0" {
+        source = .tarball(url: "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v\(version.toString()).tar.gz")
+      } else {
+        throw PackageRecipeError.unsupportedVersion
+      }
     }
-    return nil
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

@@ -1,27 +1,38 @@
 import BuildSystem
 
 public struct Mbedtls: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("2.25.0")
+    "2.25.0"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/heads/development.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v\(version.toString()).tar.gz")
-  }
-
-  public func supports(target: BuildTriple) -> Bool {
-    switch target.system {
+    switch order.target.system {
     case .tvOS, .tvSimulator, .watchOS, .watchSimulator:
       // fork() is not supported
-      return false
+      throw PackageRecipeError.unsupportedTarget
     default:
-      return true
+      break
     }
+
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/heads/development.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/ARMmbed/mbedtls/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -30,7 +41,7 @@ public struct Mbedtls: Package {
     try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")
     try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_C", with: "#define MBEDTLS_THREADING_C")
 
-    try env.changingDirectory("build-wokring") { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       /*
        // Explicitly link mbed TLS library to pthread.
        LINK_WITH_PTHREAD:BOOL=OFF

@@ -1,18 +1,21 @@
 import BuildSystem
 
 public struct FFT3DFilter: Package {
+
   public init() {}
 
-//  public var defaultVersion: PackageVersion {
-//    .stable("1")
-//  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

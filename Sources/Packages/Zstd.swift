@@ -1,17 +1,29 @@
 import BuildSystem
 
 public struct Zstd: Package {
+
   public init() {}
+
   public var defaultVersion: PackageVersion {
-    .stable("1.4.9")
+    "1.4.9"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/facebook/zstd/archive/refs/heads/dev.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/facebook/zstd/archive/refs/heads/dev.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/facebook/zstd/archive/refs/tags/v\(version).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/facebook/zstd/archive/refs/tags/v\(version).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      )
+    )
   }
 
   /*

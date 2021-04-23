@@ -1,7 +1,32 @@
 import BuildSystem
 
 public struct x265: Package {
+
   public init() {}
+
+  public var defaultVersion: PackageVersion {
+    "3.5"
+  }
+
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .branch("master"))
+    case .stable(let version):
+      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
+    }
+
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true)),
+        .init(Nasm.self, options: .init(buildTimeOnly: true))
+      )
+    )
+  }
+
   public func build(with env: BuildEnvironment) throws {
 
     let srcDir = "../source"
@@ -98,18 +123,6 @@ public struct x265: Package {
     })
   }
 
-  public var defaultVersion: PackageVersion {
-    .stable("3.5")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
-  }
-
-  public var headPackageSource: PackageSource? {
-    .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .branch("master"))
-  }
-
   @Flag(inversion: .prefixedEnableDisable)
   var cli: Bool = false
 
@@ -117,11 +130,4 @@ public struct x265: Package {
     cli ? "ENABLE_CLI" : ""
   }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(
-      .init(Cmake.self, options: .init(buildTimeOnly: true)),
-      .init(Ninja.self, options: .init(buildTimeOnly: true)),
-      .init(Nasm.self, options: .init(buildTimeOnly: true))
-      )
-  }
 }

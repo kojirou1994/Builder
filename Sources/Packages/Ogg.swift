@@ -1,21 +1,30 @@
 import BuildSystem
 
 public struct Ogg: Package {
+
   public init() {}
   /*
    1.3.4 always fail?
    https://gitlab.xiph.org/xiph/ogg/-/issues/2298
    */
   public var defaultVersion: PackageVersion {
-    .stable("1.3.3")
+    "1.3.3"
   }
 
-  public var products: [BuildProduct] {
-    [.library(name: "libogg", headers: ["ogg"])]
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-AddGrain/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(version.toString()).tar.gz")
+    return .init(
+      source: source,
+      dependencies: .brew(["autoconf", "automake", "libtool"]),
+      products: [.library(name: "libogg", headers: ["ogg"])]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -28,7 +37,7 @@ public struct Ogg: Package {
     )
 
     try env.make()
-    try env.make("install")
+    try env.make(parallelJobs: 1, "install")
   }
 
 }

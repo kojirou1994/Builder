@@ -67,7 +67,7 @@ struct Builder {
 
   }
 
-
+  let fm = URLFileManager.default
   let env: BuildEnvironment
   let logger: Logger
   let builderDirectoryURL: URL
@@ -93,6 +93,8 @@ struct Builder {
       switch requirement {
       case .branch(let branch), .tag(let branch):
         try env.launch("git", "clone", "-b", branch, "--depth", "1", "--recursive", source.url, safeDirName)
+      case .none:
+        fatalError()
       case .revision(_):
         fatalError("Useless api")
       }
@@ -142,33 +144,37 @@ struct Builder {
     // Apply patches
     try source.patches.forEach { patch in
       logger.info("Applying patch \(patch)")
-      let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [patch.url]))
-        .append(AnyExecutable(executableName: "patch", arguments: ["-ruN", "-d", srcDirURL.path, "--verbose"]))
-      print(patcher)
-      try patcher.run()
-      patcher.waitUntilExit()
+      switch patch {
+      case .raw(_): break
+      case let .remote(url: url, sha256: sha256):
+        let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
+          .append(AnyExecutable(executableName: "patch", arguments: ["-ruN", "-d", srcDirURL.path, "--verbose"]))
+        print(patcher)
+        try patcher.run()
+        patcher.waitUntilExit()
+      }
     }
 
     return srcDirURL
   }
 }
 
-typealias PrefixGenerator = (_ prefixRoot: URL, Package, PackageVersion, _ isJoinedDependency: Bool) -> URL
+typealias PrefixGenerator = (_ prefixRoot: URL, Package, PackageOrder, PackageRecipe, _ isJoinedDependency: Bool) -> URL
 
 extension Builder {
 
-  private func formPrefix(package: Package, version: PackageVersion,
+  private func formPrefix(package: Package, order: PackageOrder, recipe: PackageRecipe,
                           isJoinedDependency: Bool = false) -> PackagePath {
     let result: URL
     if let generator = prefixGenerator {
-      result = generator(env.prefix.root, package, version, isJoinedDependency)
+      result = generator(env.prefix.root, package, order, recipe, isJoinedDependency)
     } else {
       var prefix = env.prefix.root
 
       // example root/curl/7.14-feature_hash/static-x86_64-macOS/
       prefix.appendPathComponent(package.name.safeFilename())
 
-      var versionTag = version.description
+      var versionTag = order.version.description
       var tag = package.tag
       if !ignoreTag, !tag.isEmpty {
         let tagHash = tag.withUTF8 { buffer in
@@ -185,13 +191,30 @@ extension Builder {
       prefix.appendPathComponent(versionTag.safeFilename())
 
       if addLibInfoInPrefix {
-        prefix.appendPathComponent("\(env.libraryType)-\(env.target.arch.rawValue)-\(env.target.system.rawValue)")
+        var libInfos = [String]()
+        if recipe.supportedLibraryType != nil {
+          libInfos.append(env.libraryType.rawValue)
+        }
+        libInfos.append(env.target.arch.rawValue)
+        libInfos.append(env.target.system.rawValue)
+        prefix.appendPathComponent(libInfos.joined(separator: "-"))
       }
 
       result = prefix
     }
 
     return .init(root: result)
+  }
+
+  private func canStartBuild(packageSupported: PackageLibraryBuildType) -> Bool {
+    switch (env.libraryType, packageSupported) {
+    case (.shared, .shared),
+         (.static, .static),
+         (_, .all):
+      return true
+    default:
+      return true
+    }
   }
 
   ///
@@ -207,18 +230,18 @@ extension Builder {
              prefix: PackagePath? = nil,
              dependencyMap: PackageDependencyMap) throws -> PackagePath {
 
-    let usedVersion = version ?? package.defaultVersion
-
-    guard let usedSource = package.packageSource(for: usedVersion) else {
-      fatalError()
-    }
+    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.target)
+    let recipe = try package.recipe(for: order)
+    try recipe.supportedLibraryType
+      .map { try preconditionOrThrow(canStartBuild(packageSupported: $0)) }
 
     let usedPrefix: PackagePath
     if let v = prefix {
       usedPrefix = v
     } else {
-      usedPrefix = formPrefix(package: package, version: usedVersion)
+      usedPrefix = formPrefix(package: package, order: order, recipe: recipe)
       if env.fm.fileExistance(at: usedPrefix.root).exists { // Already built
+        #warning("check if build summary existed")
         logger.info("Built package existed.")
         switch (rebuildLevel, isDependency) {
         case (.tree, _), (.package, false):
@@ -265,11 +288,11 @@ extension Builder {
         }
       }
       if env.enableBitcode {
-        if package.supportsBitcode {
+        if recipe.supportsBitcode {
           cflags.append("-fembed-bitcode")
           ldlags.append("-fembed-bitcode")
         } else {
-          print("Package doesn't support bitcode!")
+          logger.warning("Package doesn't support bitcode, but bitcode is enabled!")
         }
       }
       
@@ -278,8 +301,12 @@ extension Builder {
         ldlags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
       }
       allPrefixes.forEach { prefix in
-        cflags.append("-I\(prefix.include.path)")
-        ldlags.append("-L\(prefix.lib.path)")
+        if fm.fileExistance(at: prefix.include) == .directory {
+          cflags.append("-I\(prefix.include.path)")
+        }
+        if fm.fileExistance(at: prefix.lib) == .directory {
+          ldlags.append("-L\(prefix.lib.path)")
+        }
       }
 
       cflags.append("-O2")
@@ -293,7 +320,7 @@ extension Builder {
     }
 
     let env = newBuildEnvironment(
-      version: usedVersion, source: usedSource,
+      version: order.version, source: recipe.source,
       dependencyMap: dependencyMap,
       environment: environment,
       prefix: usedPrefix)
@@ -305,7 +332,7 @@ extension Builder {
       // Start building
       try env.changingDirectory(tmpWorkDirURL) { _ in
 
-        let srcDir = try checkout(package: package, version: usedVersion, source: usedSource, directoryName: package.name)
+        let srcDir = try checkout(package: package, version: order.version, source: recipe.source, directoryName: package.name)
 
         try env.changingDirectory(srcDir) { _ in
           try package.build(with: env)
@@ -344,9 +371,11 @@ extension Builder {
     try env.mkdir(downloadCacheDirectory)
 
     let dependencyPrefix: PackagePath?
-    let usedVersion: PackageVersion = version ?? package.defaultVersion
+    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.target)
+    let recipe = try package.recipe(for: order)
+
     if joinDependency {
-      dependencyPrefix = formPrefix(package: package, version: usedVersion, isJoinedDependency: true)
+      dependencyPrefix = formPrefix(package: package, order: order, recipe: recipe, isJoinedDependency: true)
       if env.fm.fileExistance(at: dependencyPrefix!.root).exists {
         print("Removing dependency directory")
         try env.removeItem(at: dependencyPrefix!.root)
@@ -355,7 +384,7 @@ extension Builder {
       dependencyPrefix = nil
     }
 
-    let summary = try buildPackageAndDependencies(package: package, version: usedVersion, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
+    let summary = try buildPackageAndDependencies(package: package, version: order.version, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
 
     let prefix = try build(package: package, version: version, isDependency: false, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
@@ -375,7 +404,7 @@ extension Builder {
 
     logger.info("Building \(package.name)")
     let currentLevel = parentLevel + 1
-    let dependencies = package.dependencies(for: version)
+    let dependencies = try package.recipe(for: .init(version: version, target: env.target)).dependencies
 
     var dependencyMap: PackageDependencyMap = .init()
 
@@ -394,7 +423,14 @@ extension Builder {
         dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
         dependencyMap.merge(summary.dependencyMap)
       }
-      dependencyMap.mergeBrewDependency(try parseBrewDeps(dependencies.brewFormulas))
+      try dependencies.otherPackages.forEach { otherPackages in
+        switch otherPackages.manager {
+        case .brew:
+          dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names))
+        default: fatalError()
+        }
+      }
+
     } else {
       logger.info("Dependency level limit reached, dependencies are ignored.")
     }

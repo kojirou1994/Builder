@@ -4,33 +4,41 @@ public struct Mozjpeg: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("4.0.3")
+    "4.0.3"
   }
 
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/heads/master.zip")
-  }
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      source = .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/heads/master.zip")
+    case .stable(let version):
+      source = .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/tags/v\(version.toString()).tar.gz")
+    }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/tags/v\(version.toString()).tar.gz")
-  }
-
-  public var products: [BuildProduct] {
-    [
-      .library(
-        name: "libjpeg",
-        headers: [
-          "jconfig.h",
-          "jerror.h",
-          "jmorecfg.h",
-          "jpeglib.h",
-        ]),
-      .library(
-        name: "libturbojpeg",
-        headers: [
-          "turbojpeg.h"
-        ]),
-    ]
+    return .init(
+      source: source,
+      dependencies: .packages(
+        .init(Cmake.self, options: .init(buildTimeOnly: true)),
+        .init(Ninja.self, options: .init(buildTimeOnly: true)),
+        .init(Png.self)
+      ),
+      products: [
+        .library(
+          name: "libjpeg",
+          headers: [
+            "jconfig.h",
+            "jerror.h",
+            "jmorecfg.h",
+            "jpeglib.h",
+          ]),
+        .library(
+          name: "libturbojpeg",
+          headers: [
+            "turbojpeg.h"
+          ]),
+      ]
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -59,7 +67,4 @@ public struct Mozjpeg: Package {
     }
   }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    .packages(.init(Png.self))
-  }
 }

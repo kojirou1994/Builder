@@ -1,14 +1,25 @@
 import BuildSystem
 
 public struct Sdl2: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("2.0.14")
+    "2.0.14"
   }
 
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://libsdl.org/release/SDL2-\(version.toString()).tar.gz")
+  public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let source: PackageSource
+    switch order.version {
+    case .head:
+      throw PackageRecipeError.unsupportedVersion
+    case .stable(let version):
+      source = .tarball(url: "https://libsdl.org/release/SDL2-\(version.toString()).tar.gz")
+    }
+
+    return .init(
+      source: source
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
