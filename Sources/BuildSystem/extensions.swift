@@ -43,6 +43,11 @@ public func mesonFeatureFlag(_ value: Bool, _ option: String) -> String {
   "-D\(option)=\(value ? "enabled" : "disabled")"
 }
 
+@inline(never)
+public func mesonDefineFlag<T: CustomStringConvertible>(_ value: T, _ option: String) -> String {
+  "-D\(option)=\(value.description)"
+}
+
 extension String {
   /// Returns a new string with the camel-case-based words of this string
   /// split by the specified separator.

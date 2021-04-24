@@ -35,7 +35,7 @@ public struct Harfbuzz: Package {
     try env.changingDirectory(env.randomFilename) { _ in
       try env.meson(
         "--default-library=\(env.libraryType.mesonFlag)",
-        env.libraryType == .static ? mesonFeatureFlag(false, "b_lundef") : nil,
+        env.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
         mesonFeatureFlag(false, "cairo"),
         mesonFeatureFlag(true, "coretext"),
         mesonFeatureFlag(true, "freetype"),

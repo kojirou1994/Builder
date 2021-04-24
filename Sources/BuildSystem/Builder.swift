@@ -427,7 +427,9 @@ extension Builder {
         switch otherPackages.manager {
         case .brew:
           dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
-        default: fatalError()
+        default:
+          logger.warning("Unimplemented other packages: \(otherPackages), continue in 4 seconds")
+          sleep(4)
         }
       }
 

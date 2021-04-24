@@ -16,7 +16,15 @@ public struct Aom: Package {
       source = .repository(url: "https://aomedia.googlesource.com/aom", requirement: .tag("v\(version.toString())"))
     }
 
-    return .init(source: source)
+    return .init(
+      source: source,
+      dependencies:
+        .init(packages: [
+          .buildTool(Cmake.self),
+          .buildTool(Ninja.self),
+          .buildTool(Yasm.self)
+        ])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
