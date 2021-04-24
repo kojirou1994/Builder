@@ -57,10 +57,10 @@ let fm = URLFileManager.default
 let packageNames = try fm
   .enumerator(at: packageDirectory, options: [.skipsHiddenFiles], errorHandler: nil)
   .unwrap()
+  .lazy
   .compactMap { $0 as? URL }
-  .map { $0.lastPathComponent}
-  .filter { $0.hasSuffix(".swift") }
-  .map { String($0.dropLast(6)) }
+  .filter { $0.pathExtension.caseInsensitiveCompare("swift") == .orderedSame }
+  .map { $0.deletingPathExtension().lastPathComponent }
   .sorted()
 
 try BuildCliCommand.allCases.forEach { cmd in

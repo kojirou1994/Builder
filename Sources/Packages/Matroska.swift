@@ -28,7 +28,7 @@ public struct Matroska: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Ebml.self))
+      dependencies: PackageDependencies(packages: .runTime(Ebml.self))
     )
   }
 

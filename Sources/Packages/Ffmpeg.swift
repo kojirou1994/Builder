@@ -25,7 +25,10 @@ public struct Ffmpeg: Package {
       source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
-    return .init(source: source)
+    return .init(
+      source: source,
+      dependencies: dependencies(for: order.version)
+    )
   }
 
   public func encode(to encoder: Encoder) throws {
@@ -124,44 +127,48 @@ public struct Ffmpeg: Package {
   }
 
   public func dependencies(for version: PackageVersion) -> PackageDependencies {
-    var deps = [PackageDependency]()
+    var deps: [PackageDependency] = [
+      .buildTool(Nasm.self)
+//      .init(PkgConfig.self, options: .init(buildTimeOnly: true, target: .native))
+    ]
+
     dependencyOptions.forEach { dependency in
       guard dependency.supportsFFmpegVersion(version) else {
         return
       }
       switch dependency {
       case .libopus:
-        deps.append(.init(Opus.self))
+        deps.append(.runTime(Opus.self))
       case .libvorbis:
-        deps.append(.init(Vorbis.self))
+        deps.append(.runTime(Vorbis.self))
       case .libfdkaac:
-        deps.append(.init(FdkAac.self))
+        deps.append(.runTime(FdkAac.self))
       case .libx264:
-        deps.append(.init(x264.self))
+        deps.append(.runTime(x264.self))
       case .libx265:
-        deps.append(.init(x265.self))
+        deps.append(.runTime(x265.self))
       case .libwebp:
-        deps.append(.init(Webp.self))
+        deps.append(.runTime(Webp.self))
       case .libaribb24:
-        deps.append(.init(Aribb24.self))
+        deps.append(.runTime(Aribb24.self))
       case .libopencore:
-        deps.append(.init(Opencore.self))
+        deps.append(.runTime(Opencore.self))
       case .libass:
-        deps.append(.init(Ass.self))
+        deps.append(.runTime(Ass.self))
       case .libsvtav1:
-        deps.append(.init(SvtAv1.self))
+        deps.append(.runTime(SvtAv1.self))
       case .librav1e:
-        deps.append(.init(Rav1e.self))
+        deps.append(.runTime(Rav1e.self))
       case .libsdl2:
-        deps.append(.init(Sdl2.self))
+        deps.append(.runTime(Sdl2.self))
       case .libmp3lame:
-        deps.append(.init(Lame.self))
+        deps.append(.runTime(Lame.self))
       case .libaom:
-        deps.append(.init(Aom.self))
+        deps.append(.runTime(Aom.self))
       case .apple: break
       }
     }
-    return .packages(deps)
+    return .init(packages: deps, otherPackages: [.brew(["pkg-config"])])
   }
 
   public var tag: String {

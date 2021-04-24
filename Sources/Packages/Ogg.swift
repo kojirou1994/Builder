@@ -22,7 +22,7 @@ public struct Ogg: Package {
 
     return .init(
       source: source,
-      dependencies: .brew(["autoconf", "automake", "libtool"]),
+      dependencies: .init(otherPackages: [.brewAutoConf]),
       products: [.library(name: "libogg", headers: ["ogg"])]
     )
   }

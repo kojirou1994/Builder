@@ -12,22 +12,22 @@ public struct x264: Package {
     switch order.version {
     case .head:
       source = .tarball(url: "https://code.videolan.org/videolan/x264/-/archive/stable/x264-stable.tar.bz2")
-    case .stable(let version):
+    case .stable(_):
       throw PackageRecipeError.unsupportedVersion
     }
 
     var deps = [PackageDependency]()
     if lsmash {
-      deps.append(.init(Lsmash.self))
+      deps.append(.runTime(Lsmash.self))
     }
     if libav {
 //      deps.append(.init(Ffmpeg.minimalDecoder))
     }
-    deps.append(.init(Nasm.self, options: .init(buildTimeOnly: true)))
+    deps.append(.buildTool(Nasm.self))
 
     return .init(
       source: source,
-      dependencies: .packages(deps)
+      dependencies: PackageDependencies(packages: deps)
     )
   }
 

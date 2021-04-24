@@ -20,7 +20,7 @@ public struct Nnedi3cl: Package {
       source: source,
       dependencies:
         .init(packages:
-                [.init(Ninja.self, options: .init(buildTimeOnly: true))],
+                [.buildTool(Ninja.self)],
               otherPackages: [.pip(["meson"])])
     )
   }

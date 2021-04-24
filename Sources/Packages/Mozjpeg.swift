@@ -18,10 +18,10 @@ public struct Mozjpeg: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-        .init(Cmake.self, options: .init(buildTimeOnly: true)),
-        .init(Ninja.self, options: .init(buildTimeOnly: true)),
-        .init(Png.self)
+      dependencies: PackageDependencies(
+        packages: .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .runTime(Png.self)
       ),
       products: [
         .library(

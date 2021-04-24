@@ -19,11 +19,11 @@ public struct Aribb24: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Png.self)))
+      dependencies: PackageDependencies(packages: [.runTime(Png.self)], otherPackages: [.brewAutoConf, .brew(["m4"])]))
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "bootstrap")
+    try env.autoreconf()
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag

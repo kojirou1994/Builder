@@ -13,7 +13,7 @@ public struct Yasm: Package {
     let dep: PackageDependencies
     switch order.version {
     case .head:
-      dep = .blend(packages: [], brewFormulas: ["autoconf", "automake"])
+      dep = PackageDependencies(packages: [], otherPackages: [.brewAutoConf])
       source = .tarball(url: "https://github.com/yasm/yasm/archive/refs/heads/master.zip")
     case .stable(let version):
       dep = .empty

@@ -20,7 +20,7 @@ public struct Vorbis: Package {
     return .init(
       source: source,
       dependencies:
-        .init(packages: [.init(Ogg.self)], otherPackages: [.brewAutoConf])
+        .init(packages: [.runTime(Ogg.self)], otherPackages: [.brewAutoConf])
     )
   }
 

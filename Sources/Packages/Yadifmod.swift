@@ -19,9 +19,9 @@ public struct Yadifmod: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-//        .init(Meson.self, options: .init(buildTimeOnly: true)),
-        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      dependencies: PackageDependencies(
+        //        .init(Meson.self, options: .init(buildTimeOnly: true)),
+        packages: .buildTool(Ninja.self)
       )
     )
   }

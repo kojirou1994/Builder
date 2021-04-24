@@ -19,7 +19,7 @@ public struct Opusfile: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Openssl.self), .init(Opus.self), .init(Ogg.self))
+      dependencies: PackageDependencies(packages: .runTime(Openssl.self), .runTime(Opus.self), .runTime(Ogg.self))
     )
   }
 

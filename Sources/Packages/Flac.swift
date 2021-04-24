@@ -30,7 +30,7 @@ public struct Flac: Package {
     return .init(
       source: source,
       dependencies:
-        .init(packages: [ogg ? .init(Ogg.self) : nil], otherPackages: [.brewAutoConf]),
+        .init(packages: [ogg ? .runTime(Ogg.self) : nil], otherPackages: [.brewAutoConf]),
       products: [
         .library(name: "libFLAC", headers: ["FLAC"])
       ]

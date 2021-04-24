@@ -80,6 +80,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Opusfile>.self,
       PackageCheckUpdateCommand<P7Zip>.self,
       PackageCheckUpdateCommand<Pcre2>.self,
+      PackageCheckUpdateCommand<PkgConfig>.self,
       PackageCheckUpdateCommand<Png>.self,
       PackageCheckUpdateCommand<Pugixml>.self,
       PackageCheckUpdateCommand<Rav1e>.self,

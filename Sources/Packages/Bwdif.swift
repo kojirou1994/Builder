@@ -19,9 +19,9 @@ public struct Bwdif: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
+      dependencies: PackageDependencies(
         
-        .init(Ninja.self, options: .init(buildTimeOnly: true))
+        packages: .buildTool(Ninja.self)
       )
     )
   }

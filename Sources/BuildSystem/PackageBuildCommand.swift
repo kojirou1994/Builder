@@ -221,7 +221,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   public mutating func run() throws {
     var builtPackages = [BuildTargetSystem : [(arch: BuildArch, prefix: PackagePath)]]()
     var failedTargets = [BuildTriple]()
-    var unsupportedTargets = [BuildTriple]()
+    let unsupportedTargets = [BuildTriple]()
 
     for target in BuildTriple.allValid {
       do {

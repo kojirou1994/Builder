@@ -426,7 +426,7 @@ extension Builder {
       try dependencies.otherPackages.forEach { otherPackages in
         switch otherPackages.manager {
         case .brew:
-          dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names))
+          dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
         default: fatalError()
         }
       }

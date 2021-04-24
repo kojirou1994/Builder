@@ -28,13 +28,13 @@ public struct Freetype: Package {
     return .init(
       source: source,
       dependencies:
-        .blend(
+        PackageDependencies(
           packages: [
-            .init(Png.self),
+            .runTime(Png.self),
             //      .init(Brotli.self), // google shit
-            withHarfbuzz ? .init(Harfbuzz.self) : nil
+            withHarfbuzz ? .runTime(Harfbuzz.self) : nil
           ],
-          brewFormulas: [
+          otherPackages: [
 //            "autoconf", "automake", "libtool"
           ])
         )

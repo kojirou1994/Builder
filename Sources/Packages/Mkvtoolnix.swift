@@ -20,12 +20,12 @@ public struct Mkvtoolnix: Package {
     return .init(
       source: source,
       dependencies:
-        .blend(packages: [
-                .init(Vorbis.self), .init(Ebml.self),
-                .init(Matroska.self), .init(Pugixml.self),
-                .init(Pcre2.self), .init(Fmt.self),
-                .init(Flac.self), .init(Jpcre2.self)],
-               brewFormulas: ["docbook-xsl"])
+        PackageDependencies(packages: [
+                              .runTime(Vorbis.self), .runTime(Ebml.self),
+                              .runTime(Matroska.self), .runTime(Pugixml.self),
+                              .runTime(Pcre2.self), .runTime(Fmt.self),
+                              .runTime(Flac.self), .runTime(Jpcre2.self)],
+                            otherPackages: [.brew(["docbook-xsl"])])
     )
   }
   

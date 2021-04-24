@@ -19,9 +19,9 @@ public struct CAres: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-        .init(Cmake.self, options: .init(buildTimeOnly: true)),
-        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      dependencies: PackageDependencies(
+        packages: .buildTool(Cmake.self),
+        .buildTool(Ninja.self)
       ),
       products: [
         .bin("acountry"),

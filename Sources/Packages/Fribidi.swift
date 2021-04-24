@@ -29,7 +29,10 @@ public struct Fribidi: Package {
       source = .tarball(url: "https://github.com/fribidi/fribidi/releases/download/v\(version.toString())/fribidi-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
-    return .init(source: source)
+    return .init(
+      source: source,
+      dependencies: .init(packages: .runTime(Ninja.self))
+    )
   }
 
 }

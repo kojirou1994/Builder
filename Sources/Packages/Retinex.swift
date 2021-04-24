@@ -18,8 +18,8 @@ public struct Retinex: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-        .init(Ninja.self, options: .init(buildTimeOnly: true))
+      dependencies: PackageDependencies(
+        packages: .buildTool(Ninja.self)
       )
     )
   }

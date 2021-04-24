@@ -3,7 +3,7 @@ import ExecutableLauncher
 import KwiftExtension
 
 extension Builder {
-  func parseBrewDeps(_ formulas: [String], installIfMissing: Bool = true)
+  func parseBrewDeps(_ formulas: [String], installIfMissing: Bool = true, requireLinked: Bool)
   throws -> [String : PackagePath] {
     guard !formulas.isEmpty else {
       return .init()
@@ -42,6 +42,12 @@ extension Builder {
       }
 
       currentFindFormulas = formulaDependencies
+    }
+
+    if requireLinked {
+      try AnyExecutable(executableName: "brew", arguments: ["link"] + formulas)
+        .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
+      return .init()
     }
 
     var depMap = [String : PackagePath]()

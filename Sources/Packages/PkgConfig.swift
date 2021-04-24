@@ -1,11 +1,11 @@
 import BuildSystem
 
-public struct Xslt: Package {
+public struct PkgConfig: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("1.1.34")
+    "0.29.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,12 +14,12 @@ public struct Xslt: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "http://xmlsoft.org/sources/libxslt-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://pkgconfig.freedesktop.org/releases/pkg-config-\(version.toString()).tar.gz")
     }
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .runTime(Xml2.self), .runTime(Gcrypt.self))
+      dependencies: .init(packages: [], otherPackages: [.brewAutoConf])
     )
   }
 
@@ -27,13 +27,12 @@ public struct Xslt: Package {
     try env.autoreconf()
 
     try env.configure(
-      configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      "--without-python",
-      nil
+      configureWithFlag(true, "internal-glib"),
+      "--with-system-include-path=\(env.sdkPath!)/usr/include"
     )
 
+    try env.make()
     try env.make("install")
   }
+
 }

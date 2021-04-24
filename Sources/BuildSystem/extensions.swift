@@ -1,31 +1,44 @@
+@inline(never)
 public func configureEnableFlag(_ value: Bool, _ option: String) -> String {
   "--\(value ? "enable" : "disable")-\(option)"
 }
+
+@inline(never)
 public func configureEnableFlag(_ value: Bool, _ option: String, defaultEnabled: Bool) -> String? {
   value == defaultEnabled ? nil : configureEnableFlag(value, option)
 }
+
+@inline(never)
 public func configureEnableFlag(_ value: Bool, _ options: String...) -> [String] {
   options.map { configureEnableFlag(value, $0) }
 }
 
+@inline(never)
 public func configureWithFlag(_ value: Bool, _ package: String) -> String {
   "--with-\(package)=\(value ? "yes" : "no")"
 }
 
+@inline(never)
 public func cmakeOnFlag(_ value: Bool, _ option: String) -> String {
   "-D\(option)=\(value ? "ON" : "OFF")"
 }
+
+@inline(never)
 public func cmakeOnFlag(_ value: Bool, _ option: String, defaultEnabled: Bool) -> String? {
   value == defaultEnabled ? nil : cmakeOnFlag(value, option)
 }
+
+@inline(never)
 public func cmakeOnFlag(_ value: Bool, _ options: String...) -> [String] {
   options.map { cmakeOnFlag(value, $0) }
 }
 
+@inline(never)
 public func cmakeDefineFlag(_ value: String, _ option: String) -> String {
   "-D\(option)=\(value)"
 }
 
+@inline(never)
 public func mesonFeatureFlag(_ value: Bool, _ option: String) -> String {
   "-D\(option)=\(value ? "enabled" : "disabled")"
 }

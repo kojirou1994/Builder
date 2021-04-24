@@ -20,11 +20,11 @@ public struct Fish: Package {
     return .init(
       source: source,
       dependencies:
-        .packages(
-          .init(Cmake.self, options: .init(buildTimeOnly: true)),
-          .init(Pcre2.self),
-          .init(Ninja.self, options: .init(buildTimeOnly: true)),
-          .init(Gettext.self)
+        PackageDependencies(
+          packages: .buildTool(Cmake.self),
+          .runTime(Pcre2.self),
+          .buildTool(Ninja.self),
+          .runTime(Gettext.self)
         ),
       supportedLibraryType: nil
     )

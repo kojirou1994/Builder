@@ -19,12 +19,12 @@ public struct OpusTools: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-        .init(Flac.self),
-        .init(Ogg.self),
-        .init(Opus.self),
-        .init(Opusenc.self),
-        .init(Opusfile.self)
+      dependencies: PackageDependencies(
+        packages: .runTime(Flac.self),
+        .runTime(Ogg.self),
+        .runTime(Opus.self),
+        .runTime(Opusenc.self),
+        .runTime(Opusfile.self)
       )
     )
   }

@@ -80,6 +80,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Opusfile>.self,
       PackageBuildCommand<P7Zip>.self,
       PackageBuildCommand<Pcre2>.self,
+      PackageBuildCommand<PkgConfig>.self,
       PackageBuildCommand<Png>.self,
       PackageBuildCommand<Pugixml>.self,
       PackageBuildCommand<Rav1e>.self,

@@ -19,13 +19,13 @@ public struct JpegXL: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(
-        .init(Cmake.self, options: .init(buildTimeOnly: true)),
-        .init(Ninja.self, options: .init(buildTimeOnly: true)),
-        .init(Mozjpeg.self),
-        .init(Ilmbase.self),
-        .init(Openexr.self),
-        .init(Giflib.self)
+      dependencies: PackageDependencies(
+        packages: .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .runTime(Mozjpeg.self),
+        .runTime(Ilmbase.self),
+        .runTime(Openexr.self),
+        .runTime(Giflib.self)
       )
     )
   }

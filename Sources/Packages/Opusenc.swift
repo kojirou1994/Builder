@@ -19,7 +19,7 @@ public struct Opusenc: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Opus.self))
+      dependencies: PackageDependencies(packages: .runTime(Opus.self))
     )
   }
 

@@ -15,7 +15,7 @@ public struct LsmashWorks: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Lsmash.self))
+      dependencies: PackageDependencies(packages: .runTime(Lsmash.self))
     )
   }
 

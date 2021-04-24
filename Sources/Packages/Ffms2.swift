@@ -19,7 +19,7 @@ public struct Ffms2: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [.init(Ffmpeg.minimalDecoder)], otherPackages: [.brewAutoConf])
+      dependencies: .init(packages: [.runTime(Ffmpeg.minimalDecoder)], otherPackages: [.brewAutoConf])
     )
   }
 

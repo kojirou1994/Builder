@@ -21,7 +21,7 @@ public struct TCanny: Package {
       source: source,
       dependencies: .init(
         packages: [
-          .init(Cmake.self, options: .init(buildTimeOnly: true))
+          .buildTool(Cmake.self)
         ],
         otherPackages: [.pip(["meson"])]
       )

@@ -19,7 +19,7 @@ public struct Ninja: Package {
 
     return .init(
       source: source,
-      dependencies: .packages(.init(Cmake.self, options: .init(buildTimeOnly: true))),
+      dependencies: PackageDependencies(packages: .buildTool(Cmake.self)),
       supportedLibraryType: nil
     )
   }
