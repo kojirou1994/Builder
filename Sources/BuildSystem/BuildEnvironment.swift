@@ -225,9 +225,8 @@ extension BuildEnvironment {
   public func configure(_ arguments: [String?]) throws {
     var configureArguments = ["--prefix=\(prefix.root.path)"]
 
-    if isBuildingCross {
-      configureArguments.append("--host=\(target.gnuTripleString)")
-    }
+    configureArguments.append("--host=\(target.gnuTripleString)")
+
     arguments.forEach { $0.map { configureArguments.append($0) } }
     
     try launch(path: "configure", configureArguments)

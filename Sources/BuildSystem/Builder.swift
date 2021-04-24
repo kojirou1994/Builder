@@ -259,7 +259,11 @@ extension Builder {
       let allPrefixes = Set(dependencyMap.allPrefixes)
 
       // PKG_CONFIG_PATH
-      environment[.pkgConfigPath] = allPrefixes.lazy.map(\.pkgConfig.path).joined(separator: ":")
+      environment[.pkgConfigPath] = allPrefixes
+        .lazy.map(\.pkgConfig)
+        .filter { fm.fileExistance(at: $0) == .directory }
+        .map(\.path)
+        .joined(separator: ":")
 
       // PATH
       environment[.path] = (allPrefixes.map(\.bin.path) + environment[.path].split(separator: ":").map(String.init)).joined(separator: ":")
