@@ -20,7 +20,10 @@ public struct PackageDependencyMap {
 
   public subscript<Key: Package>(_ key: Key.Type) -> PackagePath {
     get {
-      packageDependencies[(ObjectIdentifier(Key.self))]!
+      guard let path = packageDependencies[(ObjectIdentifier(Key.self))] else {
+        fatalError("Required dependency \(key.name) not existed!")
+      }
+      return path
     }
   }
 

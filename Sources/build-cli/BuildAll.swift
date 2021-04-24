@@ -70,6 +70,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Ninja>.self,
       PackageBuildAllCommand<Nnedi3>.self,
       PackageBuildAllCommand<Nnedi3cl>.self,
+      PackageBuildAllCommand<Numactl>.self,
       PackageBuildAllCommand<Ogg>.self,
       PackageBuildAllCommand<Opencore>.self,
       PackageBuildAllCommand<Openexr>.self,

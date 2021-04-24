@@ -28,18 +28,12 @@ public struct Brotli: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-//    try replace(contentIn: "CMakeLists.txt",
-//                matching: "cmake_minimum_required(VERSION 2.8.6)",
-//                with: "cmake_minimum_required(VERSION 3.0)")
-
     try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-//        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_RPATH"),
-//        cmakeOnFlag(true, "CMAKE_BUILD_WITH_INSTALL_RPATH"),
-        nil
+        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
       try env.make(toolType: .ninja)

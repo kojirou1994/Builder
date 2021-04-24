@@ -5,7 +5,7 @@ public struct P7Zip: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "17.03"
+    "17.4.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

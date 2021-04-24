@@ -5,7 +5,7 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.25.0"
+    "2.26.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

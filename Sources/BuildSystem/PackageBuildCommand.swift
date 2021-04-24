@@ -26,52 +26,10 @@ public struct PackageCheckUpdateCommand<T: Package>: ParsableCommand {
   public init() {}
 
   public func run() throws {
-    let logger = Logger(label: "check-update")
-    logger.info("Checking update info for package \(T.name)")
-    let defaultPackage = T.defaultPackage
-    let stableVersion = try defaultPackage.defaultVersion.stableVersion.unwrap("No stable version")
-    logger.info("Current version: \(stableVersion)")
-    let session = URLSession(configuration: .ephemeral)
+    let checker = PackageUpdateChecker()
+    let newVersions = try checker.check(package: T.defaultPackage)
 
-    var failedVersions = Set<Version>()
-    var updateVersions = Set<Version>()
-    
-    func test(versions: [Version]) -> [Version] {
-      Set(versions).compactMap { version in
-        if !failedVersions.contains(version),
-           !updateVersions.contains(version),
-           let source = try? defaultPackage.recipe(for: .init(version: .stable(version), target: .native)).source {
-          logger.info("Testing version \(version)")
-          switch source.requirement {
-          case .repository:
-            break
-          case .tarball(sha256: _):
-            do {
-              var request = URLRequest(url: URL(string: source.url)!)
-              request.httpMethod = "HEAD"
-              let response = try session.syncResultTask(with: request).get()
-              let statusCode = (response.response as! HTTPURLResponse).statusCode
-              try preconditionOrThrow(200..<300 ~= statusCode, "status code: \(statusCode)")
-              logger.info("New version: \(version)")
-              updateVersions.insert(version)
-              return version
-            } catch {
-              logger.error("\(error)")
-            }
-          }
-        }
-        failedVersions.insert(version)
-        return nil
-      }
-    }
-
-    var testVersions = stableVersion.testGroup
-    while case let newVersions = test(versions: testVersions),
-          !newVersions.isEmpty {
-      testVersions = newVersions.flatMap(\.testGroup)
-    }
-
-    logger.info("All valid new versions: \(updateVersions.sorted())")
+    checker.logger.info("All valid new versions: \(newVersions)")
   }
 }
 

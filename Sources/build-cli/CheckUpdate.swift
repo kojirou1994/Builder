@@ -70,6 +70,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Ninja>.self,
       PackageCheckUpdateCommand<Nnedi3>.self,
       PackageCheckUpdateCommand<Nnedi3cl>.self,
+      PackageCheckUpdateCommand<Numactl>.self,
       PackageCheckUpdateCommand<Ogg>.self,
       PackageCheckUpdateCommand<Opencore>.self,
       PackageCheckUpdateCommand<Openexr>.self,

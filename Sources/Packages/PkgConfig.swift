@@ -19,7 +19,8 @@ public struct PkgConfig: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [], otherPackages: [.brewAutoConf])
+      dependencies: .init(packages: [], otherPackages: [.brewAutoConf]),
+      supportedLibraryType: nil
     )
   }
 
@@ -28,7 +29,9 @@ public struct PkgConfig: Package {
 
     try env.configure(
       configureWithFlag(true, "internal-glib"),
-      "--with-system-include-path=\(env.sdkPath!)/usr/include"
+      configureEnableFlag(false, "host-tool"),
+//      "--with-system-include-path=\(env.sdkPath!)/usr/include"
+      nil
     )
 
     try env.make()

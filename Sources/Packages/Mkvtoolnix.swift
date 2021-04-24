@@ -5,7 +5,7 @@ public struct Mkvtoolnix: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "55.0.0"
+    "56.1.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

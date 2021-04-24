@@ -1,7 +1,11 @@
 import BuildSystem
 
 public struct Aom: Package {
+
   public init() {}
+
+  @Flag(inversion: .prefixedEnableDisable)
+  var examples: Bool = false
 
   public var defaultVersion: PackageVersion {
     .stable("3.0.0")
@@ -28,13 +32,14 @@ public struct Aom: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
+
     try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
-//        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_RPATH"),
+        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(false, "ENABLE_DOCS"),
-        cmakeOnFlag(true, "ENABLE_EXAMPLES"),
+        cmakeOnFlag(examples, "ENABLE_EXAMPLES"),
         cmakeOnFlag(false, "ENABLE_TESTDATA"),
         cmakeOnFlag(false, "ENABLE_TESTS"),
         cmakeOnFlag(false, "ENABLE_TOOLS"),
@@ -47,6 +52,12 @@ public struct Aom: Package {
     }
 
     try env.autoRemoveUnneedLibraryFiles()
+  }
+
+  public var tag: String {
+    [
+      examples ? "examples" : ""
+    ].joined(separator: "_")
   }
 
 }

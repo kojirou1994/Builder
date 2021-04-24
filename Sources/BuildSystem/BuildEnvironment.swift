@@ -41,6 +41,7 @@ public class BuildEnvironment {
 
   public let parallelJobs: Int? = 8
   public let libraryType: PackageLibraryBuildType
+  public let prefersStaticBin: Bool = false
   public let target: BuildTriple
   let logger: Logger
 

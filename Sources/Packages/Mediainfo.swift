@@ -26,7 +26,7 @@ public struct Mediainfo: Package {
   public func build(with env: BuildEnvironment) throws {
     // build alone
     try env.changingDirectory("ZenLib/Project/GNU/Library", block: { _ in
-      try env.launch(path: "autogen.sh")
+      try env.autogen()
 
       try env.configure(
         configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -39,7 +39,7 @@ public struct Mediainfo: Package {
     })
 
     try env.changingDirectory("MediaInfoLib/Project/GNU/Library", block: { _ in
-      try env.launch(path: "autogen.sh")
+      try env.autogen()
 
       try env.configure(
         configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -53,7 +53,7 @@ public struct Mediainfo: Package {
     })
 
     try env.changingDirectory("MediaInfo/Project/GNU/CLI", block: { _ in
-      try env.launch(path: "autogen.sh")
+      try env.autogen()
       
       try env.configure(
         configureEnableFlag(false, CommonOptions.dependencyTracking),
