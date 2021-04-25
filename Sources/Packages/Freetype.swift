@@ -27,17 +27,13 @@ public struct Freetype: Package {
 
     return .init(
       source: source,
-      dependencies:
-        PackageDependencies(
-          packages: [
-            .runTime(Png.self),
-            //      .init(Brotli.self), // google shit
-            withHarfbuzz ? .runTime(Harfbuzz.self) : nil
-          ],
-          otherPackages: [
-//            "autoconf", "automake", "libtool"
-          ])
-        )
+      dependencies: PackageDependencies(
+        packages: [
+          .runTime(Png.self),
+//          .runTime(Brotli.self),
+          withHarfbuzz ? .runTime(Harfbuzz.self) : nil
+        ])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
@@ -47,7 +43,7 @@ public struct Freetype: Package {
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      "--enable-freetype-config",
+      configureEnableFlag(true, "freetype-config"),
       configureWithFlag(true, "png"),
       configureWithFlag(withHarfbuzz, "harfbuzz"),
       configureWithFlag(false, "brotli")

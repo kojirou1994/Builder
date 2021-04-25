@@ -32,13 +32,6 @@ public struct Aribb24: Package {
   public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
 
-    env.environment["PNG_CFLAGS"] = env.dependencyMap[Png.self].cflag
-    env.environment["PNG_LIBS"] = env.dependencyMap[Png.self].ldflag
-    env.environment.append("-lpng16", for: "PNG_LIBS")
-    if env.libraryType.buildStatic {
-      env.environment.append("-lz", for: "PNG_LIBS")
-    }
-
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag

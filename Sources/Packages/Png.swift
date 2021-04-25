@@ -17,7 +17,10 @@ public struct Png: Package {
       source = .tarball(url: "https://downloads.sourceforge.net/project/libpng/libpng16/\(version)/libpng-\(version.toString()).tar.xz")
     }
 
-    return .init(source: source)
+    return .init(
+      source: source,
+      dependencies: .init(packages: .runTime(Zlib.self))
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
