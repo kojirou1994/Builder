@@ -19,6 +19,11 @@ public struct Webp: Package {
 
     return .init(
       source: source,
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ]),
       products:
         [
           .bin("cwebp"),

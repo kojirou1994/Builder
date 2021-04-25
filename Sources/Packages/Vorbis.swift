@@ -19,8 +19,13 @@ public struct Vorbis: Package {
 
     return .init(
       source: source,
-      dependencies:
-        .init(packages: [.runTime(Ogg.self)], otherPackages: [.brewAutoConf])
+      dependencies: .init(
+        packages: [
+          .buildTool(Autoconf.self),
+          .buildTool(Automake.self),
+          .buildTool(Libtool.self),
+          .runTime(Ogg.self),
+        ])
     )
   }
 

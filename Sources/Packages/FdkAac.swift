@@ -19,7 +19,11 @@ public struct FdkAac: Package {
 
     return .init(
       source: source,
-      dependencies: .init(otherPackages: [.brewAutoConf])
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ])
     )
   }
 

@@ -19,7 +19,12 @@ public struct Icu4c: Package {
 
     return .init(
       source: source,
-      dependencies: .brew(["autoconf", "automake", "libtool"])
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+      ])
     )
   }
 

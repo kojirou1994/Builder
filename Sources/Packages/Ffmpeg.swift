@@ -5,7 +5,8 @@ public struct Ffmpeg: Package {
   public init() {}
 
   public func build(with env: BuildEnvironment) throws {
-    try env.configure(configureOptions(env: env))
+
+    try env.launch(path: "configure", configureOptions(env: env))
 
     try env.make()
 
@@ -60,7 +61,11 @@ public struct Ffmpeg: Package {
   var autodetect: Bool = false
 
   private func configureOptions(env: BuildEnvironment) throws -> [String] {
-    var r = Set<String>(["--cc=\(env.cc)", "--cxx=\(env.cxx)"])
+    var r = Set<String>([
+      "--cc=\(env.cc)",
+      "--cxx=\(env.cxx)",
+      "--prefix=\(env.prefix.root.path)",
+    ])
     var licenses = Set<FFmpegLicense>()
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
@@ -71,6 +76,7 @@ public struct Ffmpeg: Package {
     if env.libraryType == .static {
       r.insert("--pkg-config-flags=--static")
     }
+
     r.formUnion([env.libraryType.staticConfigureFlag,
                  env.libraryType.sharedConfigureFlag])
 
@@ -128,8 +134,8 @@ public struct Ffmpeg: Package {
 
   public func dependencies(for version: PackageVersion) -> PackageDependencies {
     var deps: [PackageDependency] = [
-      .buildTool(Nasm.self)
-//      .init(PkgConfig.self, options: .init(buildTimeOnly: true, target: .native))
+      .buildTool(Nasm.self),
+      .buildTool(PkgConfig.self),
     ]
 
     dependencyOptions.forEach { dependency in
@@ -168,7 +174,7 @@ public struct Ffmpeg: Package {
       case .apple: break
       }
     }
-    return .init(packages: deps, otherPackages: [.brew(["pkg-config"])])
+    return .init(packages: deps)
   }
 
   public var tag: String {

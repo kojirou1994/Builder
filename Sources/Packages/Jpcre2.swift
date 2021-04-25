@@ -19,7 +19,12 @@ public struct Jpcre2: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [.runTime(Pcre2.self)], otherPackages: [.brewAutoConf])
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .runTime(Pcre2.self),
+      ])
     )
   }
 

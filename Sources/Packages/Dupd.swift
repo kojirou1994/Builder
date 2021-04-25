@@ -19,7 +19,7 @@ public struct Dupd: Package {
 
     return .init(
       source: source,
-      dependencies: .brew(["openssl@1.1"])
+      dependencies: .init(packages: .runTime(Openssl.self))
     )
   }
 

@@ -21,12 +21,12 @@ public struct PackageRecipe {
   public init(source: PackageSource,
               dependencies: PackageDependencies = .empty,
               supportsBitcode: Bool = true,
-              products: [BuildProduct] = [],
+              products: [BuildProduct?] = [],
               supportedLibraryType: PackageLibraryBuildType? = .all) {
     self.source = source
     self.dependencies = dependencies
     self.supportsBitcode = supportsBitcode
-    self.products = products
+    self.products = products.compactMap { $0 }
     self.supportedLibraryType = supportedLibraryType
   }
 

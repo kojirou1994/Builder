@@ -13,7 +13,11 @@ public struct Yasm: Package {
     let dep: PackageDependencies
     switch order.version {
     case .head:
-      dep = PackageDependencies(packages: [], otherPackages: [.brewAutoConf])
+      dep = PackageDependencies(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ])
       source = .tarball(url: "https://github.com/yasm/yasm/archive/refs/heads/master.zip")
     case .stable(let version):
       dep = .empty

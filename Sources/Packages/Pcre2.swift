@@ -19,7 +19,11 @@ public struct Pcre2: Package {
 
     return .init(
       source: source,
-      dependencies: .brew(["autoconf", "automake", "libtool"])
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ])
     )
   }
 

@@ -424,6 +424,7 @@ extension Builder {
   struct BuildSummary {
     let prefix: PackagePath?
     let dependencyMap: PackageDependencyMap
+    let runTimeDependencyMap: PackageDependencyMap
     let level: Int
   }
 
@@ -437,6 +438,7 @@ extension Builder {
     let dependencies = try package.recipe(for: .init(version: version, target: env.target)).dependencies
 
     var dependencyMap: PackageDependencyMap = .init()
+    var runTimeDependencyMap: PackageDependencyMap = .init()
 
     if !dependencies.isEmpty {
       print("Dependencies:")
@@ -444,19 +446,26 @@ extension Builder {
     }
 
     if currentLevel <= dependencyLevelLimit {
-      try dependencies.packages.forEach { depPackage in
-        let summary = try buildPackageAndDependencies(
-          package: depPackage.package,
+      try dependencies.packages.forEach { dependencyPackage in
+        let dependencySummary = try buildPackageAndDependencies(
+          package: dependencyPackage.package,
           // TODO: Optional specific dependency's version
-          version: depPackage.package.defaultVersion,
+          version: dependencyPackage.package.defaultVersion,
           buildSelf: true, prefix: prefix, parentLevel: currentLevel)
-        dependencyMap.add(package: depPackage.package, prefix: summary.prefix!)
-        dependencyMap.merge(summary.dependencyMap)
+        switch dependencyPackage.requiredTime {
+        case .buildTime: break
+        case .runTime:
+          runTimeDependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.prefix!)
+          runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
+        }
+        dependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.prefix!)
+        dependencyMap.merge(dependencySummary.dependencyMap)
       }
       try dependencies.otherPackages.forEach { otherPackages in
         switch otherPackages.manager {
         case .brew:
           dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
+          runTimeDependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
         default:
           logger.warning("Unimplemented other packages: \(otherPackages), continue in 4 seconds")
           sleep(4)
@@ -469,7 +478,7 @@ extension Builder {
 
     let prefix = try buildSelf ? build(package: package, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
 
-    return .init(prefix: prefix, dependencyMap: dependencyMap, level: currentLevel)
+    return .init(prefix: prefix, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
   }
 
   func newBuildEnvironment(

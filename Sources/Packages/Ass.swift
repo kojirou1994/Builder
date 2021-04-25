@@ -24,9 +24,12 @@ public struct Ass: Package {
           .runTime(Freetype.self),
           .runTime(Harfbuzz.self),
           .runTime(Fribidi.self),
-          .buildTool(Nasm.self)
-        ],
-        otherPackages: [.brewAutoConf]
+          .buildTool(Nasm.self),
+          .buildTool(Autoconf.self),
+          .buildTool(Automake.self),
+          .buildTool(Libtool.self),
+          .buildTool(PkgConfig.self),
+        ]
       )
     )
   }

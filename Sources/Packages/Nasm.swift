@@ -23,7 +23,12 @@ public struct Nasm: Package {
 
     return .init(
       source: source,
-      dependencies: .brew(["asciidoc", "autoconf", "automake", "xmlto"]),
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ]),
+//      dependencies: .brew(["asciidoc", "autoconf", "automake", "xmlto"]),
       supportedLibraryType: nil
     )
   }
@@ -31,7 +36,7 @@ public struct Nasm: Package {
   public func build(with env: BuildEnvironment) throws {
     try env.autogen()
     try env.configure()
-    try env.make("rdf")
-    try env.make("install", "install_rdf")
+//    try env.make("rdf")
+    try env.make("install")//, "install_rdf")
   }
 }
