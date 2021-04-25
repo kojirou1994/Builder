@@ -119,39 +119,39 @@ public struct x265: Package {
 
       try env.fm.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
-      #if os(macOS)
-      try env.launch(
-        "libtool",
-        "-static",
-        "-o", "libx265.a",
-        "libx265_main.a",
-        enable10bit ? "libx265_main10.a" : nil,
-        enable12bit ? "libx265_main12.a" : nil
-      )
-      #elseif os(Linux)
-      let scriptFileURL = URL(fileURLWithPath: "ar_script")
-      var script = [String]()
-      script.append("CREATE libx265.a")
-      script.append("ADDLIB libx265_main.a")
-      if enable10bit {
-        script.append("ADDLIB libx265_main10.a")
-      }
-      if enable12bit {
-        script.append("ADDLIB libx265_main12.a")
-      }
-      script.append("SAVE")
-      script.append("END")
+      switch env.target.system {
+      case .macOS:
+        try env.launch(
+          "libtool",
+          "-static",
+          "-o", "libx265.a",
+          "libx265_main.a",
+          enable10bit ? "libx265_main10.a" : nil,
+          enable12bit ? "libx265_main12.a" : nil
+        )
+      case .linuxGNU:
+        let scriptFileURL = URL(fileURLWithPath: "ar_script")
+        var script = [String]()
+        script.append("CREATE libx265.a")
+        script.append("ADDLIB libx265_main.a")
+        if enable10bit {
+          script.append("ADDLIB libx265_main10.a")
+        }
+        if enable12bit {
+          script.append("ADDLIB libx265_main12.a")
+        }
+        script.append("SAVE")
+        script.append("END")
 
-      try script
-        .joined(separator: "\n")
-        .write(to: scriptFileURL, atomically: true, encoding: .utf8)
+        try script
+          .joined(separator: "\n")
+          .write(to: scriptFileURL, atomically: true, encoding: .utf8)
 
-      let fh = try FileHandle(forReadingFrom: scriptFileURL)
-      try AnyExecutable(executableName: "ar", arguments: ["-M"])
-        .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
-      #else
-      #error("Unsupported OS!")
-      #endif
+        let fh = try FileHandle(forReadingFrom: scriptFileURL)
+        try AnyExecutable(executableName: "ar", arguments: ["-M"])
+          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
+      default: break
+      }
 
       try env.make(toolType: .ninja, "install")
     })
