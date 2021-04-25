@@ -382,6 +382,9 @@ struct BuilderOptions: ParsableArguments {
   @Flag(help: "Enable bitcode.")
   var enableBitcode: Bool = false
 
+  @Option(name: [.long, .customShort("O", allowingJoined: true)])
+  var optimize: String?
+
   func validate() throws {
     try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
     try preconditionOrThrow((dependencyLevel ?? 1) > 0, ValidationError("dependencyLevel must > 0"))
@@ -410,7 +413,8 @@ extension Builder {
       libraryType: options.library, target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
-      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, enableBitcode: options.enableBitcode, deployTarget: deployTarget)
+      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize,
+      enableBitcode: options.enableBitcode, deployTarget: deployTarget)
   }
 }
 

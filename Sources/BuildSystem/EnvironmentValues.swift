@@ -20,16 +20,18 @@ public struct EnvironmentValues {
     }
   }
 
-  public mutating func append(_ value: String, for key: EnvironmentKey, separator: String = " ") {
+  public mutating func append(_ value: String, for keys: EnvironmentKey..., separator: String = " ") {
     guard !value.isEmpty else {
       return
     }
-    var result = self[key]
-    if !result.isEmpty {
-      result.append(separator)
+    for key in keys {
+      var result = self[key]
+      if !result.isEmpty {
+        result.append(separator)
+      }
+      result.append(value)
+      self[key] = result
     }
-    result.append(value)
-    self[key] = result
   }
 
 }

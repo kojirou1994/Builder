@@ -30,7 +30,7 @@ struct Builder {
        target: BuildTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
-       addLibInfoInPrefix: Bool,
+       addLibInfoInPrefix: Bool, optimize: String?,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = workDirectoryURL
     self.srcRootDirectoryURL = workDirectoryURL.appendingPathComponent("working")
@@ -47,6 +47,7 @@ struct Builder {
       self.rebuildLevel = rebuildLevel
     }
     self.addLibInfoInPrefix = addLibInfoInPrefix
+    self.optimize = optimize
 
     let sdkPath: String?
     if target.system.needSdkPath {
@@ -84,6 +85,7 @@ struct Builder {
   let cleanAll: Bool
   let prefixGenerator: PrefixGenerator? = nil
   let addLibInfoInPrefix: Bool
+  let optimize: String?
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
@@ -266,6 +268,10 @@ extension Builder {
         .map(\.path)
         .joined(separator: ":")
 
+      /*
+       ACLOCAL
+       Doc: https://www.gnu.org/software/automake/manual/html_node/Macro-Search-Path.html
+       */
       environment[.aclocalPath] = allPrefixes
         .lazy
         .map { $0.appending("share", "aclocal") }
@@ -274,11 +280,22 @@ extension Builder {
         .joined(separator: ":")
 
       // PATH
-      environment[.path] = (allPrefixes.map(\.bin.path) + environment[.path].split(separator: ":").map(String.init)).joined(separator: ":")
+      environment[.path] = (
+        allPrefixes
+          .lazy.map(\.bin)
+          .filter { fm.fileExistance(at: $0) == .directory }
+          .map(\.path)
+          +
+          environment[.path]
+          .split(separator: ":")
+          .map(String.init)
+      ).joined(separator: ":")
 
-      // ARCH
-      var cflags = environment[.cflags].split(separator: " ").map(String.init)
-      var ldlags = environment[.ldflags].split(separator: " ").map(String.init)
+      // TODO: keep user's flags?
+      environment[.cflags] = ""
+      environment[.cxxflags] = ""
+      environment[.ldflags] = ""
+
       if env.isBuildingCross {
         switch env.target.system {
         case .macCatalyst:
@@ -286,46 +303,47 @@ extension Builder {
            Thanks:
            https://stackoverflow.com/questions/59903554/uikit-uikit-h-not-found-for-clang-building-mac-catalyst
            */
-          cflags.append("-target")
-          cflags.append(env.target.clangTripleString)
+          environment.append("-target", for: .cflags, .cxxflags)
+          environment.append(env.target.clangTripleString, for: .cflags, .cxxflags)
         default:
-          cflags.append("-arch")
-          cflags.append(env.target.arch.clangTripleString)
+          environment.append("-arch", for: .cflags, .cxxflags)
+          environment.append(env.target.arch.clangTripleString, for: .cflags, .cxxflags)
         }
-        ldlags.append("-arch")
-        ldlags.append(env.target.arch.clangTripleString)
+        environment.append("-arch", for: .ldflags)
+        environment.append(env.target.arch.clangTripleString, for: .ldflags)
+
         if let sysroot = env.sdkPath {
-          cflags.append("-isysroot")
-          cflags.append(sysroot)
+          environment.append("-isysroot", for: .cflags, .cxxflags)
+          environment.append(sysroot, for: .cflags, .cxxflags)
         }
       }
       if env.enableBitcode {
         if recipe.supportsBitcode {
-          cflags.append("-fembed-bitcode")
-          ldlags.append("-fembed-bitcode")
+          let bitcodeFlag = "-fembed-bitcode"
+          environment.append(bitcodeFlag, for: .cflags, .cxxflags)
+          environment.append(bitcodeFlag, for: .ldflags)
         } else {
           logger.warning("Package doesn't support bitcode, but bitcode is enabled!")
         }
       }
       
       if let deployTarget = env.deployTarget {
-        cflags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
-        ldlags.append("\(env.target.system.minVersionClangFlag)=\(deployTarget)")
+        let flag = "\(env.target.system.minVersionClangFlag)=\(deployTarget)"
+        environment.append(flag, for: .cflags, .cxxflags)
+        environment.append(flag, for: .ldflags)
       }
       allPrefixes.forEach { prefix in
         if fm.fileExistance(at: prefix.include) == .directory {
-          cflags.append("-I\(prefix.include.path)")
+          environment.append(prefix.cflag, for: .cflags, .cxxflags)
         }
         if fm.fileExistance(at: prefix.lib) == .directory {
-          ldlags.append("-L\(prefix.lib.path)")
+          environment.append(prefix.ldflag, for: .ldflags)
         }
       }
 
-      cflags.append("-O2")
-      
-      environment[.cflags] = cflags.joined(separator: " ")
-      environment[.cxxflags] = cflags.joined(separator: " ")
-      environment[.ldflags] = ldlags.joined(separator: " ")
+      if let optimizeLevel = optimize {
+        environment.append("-O\(optimizeLevel)", for: .cflags, .cxxflags)
+      }
 
       environment[.cc] = env.cc
       environment[.cxx] = env.cxx

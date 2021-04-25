@@ -11,6 +11,14 @@ public struct PackagePath: Hashable, CustomStringConvertible {
     root.appendingPathComponent("include")
   }
 
+  public var cflag: String {
+    "-I\(include.path)"
+  }
+
+  public var ldflag: String {
+    "-L\(lib.path)"
+  }
+
   public var lib: URL {
     root.appendingPathComponent("lib")
   }
