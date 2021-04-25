@@ -1,8 +1,12 @@
 import Logging
 import Precondition
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public struct PackageUpdateChecker {
   let logger = Logger(label: "check-update")
+  let session = URLSession(configuration: .ephemeral)
 
   public init() {}
 
@@ -11,7 +15,6 @@ public struct PackageUpdateChecker {
     let defaultPackage = package
     let stableVersion = try defaultPackage.defaultVersion.stableVersion.unwrap("No stable version")
     logger.info("Current version: \(stableVersion)")
-    let session = URLSession(configuration: .ephemeral)
 
     var failedVersions = Set<Version>()
     var updateVersions = Set<Version>()
