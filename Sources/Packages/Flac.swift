@@ -35,18 +35,24 @@ public struct Flac: Package {
           .buildTool(Automake.self),
           .buildTool(Libtool.self),
           .buildTool(PkgConfig.self),
-          ogg ? .runTime(Ogg.self) : nil
+          .runTime(Ogg.self)
         ]),
       products: [
+        .bin("flac"),
+        .bin("metaflac"),
         .library(name: "libFLAC", headers: ["FLAC"])
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    /*
-     add -mfpu=neon to cflags and ldflags on arm
-     */
+
+    switch env.target.arch {
+    case .arm64, .arm64e, .armv7, .armv7s:
+      env.environment.append("-mfpu=neon", for: .cflags, .ldflags)
+    default: break
+    }
+
     let useASM = env.target.arch == .x86_64
     try env.autogen()
     
@@ -54,10 +60,11 @@ public struct Flac: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      ogg ? "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)" : configureEnableFlag(false, "ogg"),
+//      "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)",
       configureEnableFlag(cpplibs, "cpplibs"),
-      configureEnableFlag(false, "64-bit-words"),
+      configureEnableFlag(true, "64-bit-words"),
       configureEnableFlag(false, "examples"),
+      configureEnableFlag(false, "oggtest"),
       configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true)
     )
 
@@ -65,23 +72,12 @@ public struct Flac: Package {
     try env.make("install")
   }
 
-  @Flag
+  @Flag(inversion: .prefixedEnableDisable)
   var cpplibs: Bool = false
 
-  @Flag
-  var ogg: Bool = false
-  /*
-   --enable-64-bit-words
-   */
-
   public var tag: String {
-    var str = ""
-    if cpplibs {
-      str.append("CPPLIBS")
-    }
-    if ogg {
-      str.append("OGG")
-    }
-    return str
+    [
+      cpplibs ? "CPPLIBS" : ""
+    ].joined(separator: "_")
   }
 }
