@@ -462,7 +462,7 @@ extension Builder {
           runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
         }
         dependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.prefix!)
-        dependencyMap.merge(dependencySummary.dependencyMap)
+        dependencyMap.merge(dependencySummary.runTimeDependencyMap)
       }
       try dependencies.otherPackages.forEach { otherPackages in
         switch otherPackages.manager {

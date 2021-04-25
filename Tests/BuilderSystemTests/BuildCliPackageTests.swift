@@ -1,10 +1,12 @@
 import XCTest
 import Version
+import BuildSystem
 
 final class BuildCliPackageTests: XCTestCase {
 
   func testDefaultPackageAvailablity() {
     var allNames = Set<String>()
+    let allTargets = BuildTriple.all
     for package in allPackages {
       XCTAssertNoThrow(try package.parse([]))
       let defaultPackage = package.defaultPackage
@@ -12,11 +14,15 @@ final class BuildCliPackageTests: XCTestCase {
       XCTAssertTrue(defaultPackage.tag.isEmpty)
 
       let defaultVersion = defaultPackage.defaultVersion
-      let defaultSource = defaultPackage.packageSource(for: defaultVersion)
-      
-      XCTAssertNotNil(defaultSource, "Package \(package.name) has no default source!")
-      XCTAssertNotNil(URL(string: defaultSource!.url),
-                      "Invalid default source's url for package \(package.name), url: \(defaultSource!.url)")
+
+      let firstValidTarget = allTargets.first(where: { (try? defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: $0))) != nil })
+      XCTAssertNotNil(firstValidTarget,
+                      "Package \(package.name) has no default recipe for any target!")
+
+      let recipe = try! defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: firstValidTarget!))
+
+      XCTAssertNotNil(URL(string: recipe.source.url),
+                      "Invalid default source's url for package \(package.name), url: \(recipe.source.url)")
 
       // check package names
       if !allNames.insert(package.name).inserted {
