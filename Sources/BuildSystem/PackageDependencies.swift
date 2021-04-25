@@ -69,6 +69,7 @@ public struct OtherPackages: CustomStringConvertible {
   internal let names: [String]
   internal let requireLinked: Bool
 
+  @available(*, deprecated, message: "bye-bye brew")
   public static var brewAutoConf: Self {
     .brew(["autoconf", "automake", "libtool"])
   }
