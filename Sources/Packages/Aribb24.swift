@@ -5,7 +5,7 @@ public struct Aribb24: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("1.0.3")
+    "1.0.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -19,11 +19,26 @@ public struct Aribb24: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [.runTime(Png.self)], otherPackages: [.brewAutoConf, .brew(["m4"])]))
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Png.self),
+      ])
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
+
+    env.environment["PNG_CFLAGS"] = env.dependencyMap[Png.self].cflag
+    env.environment["PNG_LIBS"] = env.dependencyMap[Png.self].ldflag
+    env.environment.append("-lpng16", for: "PNG_LIBS")
+    if env.libraryType.buildStatic {
+      env.environment.append("-lz", for: "PNG_LIBS")
+    }
+
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag
