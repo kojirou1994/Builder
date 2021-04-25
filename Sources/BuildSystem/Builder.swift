@@ -266,6 +266,13 @@ extension Builder {
         .map(\.path)
         .joined(separator: ":")
 
+      environment[.aclocalPath] = allPrefixes
+        .lazy
+        .map { $0.appending("share", "aclocal") }
+        .filter { fm.fileExistance(at: $0) == .directory }
+        .map(\.path)
+        .joined(separator: ":")
+
       // PATH
       environment[.path] = (allPrefixes.map(\.bin.path) + environment[.path].split(separator: ":").map(String.init)).joined(separator: ":")
 

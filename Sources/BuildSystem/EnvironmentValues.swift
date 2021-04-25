@@ -52,4 +52,5 @@ public extension EnvironmentKey {
   static let cflags: Self = "CFLAGS"
   static let cxxflags: Self = "CXXFLAGS"
   static let ldflags: Self = "LDFLAGS"
+  static let aclocalPath: Self = "ACLOCAL_PATH"
 }
