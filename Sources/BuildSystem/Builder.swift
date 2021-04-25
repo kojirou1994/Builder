@@ -67,6 +67,7 @@ struct Builder {
 
   }
 
+  let session = URLSession(configuration: .ephemeral)
   let fm = URLFileManager.default
   let env: BuildEnvironment
   let logger: Logger
@@ -122,12 +123,12 @@ struct Builder {
       let filename = "\(package.name)-\(versionString)\(tarballExtension ?? "")"
       let dstFileURL = downloadCacheDirectory.appendingPathComponent(filename)
       if !URLFileManager.default.fileExistance(at: dstFileURL).exists {
-        let tmpFileURL = dstFileURL.appendingPathExtension("tmp")
-        if env.fm.fileExistance(at: tmpFileURL).exists {
-          try env.removeItem(at: tmpFileURL)
-        }
-        try env.launch("wget", "-O", tmpFileURL.path, url.absoluteString)
-        try URLFileManager.default.moveItem(at: tmpFileURL, to: dstFileURL)
+        logger.info("Downloading \(url.absoluteString) to memory...")
+        let response = try session.syncResultTask(with: url).get()
+        try preconditionOrThrow(200..<300 ~= (response.response as! HTTPURLResponse).statusCode,
+                                "No ok response code!")
+        logger.info("Writing data to file \(dstFileURL.path)")
+        try response.data.write(to: dstFileURL)
       }
 
       #warning("handle other tarball format")
