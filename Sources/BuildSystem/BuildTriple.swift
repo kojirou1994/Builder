@@ -32,14 +32,14 @@ public struct BuildTriple: Hashable, CustomStringConvertible {
 
   public var isValid: Bool {
     switch (arch, system) {
-    case (.x86_64, .tvSimulator), (.arm64, .tvSimulator),
+    case (.x86_64, .tvSimulator), (.arm64, .tvSimulator), (.arm64e, .tvSimulator),
          (.arm64, .tvOS),
          (.arm64, .iphoneOS), (.armv7, .iphoneOS), (.armv7s, .iphoneOS), (.arm64e, .iphoneOS),
-         (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator),
-         (.x86_64, .macOS), (.arm64, .macOS),
-         (.x86_64, .macCatalyst), (.arm64, .macCatalyst),
+         (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator), (.arm64e, .iphoneSimulator),
+         (.x86_64, .macOS), (.arm64, .macOS), (.arm64e, .macOS),
+         (.x86_64, .macCatalyst), (.arm64, .macCatalyst), (.arm64e, .macCatalyst),
          (.armv7, .watchOS),
-         (.x86_64, .watchSimulator), (.arm64, .watchSimulator):
+         (.x86_64, .watchSimulator), (.arm64, .watchSimulator),  (.arm64e, .watchSimulator):
       return true
     default:
       return false
