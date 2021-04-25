@@ -16,13 +16,21 @@ public struct M4: Package {
     default:
       break
     }
-    
+
     let source: PackageSource
     switch order.version {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://ftp.gnu.org/gnu/m4/m4-\(version.toString()).tar.xz")
+      var patches = [PackagePatch]()
+      if order.target.system == .linuxGNU {
+        patches.append(
+          .remote(
+            url: "https://raw.githubusercontent.com/archlinux/svntogit-packages/19e203625ecdf223400d523f3f8344f6ce96e0c2/trunk/m4-1.4.18-glibc-change-work-around.patch",
+            sha256: "fc9b61654a3ba1a8d6cd78ce087e7c96366c290bc8d2c299f09828d793b853c8"))
+      }
+      source = .tarball(url: "https://ftp.gnu.org/gnu/m4/m4-\(version.toString()).tar.xz",
+                        patches: patches)
     }
 
     return .init(
