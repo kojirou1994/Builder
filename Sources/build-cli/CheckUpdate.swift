@@ -109,6 +109,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Xz>.self,
       PackageCheckUpdateCommand<Yadifmod>.self,
       PackageCheckUpdateCommand<Yasm>.self,
+      PackageCheckUpdateCommand<Zlib>.self,
       PackageCheckUpdateCommand<Zstd>.self,
       PackageCheckUpdateCommand<Zvbi>.self,
       PackageCheckUpdateCommand<x264>.self,

@@ -109,6 +109,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Xz>.self,
       PackageBuildAllCommand<Yadifmod>.self,
       PackageBuildAllCommand<Yasm>.self,
+      PackageBuildAllCommand<Zlib>.self,
       PackageBuildAllCommand<Zstd>.self,
       PackageBuildAllCommand<Zvbi>.self,
       PackageBuildAllCommand<x264>.self,
