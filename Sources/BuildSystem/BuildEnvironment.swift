@@ -233,7 +233,7 @@ extension BuildEnvironment {
   }
 
   public func autoreconf() throws {
-    try launch("autoreconf", "-if")
+    try launch("autoreconf", "-ivf")
   }
 
   public func autogen() throws {
