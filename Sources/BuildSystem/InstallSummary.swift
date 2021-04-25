@@ -3,12 +3,14 @@ import Foundation
 /*
  put encoded InstallSummary in prefix root path
  */
-public struct BuildSummary {
-  public let target: BuildTriple
-  public let buildMachine: BuildTriple = .native
-  public let date: Date
+public struct PackageBuildSummary: Codable {
+  public let order: PackageOrder
+//  public let buildMachine: BuildTriple = .native
+  public let startTime: Date
+  public let endTime: Date
   /// built files
-  public let builtFiles: [String]
+//  public let builtFiles: [String]
+  public let reason: BuildReason
 }
 
 public enum DependencyTime {
@@ -16,9 +18,9 @@ public enum DependencyTime {
   case buildTime
 }
 
-public enum BuildReason {
+public enum BuildReason: String, Codable {
   case user
-  case dependency(package: String, time: DependencyTime)
+  case dependency//(package: String, time: DependencyTime)
 }
 
 public struct InstallSummary {

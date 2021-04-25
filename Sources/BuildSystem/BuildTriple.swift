@@ -1,4 +1,4 @@
-public struct BuildTriple: Hashable, CustomStringConvertible {
+public struct BuildTriple: Hashable, CustomStringConvertible, Codable {
   public let arch: BuildArch
   public let system: BuildTargetSystem
 
@@ -47,7 +47,7 @@ public struct BuildTriple: Hashable, CustomStringConvertible {
   }
 }
 
-public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
+public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible, Codable {
   case arm64
   case arm64e
   case armv7
@@ -80,7 +80,7 @@ public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomString
 
 }
 
-public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
+public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible, Codable {
   case macOS
   case macCatalyst
   case tvOS

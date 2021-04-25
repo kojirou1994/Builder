@@ -49,7 +49,18 @@ extension Version {
   }
 }
 
-public enum PackageVersion: CustomStringConvertible, Equatable {
+public enum PackageVersion: LosslessStringConvertible, Equatable, Codable {
+  public init?(_ description: String) {
+    self = .head
+  }
+  public init(from decoder: Decoder) throws {
+    self = .head
+  }
+
+  public func encode(to encoder: Encoder) throws {
+    try description.encode(to: encoder)
+  }
+
   case stable(Version)
   case head
 

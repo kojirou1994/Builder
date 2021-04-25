@@ -14,6 +14,8 @@ import ExecutableLauncher
 import FoundationNetworking
 #endif
 
+let buildSummaryFilename = ".build_summary"
+
 extension ContiguousPipeline: CustomStringConvertible {
   public var description: String {
     processes.map { ([$0.executableURL!.path] + ($0.arguments ?? [])).joined(separator: " ") }.joined(separator: " | ")
@@ -201,8 +203,8 @@ extension Builder {
         if recipe.supportedLibraryType != nil {
           libInfos.append(env.libraryType.rawValue)
         }
-        libInfos.append(env.target.arch.rawValue)
-        libInfos.append(env.target.system.rawValue)
+        libInfos.append(order.target.arch.rawValue)
+        libInfos.append(order.target.system.rawValue)
         prefix.appendPathComponent(libInfos.joined(separator: "-"))
       }
 
@@ -231,12 +233,13 @@ extension Builder {
   ///   - dependencyMap: all dependencies for the package
   /// - Throws:
   /// - Returns: package installed prefix
-  func build(package: Package, version: PackageVersion? = nil,
+  func build(package: Package, order: PackageOrder,
              isDependency: Bool,
              prefix: PackagePath? = nil,
              dependencyMap: PackageDependencyMap) throws -> PackagePath {
 
-    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.target)
+    let startTime = Date()
+
     let recipe = try package.recipe(for: order)
     try recipe.supportedLibraryType
       .map { try preconditionOrThrow(canStartBuild(packageSupported: $0)) }
@@ -246,8 +249,7 @@ extension Builder {
       usedPrefix = v
     } else {
       usedPrefix = formPrefix(package: package, order: order, recipe: recipe)
-      if env.fm.fileExistance(at: usedPrefix.root).exists { // Already built
-        #warning("check if build summary existed")
+      if env.fm.fileExistance(at: usedPrefix.root.appendingPathComponent(buildSummaryFilename)).exists {
         logger.info("Built package existed.")
         switch (rebuildLevel, isDependency) {
         case (.tree, _), (.package, false):
@@ -299,21 +301,21 @@ extension Builder {
       environment[.cxxflags] = ""
       environment[.ldflags] = ""
 
-      if env.isBuildingCross {
-        switch env.target.system {
+      if order.target != .native { // isBuildingCross
+        switch order.target.system {
         case .macCatalyst:
           /*
            Thanks:
            https://stackoverflow.com/questions/59903554/uikit-uikit-h-not-found-for-clang-building-mac-catalyst
            */
           environment.append("-target", for: .cflags, .cxxflags)
-          environment.append(env.target.clangTripleString, for: .cflags, .cxxflags)
+          environment.append(order.target.clangTripleString, for: .cflags, .cxxflags)
         default:
           environment.append("-arch", for: .cflags, .cxxflags)
-          environment.append(env.target.arch.clangTripleString, for: .cflags, .cxxflags)
+          environment.append(order.target.arch.clangTripleString, for: .cflags, .cxxflags)
         }
         environment.append("-arch", for: .ldflags)
-        environment.append(env.target.arch.clangTripleString, for: .ldflags)
+        environment.append(order.target.arch.clangTripleString, for: .ldflags)
 
         if let sysroot = env.sdkPath {
           environment.append("-isysroot", for: .cflags, .cxxflags)
@@ -354,6 +356,7 @@ extension Builder {
 
     let env = newBuildEnvironment(
       version: order.version, source: recipe.source,
+      target: order.target,
       dependencyMap: dependencyMap,
       environment: environment,
       prefix: usedPrefix)
@@ -377,6 +380,14 @@ extension Builder {
       try? env.removeItem(at: usedPrefix.root)
       throw error
     }
+
+    let endTime = Date()
+
+    let summary = PackageBuildSummary(order: order, startTime: startTime, endTime: endTime, reason: isDependency ? .dependency : .user)
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
+    logger.info("Writing summary...")
+    try encoder.encode(summary).write(to: usedPrefix.appending(buildSummaryFilename))
 
     return usedPrefix
   }
@@ -417,9 +428,9 @@ extension Builder {
       dependencyPrefix = nil
     }
 
-    let summary = try buildPackageAndDependencies(package: package, version: order.version, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
+    let summary = try buildPackageAndDependencies(package: package, order: order, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
 
-    let prefix = try build(package: package, version: version, isDependency: false, dependencyMap: summary.dependencyMap)
+    let prefix = try build(package: package, order: order, isDependency: false, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
     return prefix
   }
@@ -433,12 +444,12 @@ extension Builder {
 
   // return deps map
   private func buildPackageAndDependencies(
-    package: Package, version: PackageVersion,
+    package: Package, order: PackageOrder,
     buildSelf: Bool, prefix: PackagePath?, parentLevel: Int) throws -> BuildSummary {
 
-    logger.info("Building \(package.name)")
+    logger.info("Building \(package.name), order: \(order)")
     let currentLevel = parentLevel + 1
-    let dependencies = try package.recipe(for: .init(version: version, target: env.target)).dependencies
+    let dependencies = try package.recipe(for: order).dependencies
 
     var dependencyMap: PackageDependencyMap = .init()
     var runTimeDependencyMap: PackageDependencyMap = .init()
@@ -453,7 +464,7 @@ extension Builder {
         let dependencySummary = try buildPackageAndDependencies(
           package: dependencyPackage.package,
           // TODO: Optional specific dependency's version
-          version: dependencyPackage.package.defaultVersion,
+          order: .init(version: dependencyPackage.package.defaultVersion, target: dependencyPackage.options.target ?? order.target),
           buildSelf: true, prefix: prefix, parentLevel: currentLevel)
         switch dependencyPackage.requiredTime {
         case .buildTime: break
@@ -479,13 +490,14 @@ extension Builder {
       logger.info("Dependency level limit reached, dependencies are ignored.")
     }
 
-    let prefix = try buildSelf ? build(package: package, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
+    let prefix = try buildSelf ? build(package: package, order: order, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
 
     return .init(prefix: prefix, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
   }
 
   func newBuildEnvironment(
     version: PackageVersion, source: PackageSource,
+    target: BuildTriple,
     dependencyMap: PackageDependencyMap,
     environment: EnvironmentValues,
     prefix: PackagePath) -> BuildEnvironment {
@@ -494,6 +506,6 @@ extension Builder {
       prefix: prefix, dependencyMap: dependencyMap,
       safeMode: env.safeMode, cc: env.cc, cxx: env.cxx,
       environment: environment,
-      libraryType: env.libraryType, target: env.target, logger: env.logger, enableBitcode: env.enableBitcode, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
+      libraryType: env.libraryType, target: target, logger: env.logger, enableBitcode: env.enableBitcode, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
   }
 }

@@ -8,11 +8,6 @@ extension Version: ExpressibleByStringLiteral {
 
 public struct PackageDependency {
 
-  @available(*, deprecated, renamed: "runTime(_:)")
-  public init<T: Package>(_ package: T.Type) {
-    self = .runTime(T.self)
-  }
-
   private init(_ package: Package, requiredTime: DependencyTime, options: Options = .init()) {
     self.package = package
     self.requiredTime = requiredTime
@@ -48,7 +43,6 @@ public struct PackageDependency {
       self.target = target
       self.version = version
     }
-
 
     /// override the default build target, useful for building tools
     public let target: BuildTriple?

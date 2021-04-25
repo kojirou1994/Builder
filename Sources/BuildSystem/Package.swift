@@ -1,7 +1,7 @@
 import ArgumentParser
 import Version
 
-public struct PackageOrder {
+public struct PackageOrder: Codable {
   public init(version: PackageVersion, target: BuildTriple) {
     self.version = version
     self.target = target
