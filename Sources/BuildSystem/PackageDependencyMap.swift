@@ -12,7 +12,8 @@ public struct PackageDependencyMap {
     set {
       if let existedPath = packageDependencies[key],
          let newPath = newValue {
-        precondition(existedPath == newPath, "Conflicted!")
+        precondition(existedPath.root.pathComponents == newPath.root.pathComponents,
+                     "Conflicted!")
       }
       packageDependencies[key] = newValue
     }
