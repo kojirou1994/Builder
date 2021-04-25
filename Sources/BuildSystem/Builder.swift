@@ -10,6 +10,9 @@ import Crypto
 #endif
 import Version
 import ExecutableLauncher
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 extension ContiguousPipeline: CustomStringConvertible {
   public var description: String {
