@@ -19,15 +19,25 @@ public struct Opusenc: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .runTime(Opus.self))
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Opus.self),
+      ])
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+    
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      env.libraryType.sharedConfigureFlag,
+      configureEnableFlag(false, "doc"),
+      configureEnableFlag(false, "examples")
     )
     
     try env.make()

@@ -15,14 +15,18 @@ public struct Ogg: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-AddGrain/archive/refs/heads/master.zip")
+      throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
       source = .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(version.toString()).tar.gz")
     }
 
     return .init(
       source: source,
-      dependencies: .init(otherPackages: [.brewAutoConf]),
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ]),
       products: [.library(name: "libogg", headers: ["ogg"])]
     )
   }

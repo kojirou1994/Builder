@@ -25,20 +25,27 @@ public struct Opus: Package {
 
     return .init(
       source: source,
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+      ]),
       products: [.library(name: "libopus", headers: ["opus"])]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
+      configureEnableFlag(true, "custom-modes"),
       configureEnableFlag(false, "doc")
     )
 
     try env.make()
-
     try env.make("install")
   }
 

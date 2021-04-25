@@ -19,16 +19,30 @@ public struct Opusfile: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .runTime(Openssl.self), .runTime(Opus.self), .runTime(Ogg.self))
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Ogg.self),
+        .runTime(Opus.self),
+        .runTime(Openssl.self),
+      ])
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(false, CommonOptions.dependencyTracking)
+      configureEnableFlag(false, CommonOptions.dependencyTracking),
+      configureEnableFlag(false, "doc"),
+      configureEnableFlag(false, "examples")
     )
+
+    try env.make()
     try env.make("install")
   }
 

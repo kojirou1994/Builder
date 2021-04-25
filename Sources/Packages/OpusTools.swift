@@ -21,21 +21,35 @@ public struct OpusTools: Package {
       source: source,
       dependencies: PackageDependencies(
         packages: [
-        .runTime(Flac.self),
-        .runTime(Ogg.self),
-        .runTime(Opus.self),
-        .runTime(Opusenc.self),
-        .runTime(Opusfile.self)
-      ])
+          .buildTool(Autoconf.self),
+          .buildTool(Automake.self),
+          .buildTool(Libtool.self),
+          .buildTool(PkgConfig.self),
+          .runTime(Flac.self),
+          .runTime(Ogg.self),
+          .runTime(Opus.self),
+          .runTime(Opusenc.self),
+          .runTime(Opusfile.self)
+        ]),
+      products: [
+        .bin("opusdec"),
+        .bin("opusenc"),
+        .bin("opusinfo"),
+      ],
+      supportedLibraryType: nil
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    try env.autoreconf()
+    
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag
     )
+
+    try env.make()
     try env.make("install")
   }
 

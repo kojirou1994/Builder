@@ -29,8 +29,14 @@ public struct Flac: Package {
 
     return .init(
       source: source,
-      dependencies:
-        .init(packages: [ogg ? .runTime(Ogg.self) : nil], otherPackages: [.brewAutoConf]),
+      dependencies: PackageDependencies(
+        packages: [
+          .buildTool(Autoconf.self),
+          .buildTool(Automake.self),
+          .buildTool(Libtool.self),
+          .buildTool(PkgConfig.self),
+          ogg ? .runTime(Ogg.self) : nil
+        ]),
       products: [
         .library(name: "libFLAC", headers: ["FLAC"])
       ]
