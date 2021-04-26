@@ -163,7 +163,9 @@ public struct x265: Package {
 //      enable8bit ? "" : "NO_8BIT",
       enable10bit ? "" : "NO_10BIT",
       enable12bit ? "" : "NO_12BIT",
-    ].joined(separator: "_")
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
   }
 
 }

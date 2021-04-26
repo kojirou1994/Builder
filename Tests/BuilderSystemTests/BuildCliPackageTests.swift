@@ -1,6 +1,6 @@
 import XCTest
 import Version
-import BuildSystem
+@testable import BuildSystem
 
 final class BuildCliPackageTests: XCTestCase {
 
@@ -11,7 +11,7 @@ final class BuildCliPackageTests: XCTestCase {
       XCTAssertNoThrow(try package.parse([]))
       let defaultPackage = package.defaultPackage
       // default package's tag must be empty
-      XCTAssertTrue(defaultPackage.tag.isEmpty)
+      XCTAssertTrue(defaultPackage.tag.isEmpty, "Package \(defaultPackage.name)'s default tag is not empty! The tag is: \(defaultPackage.tag)")
 
       let defaultVersion = defaultPackage.defaultVersion
 
@@ -28,6 +28,14 @@ final class BuildCliPackageTests: XCTestCase {
       if !allNames.insert(package.name).inserted {
         XCTFail("duplicated package name: \(package.name)")
       }
+    }
+  }
+
+  func testCircularDependent() {
+    allPackages.forEach { packageType in
+//      let package = packageType.defaultPackage
+//      var dependencyNames = Set<String>()
+//      package.recipe(for: )
     }
   }
 
