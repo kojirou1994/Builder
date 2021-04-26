@@ -38,12 +38,10 @@ public struct Mkvtoolnix: Package {
           .runTime(Fmt.self),
           .runTime(Flac.self),
           .runTime(Jpcre2.self),
-//          .runTime(Gettext.self),
+          .runTime(Gettext.self),
           .runTime(Boost.self),
-          .runTime(Rmff.self),
           .runTime(NlohmannJson.self),
           .runTime(Zlib.self),
-          .runTime(Utfcpp.self),
           .runTime(Dvdread.self),
         ],
         otherPackages: [.brew(["docbook-xsl"], requireLinked: false)])
@@ -51,10 +49,11 @@ public struct Mkvtoolnix: Package {
   }
   
   public func build(with env: BuildEnvironment) throws {
+
     try env.autogen()
 
     try env.configure(
-      configureWithFlag(false, "qt"),
+      configureEnableFlag(false, "qt"),
       "--with-docbook-xsl-root=\(env.dependencyMap["docbook-xsl"].appending("docbook-xsl").path)"
     )
 
