@@ -12,6 +12,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Automake>.self,
       PackageBuildAllCommand<Bilateral>.self,
       PackageBuildAllCommand<Bm3d>.self,
+      PackageBuildAllCommand<Boost>.self,
       PackageBuildAllCommand<BoringSSL>.self,
       PackageBuildAllCommand<Brotli>.self,
       PackageBuildAllCommand<Bwdif>.self,

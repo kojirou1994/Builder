@@ -12,6 +12,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Automake>.self,
       PackageBuildCommand<Bilateral>.self,
       PackageBuildCommand<Bm3d>.self,
+      PackageBuildCommand<Boost>.self,
       PackageBuildCommand<BoringSSL>.self,
       PackageBuildCommand<Brotli>.self,
       PackageBuildCommand<Bwdif>.self,
