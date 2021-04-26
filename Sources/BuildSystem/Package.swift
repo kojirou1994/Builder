@@ -37,6 +37,26 @@ public struct PackageRecipe {
   public let supportedLibraryType: PackageLibraryBuildType?
 }
 
+public struct SystemPackage {
+  public init(prefix: PackagePath, pkgConfigs: [SystemPackage.SystemPkgConfig]) {
+    self.prefix = prefix
+    self.pkgConfigs = pkgConfigs
+  }
+
+  let prefix: PackagePath
+  let pkgConfigs: [SystemPkgConfig]
+
+  public struct SystemPkgConfig {
+    public init(name: String, content: String) {
+      self.name = name
+      self.content = content
+    }
+
+    let name: String
+    let content: String
+  }
+}
+
 /*
  version -> dependency & source & patch -> build
  */
@@ -55,6 +75,8 @@ public protocol Package: ParsableArguments, CustomStringConvertible, Encodable {
   func recipe(for order: PackageOrder) throws -> PackageRecipe
 
   func build(with env: BuildEnvironment) throws
+
+  func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage?
 
 }
 
@@ -96,6 +118,8 @@ public extension Package {
       }
     }()
   }
+
+  func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? { nil }
 
 }
 

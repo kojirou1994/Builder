@@ -88,30 +88,8 @@ extension BuildEnvironment {
     try block(url)
   }
 
-  private static let safeFilenameChars: StaticString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
   public var randomFilename: String {
-    let length = 6
-    var random = SystemRandomNumberGenerator()
-    return "build-cli-" + Self.safeFilenameChars.withUTF8Buffer { buffer -> String in
-      assert(!buffer.isEmpty)
-      if #available(OSX 11.0, *) {
-        return String(unsafeUninitializedCapacity: length) { strBuffer -> Int in
-          for index in strBuffer.indices {
-            strBuffer[index] = buffer.randomElement(using: &random).unsafelyUnwrapped
-          }
-          return length
-        }
-      } else {
-        var string = ""
-        string.reserveCapacity(length)
-        for _ in 0..<length {
-          let char = Character(Unicode.Scalar(buffer.randomElement(using: &random).unsafelyUnwrapped))
-          string.append(char)
-        }
-        return string
-      }
-    }
+    genRandomFilename(prefix: "build-cli-", length: 6)
   }
 
   /// some package ignore the library setting, call this method to remove extra library files
@@ -238,5 +216,30 @@ extension BuildEnvironment {
 
   public func autogen() throws {
     try launch(path: "autogen.sh")
+  }
+}
+
+private let safeFilenameChars: StaticString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+func genRandomFilename(prefix: String, length: Int) -> String {
+  var random = SystemRandomNumberGenerator()
+  return prefix + safeFilenameChars.withUTF8Buffer { buffer -> String in
+    assert(!buffer.isEmpty)
+    if #available(OSX 11.0, *) {
+      return String(unsafeUninitializedCapacity: length) { strBuffer -> Int in
+        for index in strBuffer.indices {
+          strBuffer[index] = buffer.randomElement(using: &random).unsafelyUnwrapped
+        }
+        return length
+      }
+    } else {
+      var string = ""
+      string.reserveCapacity(length)
+      for _ in 0..<length {
+        let char = Character(Unicode.Scalar(buffer.randomElement(using: &random).unsafelyUnwrapped))
+        string.append(char)
+      }
+      return string
+    }
   }
 }

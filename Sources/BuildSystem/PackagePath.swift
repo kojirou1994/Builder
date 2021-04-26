@@ -1,6 +1,10 @@
 import Foundation
 
 public struct PackagePath: Hashable, CustomStringConvertible {
+  public init(_ root: URL) {
+    self.root = root
+  }
+
   public let root: URL
 
   public var bin: URL {

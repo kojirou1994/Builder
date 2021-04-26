@@ -28,4 +28,23 @@ public struct Zlib: Package {
     try env.make("install")
     try env.autoRemoveUnneedLibraryFiles()
   }
+
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [.init(name: "zlib", content: """
+      sdkPath=\(sdkPath)
+      prefix=${sdkPath}/usr
+      exec_prefix=/usr
+      libdir=${exec_prefix}/lib
+      sharedlibdir=${libdir}
+      includedir=${prefix}/include
+
+      Name: zlib
+      Description: zlib compression library
+      Version: 1.2.11
+
+      Requires:
+      Libs: -L${libdir} -L${sharedlibdir} -lz
+      Cflags: -I${includedir}
+      """)])
+  }
 }

@@ -37,7 +37,7 @@ struct Builder {
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
-       strictMode: Bool,
+       strictMode: Bool, preferSystemPackage: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = workDirectoryURL
     self.srcRootDirectoryURL = workDirectoryURL.appendingPathComponent("working")
@@ -55,6 +55,7 @@ struct Builder {
     }
     self.addLibInfoInPrefix = addLibInfoInPrefix
     self.optimize = optimize
+    self.preferSystemPackage = preferSystemPackage
 
     let sdkPath: String?
     if target.system.needSdkPath {
@@ -66,7 +67,7 @@ struct Builder {
     
     self.env = .init(
       version: .head, source: .repository(url: "", requirement: .branch("main")),
-      prefix: .init(root: productsDirectoryURL),
+      prefix: .init(productsDirectoryURL),
       dependencyMap: .init(),
       strictMode: strictMode,
       cc: cc, cxx: cxx,
@@ -93,6 +94,7 @@ struct Builder {
   let prefixGenerator: PrefixGenerator? = nil
   let addLibInfoInPrefix: Bool
   let optimize: String?
+  let preferSystemPackage: Bool
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
@@ -213,7 +215,7 @@ extension Builder {
       result = prefix
     }
 
-    return .init(root: result)
+    return .init(result)
   }
 
   private func canStartBuild(packageSupported: PackageLibraryBuildType) -> Bool {
@@ -225,6 +227,27 @@ extension Builder {
     default:
       return true
     }
+  }
+
+
+  enum PackageBuildResult {
+    case built(PackagePath) // add summary info
+    case system(SystemPackage)
+  }
+
+  private func getBuildResult(
+    package: Package, order: PackageOrder,
+    reason: BuildReason,
+    prefix: PackagePath? = nil,
+    dependencyMap: PackageDependencyMap) throws -> PackageBuildResult {
+    if preferSystemPackage,
+       let sdkPath = self.env.sdkPath,
+       let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
+      logger.info("Using system package: \(package.name)")
+      return .system(systemPackage)
+    }
+
+    return try .built(build(package: package, order: order, reason: reason, prefix: prefix, dependencyMap: dependencyMap))
   }
 
   ///
@@ -277,6 +300,24 @@ extension Builder {
         .map(\.path)
         .joined(separator: ":")
 
+      // auto generated pkgconfig
+      do {
+        let builderPkgConfigPath = srcRootDirectoryURL.appendingPathComponent(genRandomFilename(prefix: "tmp_pkg_config", length: 6))
+        try env.fm.createDirectory(at: builderPkgConfigPath)
+        try dependencyMap.systemPackages.forEach { systemPackage in
+          try systemPackage.pkgConfigs.forEach { pkgConfig in
+            logger.info("Writing system pkg config \(pkgConfig.name)")
+            try pkgConfig.content
+              .write(to: builderPkgConfigPath
+                      .appendingPathComponent(pkgConfig.name)
+                      .appendingPathExtension("pc"),
+                     atomically: true, encoding: .utf8)
+          }
+        }
+
+        environment.append(builderPkgConfigPath.path, for: .pkgConfigPath, separator: EnvironmentValueSeparator.path)
+      }
+      
       /*
        ACLOCAL
        Doc: https://www.gnu.org/software/automake/manual/html_node/Macro-Search-Path.html
@@ -440,7 +481,7 @@ extension Builder {
   }
 
   struct BuildSummary {
-    let prefix: PackagePath?
+    let packageSelfResult: PackageBuildResult?
     let dependencyMap: PackageDependencyMap
     let runTimeDependencyMap: PackageDependencyMap
     let level: Int
@@ -475,10 +516,10 @@ extension Builder {
         switch dependencyPackage.requiredTime {
         case .buildTime: break
         case .runTime:
-          runTimeDependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.prefix!)
+          runTimeDependencyMap.add(package: dependencyPackage.package, result: dependencySummary.packageSelfResult!)
           runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
         }
-        dependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.prefix!)
+        dependencyMap.add(package: dependencyPackage.package, result: dependencySummary.packageSelfResult!)
         dependencyMap.merge(dependencySummary.runTimeDependencyMap)
       }
       try dependencies.otherPackages.forEach { otherPackages in
@@ -497,9 +538,9 @@ extension Builder {
     }
 
 
-    let prefix = try reason.map { try build(package: package, order: order, reason: $0, prefix: prefix, dependencyMap: dependencyMap) }
+    let result = try reason.map { try getBuildResult(package: package, order: order, reason: $0, prefix: prefix, dependencyMap: dependencyMap) }
 
-    return .init(prefix: prefix, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
+    return .init(packageSelfResult: result, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
   }
 
   func newBuildEnvironment(

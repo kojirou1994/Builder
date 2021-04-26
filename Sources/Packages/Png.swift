@@ -33,7 +33,10 @@ public struct Png: Package {
 
     try env.make()
 
-//    try env.make("test")
+    if env.strictMode {
+      try env.make("test")
+    }
+
     try env.make("install")
   }
 

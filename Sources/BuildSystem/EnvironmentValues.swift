@@ -54,5 +54,10 @@ public extension EnvironmentKey {
   static let cflags: Self = "CFLAGS"
   static let cxxflags: Self = "CXXFLAGS"
   static let ldflags: Self = "LDFLAGS"
+  static let libs: Self = "LIBS"
   static let aclocalPath: Self = "ACLOCAL_PATH"
+}
+
+public enum EnvironmentValueSeparator {
+  public static var path: String { ":" }
 }

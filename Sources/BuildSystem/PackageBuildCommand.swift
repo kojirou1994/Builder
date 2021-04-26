@@ -385,6 +385,9 @@ struct BuilderOptions: ParsableArguments {
   @Flag(inversion: .prefixedEnableDisable, help: "Enable strict mode, always test.")
   var strictMode: Bool = false
 
+  @Flag(help: "Use system package if available.")
+  var preferSystemPackage: Bool = false
+
   @Option(name: [.long, .customShort("O", allowingJoined: true)])
   var optimize: String?
 
@@ -418,7 +421,7 @@ extension Builder {
       libraryType: options.library, target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
-      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode,
+      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
       enableBitcode: options.bitcode, deployTarget: deployTarget)
   }
 }

@@ -55,7 +55,7 @@ extension Builder {
       let prefix = try AnyExecutable(executableName: "brew", arguments: ["--prefix", formula])
         .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
         .utf8Output().trimmingCharacters(in: .whitespacesAndNewlines)
-      depMap[formula] = .init(root: URL(fileURLWithPath: prefix))
+      depMap[formula] = .init(URL(fileURLWithPath: prefix))
     }
 
     return depMap
