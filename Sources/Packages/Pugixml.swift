@@ -31,6 +31,7 @@ public struct Pugixml: Package {
       try env.cmake(
         toolType: .ninja,
         "..",
+        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         env.libraryType.buildShared ? cmakeOnFlag(true, env.libraryType.buildStatic ? "BUILD_SHARED_AND_STATIC_LIBS" : "BUILD_SHARED_LIBS") : nil
       )
 

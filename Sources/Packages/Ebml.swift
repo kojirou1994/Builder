@@ -28,32 +28,25 @@ public struct Ebml: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    // build alone
-    if env.libraryType.buildStatic {
-      try env.changingDirectory(env.randomFilename, block: { _ in
-        try env.cmake(
-          toolType: .ninja,
-          ".."
-        )
 
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
-      })
-    }
-
-    if env.libraryType.buildShared {
-      try env.changingDirectory(env.randomFilename, block: { _ in
+    func build(shared: Bool) throws {
+      try env.changingDirectory(env.randomFilename) { _ in
         try env.cmake(
           toolType: .ninja,
           "..",
+          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeOnFlag(true, "BUILD_SHARED_LIBS")
         )
 
         try env.make(toolType: .ninja)
         try env.make(toolType: .ninja, "install")
-      })
+      }
     }
 
+    try build(shared: env.libraryType.buildShared)
+    if env.libraryType == .all {
+      try build(shared:false)
+    }
   }
 
 }

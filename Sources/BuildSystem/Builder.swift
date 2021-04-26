@@ -24,7 +24,8 @@ extension ContiguousPipeline: CustomStringConvertible {
 
 public enum RebuildLevel: String, ExpressibleByArgument {
   case package
-  case tree
+  case runTime
+  case all
 }
 
 struct Builder {
@@ -234,7 +235,7 @@ extension Builder {
   /// - Throws:
   /// - Returns: package installed prefix
   func build(package: Package, order: PackageOrder,
-             isDependency: Bool,
+             reason: BuildReason,
              prefix: PackagePath? = nil,
              dependencyMap: PackageDependencyMap) throws -> PackagePath {
 
@@ -251,8 +252,10 @@ extension Builder {
       usedPrefix = formPrefix(package: package, order: order, recipe: recipe)
       if env.fm.fileExistance(at: usedPrefix.root.appendingPathComponent(buildSummaryFilename)).exists {
         logger.info("Built package existed.")
-        switch (rebuildLevel, isDependency) {
-        case (.tree, _), (.package, false):
+        switch (rebuildLevel, reason) {
+        case (.all, _),
+             (.runTime, .dependency(package: _, time: .runTime)),
+             (.package, .user):
           logger.info("Rebuilding required, removing built package.")
           try env.removeItem(at: usedPrefix.root)
         default:
@@ -383,7 +386,7 @@ extension Builder {
 
     let endTime = Date()
 
-    let summary = PackageBuildSummary(order: order, startTime: startTime, endTime: endTime, reason: isDependency ? .dependency : .user)
+    let summary = PackageBuildSummary(order: order, startTime: startTime, endTime: endTime, reason: reason)
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
     logger.info("Writing summary...")
@@ -428,9 +431,9 @@ extension Builder {
       dependencyPrefix = nil
     }
 
-    let summary = try buildPackageAndDependencies(package: package, order: order, buildSelf: false, prefix: dependencyPrefix, parentLevel: 0)
+    let summary = try buildPackageAndDependencies(package: package, order: order, reason: nil, prefix: dependencyPrefix, parentLevel: 0)
 
-    let prefix = try build(package: package, order: order, isDependency: false, dependencyMap: summary.dependencyMap)
+    let prefix = try build(package: package, order: order, reason: .user, dependencyMap: summary.dependencyMap)
     print("The built package is in \(prefix.root.path)")
     return prefix
   }
@@ -445,7 +448,8 @@ extension Builder {
   // return deps map
   private func buildPackageAndDependencies(
     package: Package, order: PackageOrder,
-    buildSelf: Bool, prefix: PackagePath?, parentLevel: Int) throws -> BuildSummary {
+    reason: BuildReason?,
+    prefix: PackagePath?, parentLevel: Int) throws -> BuildSummary {
 
     logger.info("Building \(package.name), order: \(order)")
     let currentLevel = parentLevel + 1
@@ -465,7 +469,8 @@ extension Builder {
           package: dependencyPackage.package,
           // TODO: Optional specific dependency's version
           order: .init(version: dependencyPackage.package.defaultVersion, target: dependencyPackage.options.target ?? order.target),
-          buildSelf: true, prefix: prefix, parentLevel: currentLevel)
+          reason: .dependency(package: package.name, time: dependencyPackage.requiredTime),
+          prefix: prefix, parentLevel: currentLevel)
         switch dependencyPackage.requiredTime {
         case .buildTime: break
         case .runTime:
@@ -490,7 +495,8 @@ extension Builder {
       logger.info("Dependency level limit reached, dependencies are ignored.")
     }
 
-    let prefix = try buildSelf ? build(package: package, order: order, isDependency: true, prefix: prefix, dependencyMap: dependencyMap) : nil
+
+    let prefix = try reason.map { try build(package: package, order: order, reason: $0, prefix: prefix, dependencyMap: dependencyMap) }
 
     return .init(prefix: prefix, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
   }

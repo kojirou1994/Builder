@@ -19,24 +19,34 @@ public struct Mkvtoolnix: Package {
 
     return .init(
       source: source,
-      dependencies:
-        PackageDependencies(packages: [
-                              .runTime(Vorbis.self), .runTime(Ebml.self),
-                              .runTime(Matroska.self), .runTime(Pugixml.self),
-                              .runTime(Pcre2.self), .runTime(Fmt.self),
-                              .runTime(Flac.self), .runTime(Jpcre2.self)],
-                            otherPackages: [.brew(["docbook-xsl"])])
+      dependencies: PackageDependencies(
+        packages: [
+          .buildTool(Autoconf.self),
+          .buildTool(Automake.self),
+          .buildTool(Libtool.self),
+          .buildTool(PkgConfig.self),
+          .runTime(Vorbis.self),
+          .runTime(Ebml.self),
+          .runTime(Matroska.self),
+          .runTime(Pugixml.self),
+          .runTime(Pcre2.self),
+          .runTime(Fmt.self),
+          .runTime(Flac.self),
+          .runTime(Jpcre2.self),
+          .runTime(Gettext.self),
+          .runTime(Boost.self),
+        ],
+        otherPackages: [.brew(["docbook-xsl"], requireLinked: false)])
     )
   }
   
   public func build(with env: BuildEnvironment) throws {
     try env.launch(path: "autogen.sh")
 
+//    try replace(contentIn: "configure", matching: "LINK_STATICALLY=\" -static \"", with: "")
+
     try env.configure(
-      env.libraryType.staticConfigureFlag,
-//      env.libraryType.sharedConfigureFlag,
-      "--without-boost",
-      "--with-qt=no",
+      configureWithFlag(false, "qt"),
       "--with-docbook-xsl-root=\(env.dependencyMap["docbook-xsl"].appending("docbook-xsl").path)"
     )
 
