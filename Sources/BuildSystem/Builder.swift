@@ -37,6 +37,7 @@ struct Builder {
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
+       strictMode: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = workDirectoryURL
     self.srcRootDirectoryURL = workDirectoryURL.appendingPathComponent("working")
@@ -67,7 +68,7 @@ struct Builder {
       version: .head, source: .repository(url: "", requirement: .branch("main")),
       prefix: .init(root: productsDirectoryURL),
       dependencyMap: .init(),
-      safeMode: false,
+      strictMode: strictMode,
       cc: cc, cxx: cxx,
       environment: .init(),
       libraryType: libraryType, target: target, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget)
@@ -510,7 +511,7 @@ extension Builder {
     .init(
       version: version, source: source,
       prefix: prefix, dependencyMap: dependencyMap,
-      safeMode: env.safeMode, cc: env.cc, cxx: env.cxx,
+      strictMode: env.strictMode, cc: env.cc, cxx: env.cxx,
       environment: environment,
       libraryType: env.libraryType, target: target, logger: env.logger, enableBitcode: env.enableBitcode, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
   }

@@ -8,6 +8,11 @@ public struct Mkvtoolnix: Package {
     "56.1.0"
   }
 
+  /*
+   macOS app:
+   https://mkvtoolnix.download/macos/MKVToolNix-56.1.0.dmg
+
+   */
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
@@ -33,24 +38,27 @@ public struct Mkvtoolnix: Package {
           .runTime(Fmt.self),
           .runTime(Flac.self),
           .runTime(Jpcre2.self),
-          .runTime(Gettext.self),
+//          .runTime(Gettext.self),
           .runTime(Boost.self),
+          .runTime(Rmff.self),
+          .runTime(NlohmannJson.self),
+          .runTime(Zlib.self),
+          .runTime(Utfcpp.self),
+          .runTime(Dvdread.self),
         ],
         otherPackages: [.brew(["docbook-xsl"], requireLinked: false)])
     )
   }
   
   public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "autogen.sh")
-
-//    try replace(contentIn: "configure", matching: "LINK_STATICALLY=\" -static \"", with: "")
+    try env.autogen()
 
     try env.configure(
       configureWithFlag(false, "qt"),
       "--with-docbook-xsl-root=\(env.dependencyMap["docbook-xsl"].appending("docbook-xsl").path)"
     )
 
-    try env.launch("rake", "-j8")
+    try env.launch("rake", env.parallelJobs.map { "-j\($0)" } )
     try env.launch("rake", "install")
   }
 

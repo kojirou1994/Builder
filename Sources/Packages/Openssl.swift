@@ -63,7 +63,7 @@ public struct Openssl: Package {
     )
 
     try env.make()
-    if env.safeMode {
+    if env.strictMode {
       try env.launch("make", "test")
     }
     try env.make(parallelJobs: 1, "install")

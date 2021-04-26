@@ -3,12 +3,12 @@ import Logging
 import KwiftUtility
 
 public class BuildEnvironment {
-  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, safeMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
+  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
     self.version = version
     self.source = source
     self.prefix = prefix
     self.dependencyMap = dependencyMap
-    self.safeMode = safeMode
+    self.strictMode = strictMode
     self.cc = cc
     self.cxx = cxx
     self.environment = environment
@@ -30,7 +30,7 @@ public class BuildEnvironment {
   public let dependencyMap: PackageDependencyMap
 
   /// need to test or ...
-  public let safeMode: Bool
+  public let strictMode: Bool
   /// c compiler
   public let cc: String
   /// cpp compiler

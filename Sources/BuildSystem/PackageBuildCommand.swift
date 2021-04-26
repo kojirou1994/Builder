@@ -379,8 +379,11 @@ struct BuilderOptions: ParsableArguments {
   @Option(help: "Specify package storage directory")
   var packagePath: String = "./Packages"
 
-  @Flag(help: "Enable bitcode.")
-  var enableBitcode: Bool = false
+  @Flag(inversion: .prefixedEnableDisable, help: "Enable bitcode.")
+  var bitcode: Bool = false
+
+  @Flag(inversion: .prefixedEnableDisable, help: "Enable strict mode, always test.")
+  var strictMode: Bool = false
 
   @Option(name: [.long, .customShort("O", allowingJoined: true)])
   var optimize: String?
@@ -403,6 +406,8 @@ struct BuilderOptions: ParsableArguments {
 
 extension Builder {
   init(options: BuilderOptions, target: BuildTriple, addLibInfoInPrefix: Bool, deployTarget: String?) throws {
+    // TODO: use argument parser to parse environment
+    // see: https://github.com/apple/swift-argument-parser/issues/4
     let cc = ProcessInfo.processInfo.environment["CC"] ?? BuildTargetSystem.native.cc
     let cxx = ProcessInfo.processInfo.environment["CXX"] ?? BuildTargetSystem.native.cxx
 
@@ -413,8 +418,8 @@ extension Builder {
       libraryType: options.library, target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
-      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize,
-      enableBitcode: options.enableBitcode, deployTarget: deployTarget)
+      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode,
+      enableBitcode: options.bitcode, deployTarget: deployTarget)
   }
 }
 
