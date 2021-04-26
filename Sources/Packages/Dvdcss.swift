@@ -24,7 +24,7 @@ public struct Dvdcss: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
       ]),
-      products: [.library(name: "libogg", headers: ["ogg"])]
+      products: [.library(name: "libdvdcss", headers: ["dvdcss"])]
     )
   }
 

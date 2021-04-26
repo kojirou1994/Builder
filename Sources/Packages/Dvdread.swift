@@ -8,6 +8,9 @@ public struct Dvdread: Package {
     "6.1.2"
   }
 
+  @Flag(inversion: .prefixedEnableDisable)
+  var dvdcss: Bool = false
+
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
@@ -24,9 +27,9 @@ public struct Dvdread: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
-        .runTime(Dvdcss.self),
+        dvdcss ? .runTime(Dvdcss.self) : nil,
       ]),
-      products: [.library(name: "libogg", headers: ["ogg"])]
+      products: [.library(name: "libdvdread", headers: ["dvdread"])]
     )
   }
 
@@ -37,11 +40,19 @@ public struct Dvdread: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      configureWithFlag(true, "libdvdcss")
+      configureWithFlag(dvdcss, "libdvdcss")
     )
 
     try env.make()
     try env.make("install")
+  }
+
+  public var tag: String {
+    [
+      dvdcss ? "DVDCSS" : ""
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
   }
 
 }
