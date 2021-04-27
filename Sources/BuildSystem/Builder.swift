@@ -241,6 +241,7 @@ extension Builder {
     prefix: PackagePath? = nil,
     dependencyMap: PackageDependencyMap) throws -> PackageBuildResult {
     if preferSystemPackage,
+       case .dependency = reason,
        let sdkPath = self.env.sdkPath,
        let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
       logger.info("Using system package: \(package.name)")
@@ -317,7 +318,7 @@ extension Builder {
 
         environment.append(builderPkgConfigPath.path, for: .pkgConfigPath, separator: EnvironmentValueSeparator.path)
       }
-      
+
       /*
        ACLOCAL
        Doc: https://www.gnu.org/software/automake/manual/html_node/Macro-Search-Path.html
