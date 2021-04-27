@@ -16,6 +16,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<BoringSSL>.self,
       PackageCheckUpdateCommand<Brotli>.self,
       PackageCheckUpdateCommand<Bwdif>.self,
+      PackageCheckUpdateCommand<Bzip2>.self,
       PackageCheckUpdateCommand<CAres>.self,
       PackageCheckUpdateCommand<Cas>.self,
       PackageCheckUpdateCommand<Cmake>.self,

@@ -6,6 +6,11 @@ public struct EnvironmentValues {
 
   init() {
     values = ProcessInfo.processInfo.environment
+    self[.path] = ""
+    self.append("/usr/bin", for: .path)
+    self.append("/bin", for: .path)
+    self.append("/usr/sbin", for: .path)
+    self.append("/sbin", for: .path)
   }
 
   public subscript(key: EnvironmentKey) -> String {

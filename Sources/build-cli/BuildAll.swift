@@ -16,6 +16,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<BoringSSL>.self,
       PackageBuildAllCommand<Brotli>.self,
       PackageBuildAllCommand<Bwdif>.self,
+      PackageBuildAllCommand<Bzip2>.self,
       PackageBuildAllCommand<CAres>.self,
       PackageBuildAllCommand<Cas>.self,
       PackageBuildAllCommand<Cmake>.self,
