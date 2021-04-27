@@ -42,5 +42,16 @@ public struct Brotli: Package {
     }
 
     try env.autoRemoveUnneedLibraryFiles()
+    if env.libraryType.buildStatic {
+      try """
+      libbrotlicommon-static.a
+      libbrotlidec-static.a
+      libbrotlienc-static.a
+      """.split(separator: "\n")
+        .forEach { filename in
+          try env.fm.moveItem(at: env.prefix.lib.appendingPathComponent(String(filename)),
+                              to: env.prefix.lib.appendingPathComponent(String(filename.dropLast("-static.a".count)) + ".a"))
+        }
+    }
   }
 }

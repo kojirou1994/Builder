@@ -27,7 +27,7 @@ public struct Pugixml: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
@@ -37,6 +37,6 @@ public struct Pugixml: Package {
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
-    })
+    }
   }
 }

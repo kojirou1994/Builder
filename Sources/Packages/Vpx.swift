@@ -25,7 +25,7 @@ public struct Vpx: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.launch(
         path: "../configure",
         "--prefix=\(env.prefix.root.path)",
@@ -40,7 +40,7 @@ public struct Vpx: Package {
       try env.make()
 
       try env.make("install")
-    })
+    }
   }
 
 }

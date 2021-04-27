@@ -57,7 +57,7 @@ public struct x265: Package {
       : nil
 
     if enable12bit {
-      try env.changingDirectory("12bit", block: { cwd in
+      try env.changingDirectory("12bit") { cwd in
         try env.cmake(
           toolType: .ninja,
           srcDir,
@@ -69,11 +69,11 @@ public struct x265: Package {
           nasmEnabled)
 
         try env.make(toolType: .ninja)
-      })
+      }
     }
 
     if enable10bit {
-      try env.changingDirectory("10bit", block: { cwd in
+      try env.changingDirectory("10bit") { cwd in
         try env.cmake(
           toolType: .ninja,
           srcDir,
@@ -85,10 +85,10 @@ public struct x265: Package {
           nasmEnabled)
 
         try env.make(toolType: .ninja)
-      })
+      }
     }
 
-    try env.changingDirectory("8bit", block: { cwd in
+    try env.changingDirectory("8bit") { _ in
 
       var extraLib = [String]()
       if enable10bit {
@@ -154,7 +154,9 @@ public struct x265: Package {
       }
 
       try env.make(toolType: .ninja, "install")
-    })
+    }
+
+    try env.autoRemoveUnneedLibraryFiles()
   }
 
   public var tag: String {

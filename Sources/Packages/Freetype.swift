@@ -29,8 +29,12 @@ public struct Freetype: Package {
       source: source,
       dependencies: PackageDependencies(
         packages: [
+          .buildTool(Cmake.self),
+          .buildTool(Ninja.self),
+          .buildTool(PkgConfig.self),
           .runTime(Png.self),
-//          .runTime(Brotli.self),
+          .runTime(Bzip2.self),
+          .runTime(Brotli.self),
           withHarfbuzz ? .runTime(Harfbuzz.self) : nil
         ])
     )
@@ -38,18 +42,25 @@ public struct Freetype: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-//    try env.autogen()
+    func build(shared: Bool) throws {
+      try env.changingDirectory(env.randomFilename) { _ in
+        try env.cmake(
+          toolType: .ninja,
+          "..",
+          cmakeOnFlag(true, "FT_WITH_BROTLI"),
+          cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
+          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
+          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        )
 
-    try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(true, "freetype-config"),
-      configureWithFlag(true, "png"),
-      configureWithFlag(withHarfbuzz, "harfbuzz"),
-      configureWithFlag(false, "brotli")
-    )
+        try env.make(toolType: .ninja)
+        try env.make(toolType: .ninja, "install")
+      }
+    }
 
-    try env.make()
-    try env.make("install")
+    try build(shared: env.libraryType.buildShared)
+    if env.libraryType == .all {
+      try build(shared: false)
+    }
   }
 }

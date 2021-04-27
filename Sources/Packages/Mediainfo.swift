@@ -25,7 +25,7 @@ public struct Mediainfo: Package {
 
   public func build(with env: BuildEnvironment) throws {
     // build alone
-    try env.changingDirectory("ZenLib/Project/GNU/Library", block: { _ in
+    try env.changingDirectory("ZenLib/Project/GNU/Library") { _ in
       try env.autogen()
 
       try env.configure(
@@ -36,9 +36,9 @@ public struct Mediainfo: Package {
 
       try env.make()
       try env.make("install")
-    })
+    }
 
-    try env.changingDirectory("MediaInfoLib/Project/GNU/Library", block: { _ in
+    try env.changingDirectory("MediaInfoLib/Project/GNU/Library") { _ in
       try env.autogen()
 
       try env.configure(
@@ -50,9 +50,9 @@ public struct Mediainfo: Package {
 
       try env.make()
       try env.make("install")
-    })
+    }
 
-    try env.changingDirectory("MediaInfo/Project/GNU/CLI", block: { _ in
+    try env.changingDirectory("MediaInfo/Project/GNU/CLI") { _ in
       try env.autogen()
       
       try env.configure(
@@ -64,7 +64,7 @@ public struct Mediainfo: Package {
 
       try env.make()
       try env.make("install")
-    })
+    }
 
   }
 }

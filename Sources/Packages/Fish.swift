@@ -35,7 +35,7 @@ public struct Fish: Package {
     if env.target.system.isApple {
       env.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
     }
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
@@ -44,7 +44,7 @@ public struct Fish: Package {
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
-    })
+    }
   }
 
 }

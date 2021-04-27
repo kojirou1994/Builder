@@ -18,7 +18,14 @@ public struct Xml2: Package {
     }
 
     return .init(
-      source: source
+      source: source,
+      dependencies: .init(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Zlib.self),
+      ])
     )
   }
 
@@ -36,5 +43,25 @@ public struct Xml2: Package {
     try env.make()
 
     try env.make("install")
+  }
+
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [
+      .init(name: "libxml-2.0", content: """
+        prefix=\(sdkPath)/usr
+        exec_prefix=${prefix}
+        libdir=${exec_prefix}/lib
+        includedir=${prefix}/include
+        modules=1
+
+        Name: libXML
+        Version: 2.9.4
+        Description: libXML library version2.
+        Requires:
+        Libs: -L${libdir} -lxml2
+        Libs.private:  -lpthread -L{libdir} -lz   -liconv -lm
+        Cflags: -I${includedir}/libxml2
+        """)
+    ])
   }
 }

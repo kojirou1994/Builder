@@ -28,7 +28,7 @@ public struct Fmtconv: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/unix", block: { _ in
+    try env.changingDirectory("build/unix") { _ in
       try env.autogen()
 
       try env.configure(
@@ -37,6 +37,6 @@ public struct Fmtconv: Package {
 
       try env.make()
       try env.make("install")
-    })
+    }
   }
 }

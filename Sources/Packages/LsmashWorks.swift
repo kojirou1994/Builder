@@ -21,14 +21,14 @@ public struct LsmashWorks: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    try env.changingDirectory("VapourSynth", block: { _ in
+    try env.changingDirectory("VapourSynth") { _ in
       try env.configure(
       )
 
       try env.make()
 
       try env.make("install")
-    })
+    }
   }
 
 }

@@ -27,10 +27,10 @@ public struct NeoMiniDeen: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(toolType: .ninja, "..")
 
       try env.make(toolType: .ninja)
-    })
+    }
   }
 }

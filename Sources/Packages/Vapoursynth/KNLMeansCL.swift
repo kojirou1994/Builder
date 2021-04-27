@@ -23,12 +23,12 @@ public struct KNLMeansCL: Package {
 
   public func build(with env: BuildEnvironment) throws {
     if env.version > "1.1.1" {
-      try env.changingDirectory(env.randomFilename, block: { _ in
+      try env.changingDirectory(env.randomFilename) { _ in
         try env.meson("..")
 
         try env.launch("ninja")
         try env.launch("ninja", "install")
-      })
+      }
     } else {
       try env.launch(path: "./configure", "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)")
 

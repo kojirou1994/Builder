@@ -5,7 +5,7 @@ public struct Fribidi: Package {
   public init() {}
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build", block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.meson(
         "..",
         "--default-library=\(env.libraryType.mesonFlag)"
@@ -13,7 +13,7 @@ public struct Fribidi: Package {
 
       try env.launch("ninja")
       try env.launch("ninja", "install")
-    })
+    }
   }
 
   public var defaultVersion: PackageVersion {

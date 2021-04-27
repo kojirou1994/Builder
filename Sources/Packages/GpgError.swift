@@ -23,7 +23,7 @@ public struct GpgError: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    //    try env.autoreconf()
+
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,

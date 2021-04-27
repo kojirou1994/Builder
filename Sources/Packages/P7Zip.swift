@@ -38,7 +38,7 @@ public struct P7Zip: Package {
      cmake no install target
      https://github.com/jinfeihan57/p7zip/issues/116
      */
-//    try env.changingDirectory("CPP/7zip/CMAKE/build", block: { _ in
+//    try env.changingDirectory("CPP/7zip/CMAKE/build") { _ in
 //      try env.cmake(toolType: .ninja, "..")
 //
 //      try env.make(toolType: .ninja)

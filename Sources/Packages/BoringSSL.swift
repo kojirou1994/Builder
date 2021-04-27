@@ -26,7 +26,7 @@ public struct BoringSSL: Package {
   public func build(with env: BuildEnvironment) throws {
 
     func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename, block: { _ in
+      try env.changingDirectory(env.randomFilename) { _ in
 
         try env.cmake(
           toolType: .ninja,
@@ -40,7 +40,7 @@ public struct BoringSSL: Package {
         try env.fm.createDirectory(at: env.prefix.lib)
         try env.fm.copyItem(at: URL(fileURLWithPath: "crypto/libcrypto.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
         try env.fm.copyItem(at: URL(fileURLWithPath: "ssl/libssl.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
-      })
+      }
     }
 
     try build(shared: env.libraryType.buildShared)

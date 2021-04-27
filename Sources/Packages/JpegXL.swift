@@ -34,7 +34,7 @@ public struct JpegXL: Package {
 
     try replace(contentIn: "CMakeLists.txt", matching: "find_package(Python COMPONENTS Interpreter)", with: "") // disable manpages
 
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
 
       try env.cmake(
         toolType: .ninja,
@@ -47,7 +47,7 @@ public struct JpegXL: Package {
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
-    })
+    }
 
     try env.autoRemoveUnneedLibraryFiles()
   }

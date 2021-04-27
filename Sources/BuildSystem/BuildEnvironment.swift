@@ -68,13 +68,13 @@ public class BuildEnvironment {
 // MARK: FM Utilities
 extension BuildEnvironment {
 
-  public func changingDirectory(_ path: String, create: Bool = true, block: (URL) throws -> ()) throws {
-    try changingDirectory(URL(fileURLWithPath: path), create: create, block: block)
+  public func changingDirectory(_ path: String, create: Bool = true, _ block: (URL) throws -> ()) throws {
+    try changingDirectory(URL(fileURLWithPath: path), create: create, block)
   }
 
   public func changingDirectory(_ url: URL, create: Bool = true,
                                 // logger
-                                block: (URL) throws -> ()) throws {
+                                _ block: (URL) throws -> ()) throws {
     if create {
       try fm.createDirectory(at: url, withIntermediateDirectories: true)
     }

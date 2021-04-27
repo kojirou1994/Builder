@@ -61,7 +61,7 @@ public struct Zstd: Package {
    ZSTD_PROGRAMS_LINK_SHARED:BOOL=OFF
    */
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/cmake/build", block: { _ in
+    try env.changingDirectory("build/cmake/build") { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
@@ -76,6 +76,6 @@ public struct Zstd: Package {
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
-    })
+    }
   }
 }

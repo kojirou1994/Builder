@@ -27,7 +27,12 @@ public struct Gcrypt: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .runTime(GpgError.self))
+      dependencies: PackageDependencies(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .runTime(GpgError.self),
+      ])
     )
   }
 

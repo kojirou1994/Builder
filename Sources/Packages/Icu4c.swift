@@ -29,7 +29,7 @@ public struct Icu4c: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("icu4c/source", block: { _ in
+    try env.changingDirectory("icu4c/source") { _ in
       try env.autoreconf()
 
       try env.configure(
@@ -42,7 +42,7 @@ public struct Icu4c: Package {
 
       try env.make()
       try env.make("install")
-    })
+    }
   }
 
 }

@@ -31,11 +31,11 @@ public struct Bwdif: Package {
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.meson("..")
 
       try env.launch("ninja")
       try env.launch("ninja", "install")
-    })
+    }
   }
 }

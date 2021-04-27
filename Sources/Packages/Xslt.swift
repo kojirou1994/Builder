@@ -19,7 +19,14 @@ public struct Xslt: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .runTime(Xml2.self), .runTime(Gcrypt.self))
+      dependencies: PackageDependencies(packages: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Xml2.self),
+        .runTime(Gcrypt.self),
+      ])
     )
   }
 
@@ -34,6 +41,40 @@ public struct Xslt: Package {
       nil
     )
 
+    try env.make()
+
     try env.make("install")
+  }
+
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [
+      .init(name: "libxslt", content: """
+        prefix=\(sdkPath)/usr
+        exec_prefix=${prefix}
+        libdir=${exec_prefix}/lib
+        includedir=${prefix}/include
+
+        Name: libxslt
+        Version: 1.1.29
+        Description: XSLT library version 2.
+        Requires: libxml-2.0
+        Cflags: -I${includedir}
+        Libs: -L${libdir} -lxslt
+        Libs.private:
+        """),
+      .init(name: "libexslt", content: """
+        prefix=\(sdkPath)/usr
+        exec_prefix=${prefix}
+        libdir=${exec_prefix}/lib
+        includedir=${prefix}/include
+
+        Name: libexslt
+        Version: 0.8.17
+        Description: EXSLT Extension library
+        Requires: libxml-2.0
+        Cflags: -I${includedir}
+        Libs: -L${libdir} -lexslt -lxslt
+        """)
+    ])
   }
 }

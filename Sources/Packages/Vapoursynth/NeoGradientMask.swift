@@ -23,7 +23,7 @@ public struct NeoGradientMask: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename, block: { _ in
+    try env.changingDirectory(env.randomFilename) { _ in
       try env.cmake(toolType: .ninja, "..")
 
       try env.make(toolType: .ninja)
@@ -33,6 +33,6 @@ public struct NeoGradientMask: Package {
 //      try env.fm.createDirectory(at: installDir)
 //
 //      try env.fm.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
-    })
+    }
   }
 }
