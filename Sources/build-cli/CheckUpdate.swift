@@ -11,6 +11,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Autoconf>.self,
       PackageCheckUpdateCommand<Automake>.self,
       PackageCheckUpdateCommand<Bilateral>.self,
+      PackageCheckUpdateCommand<Bluray>.self,
       PackageCheckUpdateCommand<Bm3d>.self,
       PackageCheckUpdateCommand<Boost>.self,
       PackageCheckUpdateCommand<BoringSSL>.self,

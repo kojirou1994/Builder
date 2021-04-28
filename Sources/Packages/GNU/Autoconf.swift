@@ -23,7 +23,7 @@ public struct Autoconf: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [.runTime(M4.self)]),
+      dependencies: PackageDependencies(packages: [.buildTool(M4.self)]),
       supportedLibraryType: nil
     )
   }
@@ -36,6 +36,13 @@ public struct Autoconf: Package {
 
     try env.make()
     try env.make("install")
+  }
+
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    if order.target.system == .linuxGNU {
+      return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
+    }
+    return nil
   }
 
 }

@@ -22,10 +22,12 @@ extension ContiguousPipeline: CustomStringConvertible {
   }
 }
 
-public enum RebuildLevel: String, ExpressibleByArgument {
+public enum RebuildLevel: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible {
   case package
   case runTime
   case all
+
+  public var description: String { rawValue }
 }
 
 struct Builder {
@@ -40,7 +42,7 @@ struct Builder {
        strictMode: Bool, preferSystemPackage: Bool,
        enableBitcode: Bool, deployTarget: String?) throws {
     self.builderDirectoryURL = workDirectoryURL
-    self.srcRootDirectoryURL = workDirectoryURL.appendingPathComponent("working")
+    self.workingDirectoryURL = workDirectoryURL.appendingPathComponent("working")
     self.downloadCacheDirectory = workDirectoryURL.appendingPathComponent("download")
     self.logger = Logger(label: "Builder")
     self.productsDirectoryURL = packagesDirectoryURL
@@ -64,6 +66,41 @@ struct Builder {
     } else {
       sdkPath = nil
     }
+
+    var envValues = EnvironmentValues()
+    envValues[.path] = ""
+    if case let cargoHome = envValues["CARGO_HOME"],
+       !cargoHome.isEmpty {
+      logger.info("use cargo root from env: \(cargoHome)")
+      envValues.append(cargoHome, for: .path)
+    } else {
+      let defaultCargoHome = fm.homeDirectoryForCurrentUser.appendingPathComponent(".cargo").appendingPathComponent("bin")
+      if fm.fileExistance(at: defaultCargoHome) == .directory {
+        let path = defaultCargoHome.path
+        logger.info("use default cargo root: \(path)")
+        envValues.append(path, for: .path)
+      } else {
+        logger.warning("Can't find cargo root, you may install rustup first.")
+      }
+    }
+
+    do {
+      let pyenvRoot = try AnyExecutable(executableName: "pyenv", arguments: ["root"])
+        .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
+        .utf8Output()
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+      logger.info("use pyenv root: \(pyenvRoot)")
+      envValues.append("\(pyenvRoot)/shims", for: .path)
+    } catch {
+      logger.warning("Can't find pyenv root, you may install pyenv first.")
+    }
+
+    envValues.append("/usr/bin", for: .path)
+    envValues.append("/bin", for: .path)
+    envValues.append("/usr/sbin", for: .path)
+    envValues.append("/sbin", for: .path)
+
+    logger.info("Using PATH: \(envValues[.path])")
     
     self.env = .init(
       version: .head, source: .repository(url: "", requirement: .branch("main")),
@@ -71,7 +108,7 @@ struct Builder {
       dependencyMap: .init(),
       strictMode: strictMode,
       cc: cc, cxx: cxx,
-      environment: .init(),
+      environment: envValues,
       libraryType: libraryType, target: target, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget)
 
   }
@@ -81,7 +118,7 @@ struct Builder {
   let env: BuildEnvironment
   let logger: Logger
   let builderDirectoryURL: URL
-  let srcRootDirectoryURL: URL
+  let workingDirectoryURL: URL
   let downloadCacheDirectory: URL
   let productsDirectoryURL: URL
 
@@ -230,25 +267,10 @@ extension Builder {
   }
 
 
-  enum PackageBuildResult {
-    case built(PackagePath) // add summary info
-    case system(SystemPackage)
-  }
-
-  private func getBuildResult(
-    package: Package, order: PackageOrder,
-    reason: BuildReason,
-    prefix: PackagePath? = nil,
-    dependencyMap: PackageDependencyMap) throws -> PackageBuildResult {
-    if preferSystemPackage,
-       case .dependency = reason,
-       let sdkPath = self.env.sdkPath,
-       let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
-      logger.info("Using system package: \(package.name)")
-      return .system(systemPackage)
-    }
-
-    return try .built(build(package: package, order: order, reason: reason, prefix: prefix, dependencyMap: dependencyMap))
+  private struct InternalBuildResult {
+    let prefix: PackagePath
+    let products: [BuildProduct]
+    // add summary info
   }
 
   ///
@@ -259,10 +281,10 @@ extension Builder {
   ///   - dependencyMap: all dependencies for the package
   /// - Throws:
   /// - Returns: package installed prefix
-  func build(package: Package, order: PackageOrder,
+  private func build(package: Package, order: PackageOrder,
              reason: BuildReason,
              prefix: PackagePath? = nil,
-             dependencyMap: PackageDependencyMap) throws -> PackagePath {
+             dependencyMap: PackageDependencyMap) throws -> InternalBuildResult {
 
     let startTime = Date()
 
@@ -271,22 +293,63 @@ extension Builder {
       .map { try preconditionOrThrow(canStartBuild(packageSupported: $0)) }
 
     let usedPrefix: PackagePath
+    var result: InternalBuildResult {
+      .init(prefix: usedPrefix, products: recipe.products)
+    }
+
+    func summaryAndFinish() throws -> InternalBuildResult {
+      let endTime = Date()
+
+      let summary = PackageBuildSummary(order: order, startTime: startTime, endTime: endTime, reason: reason)
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
+      logger.info("Writing summary...")
+      try encoder.encode(summary).write(to: usedPrefix.appending(buildSummaryFilename))
+
+      return result
+    }
+
     if let v = prefix {
       usedPrefix = v
     } else {
       usedPrefix = formPrefix(package: package, order: order, recipe: recipe)
       if env.fm.fileExistance(at: usedPrefix.root.appendingPathComponent(buildSummaryFilename)).exists {
         logger.info("Built package existed.")
+        // MARK: Rebuild Handling
         switch (rebuildLevel, reason) {
         case (.all, _),
              (.runTime, .dependency(package: _, time: .runTime)),
+             (.runTime, .user),
              (.package, .user):
           logger.info("Rebuilding required, removing built package.")
           try env.removeItem(at: usedPrefix.root)
         default:
-          return usedPrefix
+          return result
         }
       }
+    }
+
+    // MARK: Install system package, skip building
+    if preferSystemPackage,
+       case .dependency = reason,
+       package.tag.isEmpty,
+       let sdkPath = self.env.sdkPath,
+       let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
+      logger.info("Using system package: \(package.name)")
+      // auto generated pkgconfig
+
+      let pkgConfigDirectoryURL = usedPrefix.pkgConfig
+      try env.fm.createDirectory(at: pkgConfigDirectoryURL)
+      try systemPackage.pkgConfigs.forEach { pkgConfig in
+        logger.info("Writing system pkg config \(pkgConfig.name)")
+        try pkgConfig.content
+          .write(to: pkgConfigDirectoryURL
+                  .appendingPathComponent(pkgConfig.name)
+                  .appendingPathExtension("pc"),
+                 atomically: true, encoding: .utf8)
+      }
+
+      return try summaryAndFinish()
     }
 
     // MARK: Setup Build Environment
@@ -300,24 +363,6 @@ extension Builder {
         .filter { fm.fileExistance(at: $0) == .directory }
         .map(\.path)
         .joined(separator: ":")
-
-      // auto generated pkgconfig
-      do {
-        let builderPkgConfigPath = srcRootDirectoryURL.appendingPathComponent(genRandomFilename(prefix: "tmp_pkg_config", length: 6))
-        try env.fm.createDirectory(at: builderPkgConfigPath)
-        try dependencyMap.systemPackages.forEach { systemPackage in
-          try systemPackage.pkgConfigs.forEach { pkgConfig in
-            logger.info("Writing system pkg config \(pkgConfig.name)")
-            try pkgConfig.content
-              .write(to: builderPkgConfigPath
-                      .appendingPathComponent(pkgConfig.name)
-                      .appendingPathExtension("pc"),
-                     atomically: true, encoding: .utf8)
-          }
-        }
-
-        environment.append(builderPkgConfigPath.path, for: .pkgConfigPath, separator: EnvironmentValueSeparator.path)
-      }
 
       /*
        ACLOCAL
@@ -407,7 +452,7 @@ extension Builder {
       environment: environment,
       prefix: usedPrefix)
 
-    let tmpWorkDirURL = srcRootDirectoryURL.appendingPathComponent(package.name + UUID().uuidString)
+    let tmpWorkDirURL = workingDirectoryURL.appendingPathComponent(package.name + UUID().uuidString)
 
     try env.fm.createDirectory(at: usedPrefix.root)
     do {
@@ -427,15 +472,7 @@ extension Builder {
       throw error
     }
 
-    let endTime = Date()
-
-    let summary = PackageBuildSummary(order: order, startTime: startTime, endTime: endTime, reason: reason)
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
-    logger.info("Writing summary...")
-    try encoder.encode(summary).write(to: usedPrefix.appending(buildSummaryFilename))
-
-    return usedPrefix
+    return try summaryAndFinish()
   }
 }
 
@@ -449,14 +486,21 @@ public func replace(contentIn file: String, matching string: String, with newStr
   try replace(contentIn: URL(fileURLWithPath: file), matching: string, with: newString)
 }
 
+public struct PackageBuildResult {
+  public let prefix: PackagePath
+  public let products: [BuildProduct]
+  public let dependencyMap: PackageDependencyMap
+  public let runTimeDependencyMap: PackageDependencyMap
+}
+
 extension Builder {
-  func startBuild(package: Package, version: PackageVersion?) throws -> PackagePath {
+  public func startBuild(package: Package, version: PackageVersion?) throws -> PackageBuildResult {
     if cleanAll {
       print("Cleaning products directory...")
       try? env.removeItem(at: productsDirectoryURL)
     }
     print("Cleaning working directory...")
-    try? env.removeItem(at: srcRootDirectoryURL)
+    try? env.removeItem(at: workingDirectoryURL)
 
     try env.mkdir(downloadCacheDirectory)
 
@@ -476,13 +520,14 @@ extension Builder {
 
     let summary = try buildPackageAndDependencies(package: package, order: order, reason: nil, prefix: dependencyPrefix, parentLevel: 0)
 
-    let prefix = try build(package: package, order: order, reason: .user, dependencyMap: summary.dependencyMap)
-    print("The built package is in \(prefix.root.path)")
-    return prefix
+    let buildResult = try build(package: package, order: order, reason: .user, dependencyMap: summary.dependencyMap)
+    print("The built package is in \(buildResult.prefix.root.path)")
+    return .init(prefix: buildResult.prefix, products: buildResult.products,
+                 dependencyMap: summary.dependencyMap, runTimeDependencyMap: summary.runTimeDependencyMap)
   }
 
-  struct BuildSummary {
-    let packageSelfResult: PackageBuildResult?
+  private struct InternalBuildSummary {
+    let packageSelfResult: InternalBuildResult?
     let dependencyMap: PackageDependencyMap
     let runTimeDependencyMap: PackageDependencyMap
     let level: Int
@@ -492,7 +537,7 @@ extension Builder {
   private func buildPackageAndDependencies(
     package: Package, order: PackageOrder,
     reason: BuildReason?,
-    prefix: PackagePath?, parentLevel: Int) throws -> BuildSummary {
+    prefix: PackagePath?, parentLevel: Int) throws -> InternalBuildSummary {
 
     logger.info("Building \(package.name), order: \(order)")
     let currentLevel = parentLevel + 1
@@ -517,10 +562,10 @@ extension Builder {
         switch dependencyPackage.requiredTime {
         case .buildTime: break
         case .runTime:
-          runTimeDependencyMap.add(package: dependencyPackage.package, result: dependencySummary.packageSelfResult!)
+          runTimeDependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.packageSelfResult!.prefix)
           runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
         }
-        dependencyMap.add(package: dependencyPackage.package, result: dependencySummary.packageSelfResult!)
+        dependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.packageSelfResult!.prefix)
         dependencyMap.merge(dependencySummary.runTimeDependencyMap)
       }
       try dependencies.otherPackages.forEach { otherPackages in
@@ -538,8 +583,7 @@ extension Builder {
       logger.info("Dependency level limit reached, dependencies are ignored.")
     }
 
-
-    let result = try reason.map { try getBuildResult(package: package, order: order, reason: $0, prefix: prefix, dependencyMap: dependencyMap) }
+    let result = try reason.map { try build(package: package, order: order, reason: $0, prefix: prefix, dependencyMap: dependencyMap) }
 
     return .init(packageSelfResult: result, dependencyMap: dependencyMap, runTimeDependencyMap: runTimeDependencyMap, level: currentLevel)
   }

@@ -1,13 +1,9 @@
 public struct PackageDependencyMap {
   /// requiered package dependencies, value is install prefix
-  private var packageDependencies: [ObjectIdentifier: PackagePath] = .init()
+  private(set) var packageDependencies: [ObjectIdentifier: PackagePath] = .init()
 
   /// requiered brew formula dependencies, value is install prefix
-  private var brewDependencies: [String: PackagePath] = .init()
-
-  private var systemPackageIDs: Set<ObjectIdentifier> = .init()
-
-  private(set) var systemPackages: [SystemPackage] = .init()
+  private(set) var brewDependencies: [String: PackagePath] = .init()
 
   private subscript(_ key: ObjectIdentifier) -> PackagePath? {
     get {
@@ -34,15 +30,8 @@ public struct PackageDependencyMap {
 
   //  let conflictHandler: () -> ()
 
-  mutating func add(package: Package, result: Builder.PackageBuildResult) {
-    switch result {
-    case .built(let prefix):
-      self[package.identifier] = prefix
-    case .system(let systemPackage):
-      self[package.identifier] = systemPackage.prefix
-      systemPackages.append(systemPackage)
-      systemPackageIDs.insert(package.identifier)
-    }
+  mutating func add(package: Package, prefix: PackagePath) {
+    self[package.identifier] = prefix
   }
 
   private mutating func merge(_ other: [ObjectIdentifier : PackagePath]) {
@@ -56,8 +45,6 @@ public struct PackageDependencyMap {
   mutating func merge(_ other: Self) {
     mergeBrewDependency(other.brewDependencies)
     merge(other.packageDependencies)
-    self.systemPackages.append(contentsOf: other.systemPackages)
-    self.systemPackageIDs.formUnion(other.systemPackageIDs)
   }
 
   public internal(set) subscript(_ formula: String) -> PackagePath {
@@ -72,11 +59,7 @@ public struct PackageDependencyMap {
   /// not including the system packages
   public var allPrefixes: [PackagePath] {
     var r = [PackagePath]()
-    packageDependencies.forEach { (id, packageDependency) in
-      if !systemPackageIDs.contains(id) {
-        r.append(packageDependency)
-      }
-    }
+    r.append(contentsOf: packageDependencies.values)
     r.append(contentsOf: brewDependencies.values)
     return r
   }

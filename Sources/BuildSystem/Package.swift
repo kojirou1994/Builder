@@ -82,6 +82,11 @@ public protocol Package: ParsableArguments, CustomStringConvertible, Encodable {
 
 public extension Package {
 
+  init(_ initialize: (inout Self) -> Void) {
+    self = Self.defaultPackage
+    initialize(&self)
+  }
+
   var buildInfo: String { "" }
 
   var tag: String { "" }

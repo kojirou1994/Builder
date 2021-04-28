@@ -59,7 +59,7 @@ public struct Xml2: Package {
         Description: libXML library version2.
         Requires:
         Libs: -L${libdir} -lxml2
-        Libs.private:  -lpthread -L{libdir} -lz   -liconv -lm
+        Libs.private:  -lpthread -L${libdir} -lz   -liconv -lm
         Cflags: -I${includedir}/libxml2
         """)
     ])

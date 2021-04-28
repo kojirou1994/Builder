@@ -1,8 +1,8 @@
 import Foundation
 import TSCBasic
 
-struct BuilderLauncher: ExecutableLauncher {
-  func generateProcess<T>(for executable: T) throws -> Process where T : Executable {
+public struct BuilderLauncher: ExecutableLauncher {
+  public func generateProcess<T>(for executable: T) throws -> Process where T : Executable {
     let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable, overridePath: environment["PATH"])
     let arguments = CollectionOfOne(launchPath) + executable.arguments
 
@@ -20,7 +20,7 @@ struct BuilderLauncher: ExecutableLauncher {
     }
   }
 
-  func launch<T>(executable: T, options: ExecutableLaunchOptions) throws -> LaunchResult where T : Executable {
+  public func launch<T>(executable: T, options: ExecutableLaunchOptions) throws -> LaunchResult where T : Executable {
     let process = try generateProcess(for: executable)
     // log arguments
     print(process.arguments)
@@ -38,11 +38,20 @@ struct BuilderLauncher: ExecutableLauncher {
     return result
   }
 
-  typealias Process = TSCExecutableLauncher.Process
+  public typealias Process = TSCExecutableLauncher.Process
 
-  typealias LaunchResult = TSCExecutableLauncher.LaunchResult
+  public typealias LaunchResult = TSCExecutableLauncher.LaunchResult
 
-  let tsc: TSCExecutableLauncher
+  var tsc: TSCExecutableLauncher
+
+  public var outputRedirection: Process.OutputRedirection {
+    get {
+      tsc.outputRedirection
+    }
+    set {
+      tsc = .init(outputRedirection: newValue)
+    }
+  }
 
   let dateFormatter: DateFormatter = .init()
 

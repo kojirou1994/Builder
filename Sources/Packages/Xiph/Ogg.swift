@@ -12,6 +12,14 @@ public struct Ogg: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
+    switch order.target.system {
+    case .macCatalyst:
+      throw PackageRecipeError.unsupportedTarget
+    default:
+      break
+    }
+
     let source: PackageSource
     switch order.version {
     case .head:

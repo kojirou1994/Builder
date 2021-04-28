@@ -49,7 +49,7 @@ public class BuildEnvironment {
   public let sdkPath: String?
   public let deployTarget: String?
 
-  var launcher: BuilderLauncher {
+  public var launcher: BuilderLauncher {
     .init(environment: environment.values)
   }
 

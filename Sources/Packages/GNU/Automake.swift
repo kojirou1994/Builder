@@ -35,4 +35,11 @@ public struct Automake: Package {
 //    """.write(to: env.prefix.appending("share", "aclocal", "dirlist"), atomically: true, encoding: .utf8)
   }
 
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    if order.target.system == .linuxGNU {
+      return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
+    }
+    return nil
+  }
+
 }

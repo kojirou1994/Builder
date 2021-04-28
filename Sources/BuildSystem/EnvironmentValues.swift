@@ -5,12 +5,7 @@ public struct EnvironmentValues {
   private(set) var values: [String : String]
 
   init() {
-    values = ProcessInfo.processInfo.environment
-    self[.path] = ""
-    self.append("/usr/bin", for: .path)
-    self.append("/bin", for: .path)
-    self.append("/usr/sbin", for: .path)
-    self.append("/sbin", for: .path)
+    self.values = ProcessInfo.processInfo.environment
   }
 
   public subscript(key: EnvironmentKey) -> String {
@@ -25,7 +20,23 @@ public struct EnvironmentValues {
     }
   }
 
-  public mutating func append(_ value: String, for keys: EnvironmentKey..., separator: String = " ") {
+  public mutating func append(_ value: String, for keys: EnvironmentKey...) {
+    keys.forEach { key in
+      let separator: String
+      switch key {
+      case .path, .pkgConfigPath, .aclocalPath:
+        separator = EnvironmentValueSeparator.path
+      case .cflags, .ldflags, .cxxflags,
+           .libs:
+        separator = EnvironmentValueSeparator.flag
+      default: separator = ""
+      }
+      append(value, for: key, separator: separator)
+    }
+  }
+
+
+  public mutating func append(_ value: String, for keys: EnvironmentKey..., separator: String) {
     guard !value.isEmpty else {
       return
     }
@@ -63,6 +74,9 @@ public extension EnvironmentKey {
   static let aclocalPath: Self = "ACLOCAL_PATH"
 }
 
+extension EnvironmentKey: Equatable { }
+
 public enum EnvironmentValueSeparator {
   public static var path: String { ":" }
+  public static var flag: String { " " }
 }

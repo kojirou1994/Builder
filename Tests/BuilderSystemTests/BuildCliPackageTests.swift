@@ -5,8 +5,9 @@ import Version
 final class BuildCliPackageTests: XCTestCase {
 
   func testDefaultPackageAvailablity() {
-    var allNames = Set<String>()
     let allTargets = BuildTriple.all
+    var allPackagesMap = [String : Package.Type]()
+
     for package in allPackages {
       XCTAssertNoThrow(try package.parse([]))
       let defaultPackage = package.defaultPackage
@@ -24,9 +25,12 @@ final class BuildCliPackageTests: XCTestCase {
       XCTAssertNotNil(URL(string: recipe.source.url),
                       "Invalid default source's url for package \(package.name), url: \(recipe.source.url)")
 
-      // check package names
-      if !allNames.insert(package.name).inserted {
-        XCTFail("duplicated package name: \(package.name)")
+      // check package names, the package name should be case insensitive unique
+      let uniqueKey = package.name.lowercased()
+      if let existedPackage = allPackagesMap[uniqueKey] {
+        XCTFail("duplicated package name \"\(uniqueKey)\": \(package) and \(existedPackage)")
+      } else {
+        allPackagesMap[uniqueKey] = package
       }
     }
   }

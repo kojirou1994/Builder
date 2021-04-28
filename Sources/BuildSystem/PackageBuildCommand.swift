@@ -78,70 +78,86 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
       let builder = try Builder(options: builderOptions, target: target,
                                 addLibInfoInPrefix: prefixLibInfo, deployTarget: deployTarget)
 
-      let installedPrefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
-      builder.logger.info("Package is installed at: \(installedPrefix.root.path)")
+      let buildResult = try builder.startBuild(package: package, version: builderOptions.packageVersion)
+      builder.logger.info("Package is installed at: \(buildResult.prefix.root.path)")
 
       if let installContent = installOptions.installContent {
-        builder.logger.info("Installing \(installContent)")
         let fm: URLFileManager = .init()
-        let installSources: [URL]
-        switch installContent {
-        case .bin:
-          installSources = [installedPrefix.bin]
-        case .lib:
-          installSources = [installedPrefix.include, installedPrefix.lib]
-        case .all:
-          installSources = try fm.contentsOfDirectory(at: installedPrefix.root)
-        case .pkgconfig:
-          installSources = [installedPrefix.pkgConfig]
-        }
 
         let installDestPrefix = URL(fileURLWithPath: installOptions.installPrefix)
 
-        installSources.forEach { installSource in
-          guard let enumerator = fm.enumerator(at: installSource, options: [.skipsHiddenFiles]) else {
-            // show error
-            return
+        func install(from prefix: PackagePath) throws {
+          let action = installOptions.uninstall ? "Uninstalling" : "Installing"
+          builder.logger.info("\(action) from \(prefix)")
+          let installSources: [URL]
+          switch installContent {
+          case .bin:
+            installSources = [prefix.bin]
+          case .lib:
+            installSources = [prefix.include, prefix.lib]
+          case .all:
+            installSources = [prefix.root]
+          case .pkgconfig:
+            installSources = [prefix.pkgConfig]
           }
-          for case let url as URL in enumerator {
-            if fm.fileExistance(at: url) == .file {
-              let relativePath = url.path.dropFirst(installedPrefix.root.path.count)
-                .drop(while: {"/" == $0 })
 
-              let destURL = installDestPrefix.appendingPathComponent(String(relativePath))
+          installSources.forEach { installSource in
+            guard let enumerator = fm.enumerator(at: installSource, options: [.skipsHiddenFiles]) else {
+              // show error
+              return
+            }
+            for case let url as URL in enumerator {
+              if fm.fileExistance(at: url) == .file {
+                let relativePath = url.path.dropFirst(prefix.root.path.count)
+                  .drop(while: {"/" == $0 })
 
-              if installOptions.uninstall {
-                do {
-                  if fm.fileExistance(at: destURL).exists {
-                    print("removing \(destURL.path)")
-                    try fm.removeItem(at: destURL)
+                let destURL = installDestPrefix.appendingPathComponent(String(relativePath))
+
+                if installOptions.uninstall {
+                  do {
+                    if fm.fileExistance(at: destURL).exists {
+                      print("removing \(destURL.path)")
+                      try fm.removeItem(at: destURL)
+                    }
+                  } catch {
+                    print("uninstall failed: \(error.localizedDescription)")
                   }
-                } catch {
-                  print("uninstall failed: \(error.localizedDescription)")
-                }
-              } else {
-                print("\(relativePath) --> \(destURL.path)")
-                try! fm.createDirectory(at: destURL.deletingLastPathComponent())
-                do {
-                  if fm.isDeletableFile(at: destURL), installOptions.forceInstall {
-                    print("removing existed \(destURL.path)")
-                    try fm.removeItem(at: destURL)
+                } else {
+                  print("\(relativePath) --> \(destURL.path)")
+                  try! fm.createDirectory(at: destURL.deletingLastPathComponent())
+                  do {
+                    if fm.isDeletableFile(at: destURL), installOptions.forceInstall {
+                      print("removing existed \(destURL.path)")
+                      try fm.removeItem(at: destURL)
+                    }
+                    switch installOptions.installMethod {
+                    case .link:
+                      try fm.createSymbolicLink(at: destURL, withDestinationURL: url)
+                    case .copy:
+                      try fm.copyItem(at: url, to: destURL)
+                    }
+                  } catch {
+                    print("install failed: \(error.localizedDescription)")
                   }
-                  switch installOptions.installMethod {
-                  case .link:
-                    try fm.createSymbolicLink(at: destURL, withDestinationURL: url)
-                  case .copy:
-                    try fm.copyItem(at: url, to: destURL)
-                  }
-                } catch {
-                  print("install failed: \(error.localizedDescription)")
                 }
               }
-
             }
+          } // installSources forEach end
+        } // install func end
+
+        try install(from: buildResult.prefix)
+        switch installOptions.installLevel {
+        case .package:
+          break
+        case .runTime:
+          try buildResult.runTimeDependencyMap.packageDependencies.values.forEach { prefix in
+            try install(from: prefix)
+          }
+        case .all:
+          try buildResult.dependencyMap.packageDependencies.values.forEach { prefix in
+            try install(from: prefix)
           }
         }
-
       }
     }
   }
@@ -177,7 +193,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   var autoModulemap: Bool = true
 
   public mutating func run() throws {
-    var builtPackages = [BuildTargetSystem : [(arch: BuildArch, prefix: PackagePath)]]()
+    var builtPackages = [BuildTargetSystem : [(arch: BuildArch, result: PackageBuildResult)]]()
     var failedTargets = [BuildTriple]()
     let unsupportedTargets = [BuildTriple]()
 
@@ -186,9 +202,9 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         print("Building \(target)")
         let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)
 
-        let prefix = try builder.startBuild(package: package, version: builderOptions.packageVersion)
+        let result = try builder.startBuild(package: package, version: builderOptions.packageVersion)
 
-        builtPackages[target.system, default: []].append((target.arch, prefix))
+        builtPackages[target.system, default: []].append((target.arch, result))
       } catch {
         print("ERROR!", error)
         failedTargets.append(target)
@@ -231,13 +247,13 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         let libraryFileURL: URL
         let tmpDirectory = xcTempDirectory.appendingPathComponent("\(system)-\(systemPackages.map(\.arch.rawValue).joined(separator: "_"))")
         if systemPackages.count == 1 {
-          libraryFileURL = systemPackages[0].prefix.lib.appendingPathComponent(libraryFilename)
+          libraryFileURL = systemPackages[0].result.prefix.lib.appendingPathComponent(libraryFilename)
             .resolvingSymlinksInPath()
         } else {
           try retry(body: fm.createDirectory(at: tmpDirectory))
           let fatOutput = tmpDirectory.appendingPathComponent(libraryFilename)
           let lipoArguments = ["-create", "-output", fatOutput.path]
-            + systemPackages.map { $0.prefix.lib.appendingPathComponent(libraryFilename).path }
+            + systemPackages.map { $0.result.prefix.lib.appendingPathComponent(libraryFilename).path }
           let lipo = AnyExecutable(executableName: "lipo",
                                    arguments: lipoArguments)
           try lipo.launch(use: TSCExecutableLauncher(outputRedirection: .none))
@@ -252,11 +268,11 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
             let headerDstURL = headerIncludeDir.appendingPathComponent(headerFilename)
             let headerSuperDirectory = headerDstURL.deletingLastPathComponent()
             try fm.createDirectory(at: headerSuperDirectory)
-            try fm.copyItem(at: systemPackages[0].prefix.include.appendingPathComponent(headerFilename),
+            try fm.copyItem(at: systemPackages[0].result.prefix.include.appendingPathComponent(headerFilename),
                             to: headerDstURL)
           }
         } else {
-          headerIncludeDir = systemPackages[0].prefix.include
+          headerIncludeDir = systemPackages[0].result.prefix.include
         }
         if autoModulemap {
           // create tmp framework
@@ -282,11 +298,19 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
             }
           }
 
+          let shimFilename = "\(libraryName)_shim.h"
+          let shimURL = frameworkHeadersDirectory.appendingPathComponent(shimFilename)
+          let shimContent = headerFiles.map { "#include \"\($0)\"" }.joined(separator: "\n")
+          try shimContent
+            .write(to: shimURL, atomically: true, encoding: .utf8)
+
           let modulemap = """
           framework module \(libraryName) {
-          \(headerFiles.map { "  header \"\($0)\"" }.joined(separator: "\n"))
+          \(headerFiles.map { "//  header \"\($0)\"" }.joined(separator: "\n"))
+            umbrella header "\(shimFilename)"
             export *
-            // module * { export * }
+            module * { export * }
+            //requires objc
           }
           """
           try modulemap.write(to: frameworkModulesDirectory.appendingPathComponent("module.modulemap"), atomically: true, encoding: .utf8)
@@ -325,16 +349,16 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     }
 
     if autoPackXC {
-//      let products = package.products
-//
-//      try products.forEach { product in
-//        switch product {
-//        case let .library(name: libraryName, headers: headers):
-//          try packXCFramework(libraryName: libraryName, headers: headers)
-//        default:
-//          break
-//        }
-//      }
+      let products = builtPackages.values.first!.first!.result.products
+
+      try products.forEach { product in
+        switch product {
+        case let .library(name: libraryName, headers: headers):
+          try packXCFramework(libraryName: libraryName, headers: headers)
+        default:
+          break
+        }
+      }
     }
   }
 }
@@ -411,8 +435,8 @@ extension Builder {
   init(options: BuilderOptions, target: BuildTriple, addLibInfoInPrefix: Bool, deployTarget: String?) throws {
     // TODO: use argument parser to parse environment
     // see: https://github.com/apple/swift-argument-parser/issues/4
-    let cc = ProcessInfo.processInfo.environment["CC"] ?? BuildTargetSystem.native.cc
-    let cxx = ProcessInfo.processInfo.environment["CXX"] ?? BuildTargetSystem.native.cxx
+    let cc = ProcessInfo.processInfo.environment[EnvironmentKey.cc.string] ?? BuildTargetSystem.native.cc
+    let cxx = ProcessInfo.processInfo.environment[EnvironmentKey.cxx.string] ?? BuildTargetSystem.native.cxx
 
     try self.init(
       workDirectoryURL: URL(fileURLWithPath: options.workPath),
@@ -451,10 +475,13 @@ struct InstallOptions: ParsableArguments {
   @Option(help: "Install method, available: \(InstallMethod.allCases.map(\.rawValue).joined(separator: ", "))")
   var installMethod: InstallMethod = .link
 
+  @Option(help: "Install level, available: \(RebuildLevel.allCases.map(\.rawValue).joined(separator: ", "))")
+  var installLevel: RebuildLevel = .package
+
   @Option(help: "Install prefix")
   var installPrefix: String = "/usr/local"
 
-  @Flag
+  @Flag(help: "Install existed files")
   var forceInstall: Bool = false
 
   @Flag

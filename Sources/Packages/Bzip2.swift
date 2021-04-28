@@ -54,6 +54,8 @@ public struct Bzip2: Package {
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
-    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
+    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [
+      .init(name: "bzip2", content: pkgConfig(prefix: sdkPath + "/usr"))
+    ])
   }
 }
