@@ -385,6 +385,7 @@ extension Builder {
           .split(separator: ":")
           .map(String.init)
       ).joined(separator: ":")
+      environment[.cmakePrefixPath] = environment[.path]
 
       // TODO: keep user's flags?
       environment[.cflags] = ""

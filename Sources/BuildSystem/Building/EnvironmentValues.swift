@@ -72,6 +72,7 @@ public extension EnvironmentKey {
   static let ldflags: Self = "LDFLAGS"
   static let libs: Self = "LIBS"
   static let aclocalPath: Self = "ACLOCAL_PATH"
+  static let cmakePrefixPath: Self = "CMAKE_PREFIX_PATH"
 }
 
 extension EnvironmentKey: Equatable { }
