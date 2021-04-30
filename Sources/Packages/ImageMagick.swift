@@ -1,5 +1,4 @@
 import BuildSystem
-import Precondition
 
 public struct ImageMagick: Package {
 

@@ -1,11 +1,3 @@
-import Version
-
-extension Version: ExpressibleByStringLiteral {
-  public init(stringLiteral value: String) {
-    self.init(tolerant: value)!
-  }
-}
-
 public struct PackageDependency {
 
   private init(_ package: Package, requiredTime: DependencyTime, options: Options = .init()) {
@@ -38,20 +30,20 @@ public struct PackageDependency {
   internal let options: Options
 
   internal struct Options {
-    internal init(target: BuildTriple? = nil,
+    internal init(target: TargetTriple? = nil,
                 version: Range<Version>? = nil) {
       self.target = target
       self.version = version
     }
 
     /// override the default build target, useful for building tools
-    public let target: BuildTriple?
+    public let target: TargetTriple?
     public let version: Range<Version>?
   }
 
 }
 
-internal enum OtherPackageManager: String {
+public enum OtherPackageManager: String {
   case cargo
   case brew
   case pip

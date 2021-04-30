@@ -1,6 +1,6 @@
 import ExecutableLauncher
 
-extension BuildTargetSystem {
+extension TargetSystem {
   func getSdkPath() throws -> String {
     try AnyExecutable(
       executableName: "xcrun",

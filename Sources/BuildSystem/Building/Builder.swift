@@ -8,7 +8,6 @@ import Crypto
 #else
 #error("Unsupported platform!")
 #endif
-import Version
 import ExecutableLauncher
 #if canImport(FoundationNetworking)
 import FoundationNetworking
@@ -35,7 +34,7 @@ struct Builder {
        packagesDirectoryURL: URL,
        cc: String, cxx: String,
        libraryType: PackageLibraryBuildType,
-       target: BuildTriple,
+       target: TargetTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
@@ -269,7 +268,7 @@ extension Builder {
 
   private struct InternalBuildResult {
     let prefix: PackagePath
-    let products: [BuildProduct]
+    let products: [PackageProduct]
     // add summary info
   }
 
@@ -333,7 +332,7 @@ extension Builder {
     if preferSystemPackage,
        case .dependency = reason,
        package.tag.isEmpty,
-       let sdkPath = self.env.sdkPath,
+       case let sdkPath = self.env.sdkPath ?? "",
        let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
       logger.info("Using system package: \(package.name)")
       // auto generated pkgconfig
@@ -424,7 +423,7 @@ extension Builder {
       }
       
       if let deployTarget = env.deployTarget {
-        let flag = "\(env.target.system.minVersionClangFlag)=\(deployTarget)"
+        let flag = "\(env.order.target.system.minVersionClangFlag)=\(deployTarget)"
         environment.append(flag, for: .cflags, .cxxflags)
         environment.append(flag, for: .ldflags)
       }
@@ -476,19 +475,9 @@ extension Builder {
   }
 }
 
-public func replace(contentIn file: URL, matching string: String, with newString: String) throws {
-  try String(contentsOf: file)
-    .replacingOccurrences(of: string, with: newString)
-    .write(to: file, atomically: true, encoding: .utf8)
-}
-
-public func replace(contentIn file: String, matching string: String, with newString: String) throws {
-  try replace(contentIn: URL(fileURLWithPath: file), matching: string, with: newString)
-}
-
 public struct PackageBuildResult {
   public let prefix: PackagePath
-  public let products: [BuildProduct]
+  public let products: [PackageProduct]
   public let dependencyMap: PackageDependencyMap
   public let runTimeDependencyMap: PackageDependencyMap
 }
@@ -505,7 +494,7 @@ extension Builder {
     try env.mkdir(downloadCacheDirectory)
 
     let dependencyPrefix: PackagePath?
-    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.target)
+    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.order.target)
     let recipe = try package.recipe(for: order)
 
     if joinDependency {
@@ -590,7 +579,7 @@ extension Builder {
 
   func newBuildEnvironment(
     version: PackageVersion, source: PackageSource,
-    target: BuildTriple,
+    target: TargetTriple,
     dependencyMap: PackageDependencyMap,
     environment: EnvironmentValues,
     prefix: PackagePath) -> BuildEnvironment {

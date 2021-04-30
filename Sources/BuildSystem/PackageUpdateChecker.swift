@@ -4,6 +4,21 @@ import Precondition
 import FoundationNetworking
 #endif
 
+extension Version {
+  var nextMajor: Self {
+    .init(major: major + 1, minor: 0, patch: 0)
+  }
+
+  var nextMinor: Self {
+    .init(major: major, minor: minor + 1, patch: 0)
+  }
+
+  var nextPatch: Self {
+    .init(major: major, minor: minor, patch: patch + 1)
+  }
+}
+
+
 public struct PackageUpdateChecker {
   let logger = Logger(label: "check-update")
   let session = URLSession(configuration: .ephemeral)

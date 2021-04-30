@@ -20,6 +20,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Bzip2>.self,
       PackageBuildAllCommand<CAres>.self,
       PackageBuildAllCommand<Cas>.self,
+      PackageBuildAllCommand<Choco>.self,
       PackageBuildAllCommand<Cmake>.self,
       PackageBuildAllCommand<Corkscrew>.self,
       PackageBuildAllCommand<Ctmf>.self,

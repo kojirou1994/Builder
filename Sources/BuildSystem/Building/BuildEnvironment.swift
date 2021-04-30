@@ -3,8 +3,9 @@ import Logging
 import KwiftUtility
 
 public class BuildEnvironment {
-  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: BuildTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
-    self.version = version
+
+  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: TargetTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
+    self.order = .init(version: version, target: target)
     self.source = source
     self.prefix = prefix
     self.dependencyMap = dependencyMap
@@ -13,7 +14,7 @@ public class BuildEnvironment {
     self.cxx = cxx
     self.environment = environment
     self.libraryType = libraryType
-    self.target = target
+
     self.logger = logger
     self.enableBitcode = enableBitcode
     self.sdkPath = sdkPath
@@ -21,8 +22,16 @@ public class BuildEnvironment {
   }  
 
   
-  public let fm: URLFileManager = .init()
-  public let version: PackageVersion
+  internal let fm: URLFileManager = .init()
+  public let order: PackageOrder
+  @available(*, deprecated, renamed: "order.version")
+  public var version: PackageVersion {
+    order.version
+  }
+  @available(*, deprecated, renamed: "order.target")
+  public var target: TargetTriple {
+    order.target
+  }
   public let source: PackageSource
   public let prefix: PackagePath
 
@@ -39,10 +48,9 @@ public class BuildEnvironment {
   /// the environment will be used to run processes
   public var environment: EnvironmentValues
 
-  public let parallelJobs: Int? = 8
+  public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount + 2
   public let libraryType: PackageLibraryBuildType
   public let prefersStaticBin: Bool = false
-  public let target: BuildTriple
   let logger: Logger
 
   public let enableBitcode: Bool
@@ -50,13 +58,17 @@ public class BuildEnvironment {
   public let deployTarget: String?
 
   public var launcher: BuilderLauncher {
-    .init(environment: environment.values)
+    .init(environment: environment)
   }
 
-  public var host: BuildTriple { .native }
+}
+
+// MARK: Target
+extension BuildEnvironment {
+  public var host: TargetTriple { .native }
 
   public var isBuildingNative: Bool {
-    target == host
+    order.target == host
   }
 
   public var isBuildingCross: Bool {
@@ -64,12 +76,15 @@ public class BuildEnvironment {
   }
 }
 
-
 // MARK: FM Utilities
 extension BuildEnvironment {
 
-  public func changingDirectory(_ path: String, create: Bool = true, _ block: (URL) throws -> ()) throws {
-    try changingDirectory(URL(fileURLWithPath: path), create: create, block)
+  public func changingDirectory(_ path: String, _ block: (URL) throws -> ()) throws {
+    try changingDirectory(URL(fileURLWithPath: path), block)
+  }
+
+  public func inRandomDirectory(_ block: (URL) throws -> ()) throws {
+    try changingDirectory(randomFilename, block)
   }
 
   public func changingDirectory(_ url: URL, create: Bool = true,
@@ -89,7 +104,7 @@ extension BuildEnvironment {
   }
 
   public var randomFilename: String {
-    genRandomFilename(prefix: "build-cli-", length: 6)
+    genRandomFilename(prefix: "BuildEnvironment-", length: 6)
   }
 
   /// some package ignore the library setting, call this method to remove extra library files
@@ -99,7 +114,7 @@ extension BuildEnvironment {
     switch libraryType {
     case .all: return
     case .shared: searchExtension = "a"
-    case .static: searchExtension = target.system.sharedLibraryExtension
+    case .static: searchExtension = order.target.system.sharedLibraryExtension
     }
     let dstFiles = try fm.contentsOfDirectory(at: prefix.lib)
       .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame }
@@ -118,38 +133,47 @@ extension BuildEnvironment {
     try fm.createDirectory(at: url)
   }
 
+  public func copyItem(at srcURL: URL,
+                       to dstURL: URL) throws {}
+
+  public func copyItem(at srcURL: URL,
+                       toDirectory dstDirURL: URL) throws {}
+
+  public func moveItem(at srcURL: URL,
+                       to dstURL: URL) throws {}
 
   private func launch<T>(_ executable: T) throws where T : Executable {
     _ = try launcher.launch(executable: executable, options: .init(checkNonZeroExitCode: true))
   }
 
-  public func launch(_ executableName: String, _ arguments: String?...) throws {
-    try launch(executableName, arguments)
-  }
   public func launch(_ executableName: String, _ arguments: [String?]) throws {
     try launch(AnyExecutable(executableName: executableName, arguments: arguments.compactMap {$0}))
-  }
-  public func launch(path: String, _ arguments: String?...) throws {
-    try launch(path: path, arguments)
   }
 
   public func launch(path: String, _ arguments: [String?]) throws {
     try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
   }
+
+  public func launchResult(_ executableName: String, _ arguments: [String?]) throws -> LaunchResult {
+    fatalError()
+  }
+
+  public func launchResult(path: String, _ arguments: [String?]) throws -> LaunchResult {
+    fatalError()
+  }
 }
 
-// MARK: Common tools
+public typealias LaunchResult = BuilderLauncher.LaunchResult
+
+// MARK: Common Build Systems
 extension BuildEnvironment {
+
   public func make(toolType: MakeToolType = .make,
                    parallelJobs: Int? = nil,
                    _ targets: String...) throws {
     try launch(MakeTool(toolType: toolType,
                         parallelJobs: parallelJobs ?? self.parallelJobs,
                         targets: targets))
-  }
-
-  public func rake(_ targets: String...) throws {
-    try launch(Rake(jobs: parallelJobs ?? 0, targets: targets))
   }
 
   public func cmake(toolType: MakeToolType, _ arguments: String?...) throws {
@@ -171,11 +195,11 @@ extension BuildEnvironment {
     default:
       break
     }
-    if isBuildingCross {
-      cmakeArguments.append(cmakeDefineFlag(target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
-      cmakeArguments.append(cmakeDefineFlag(target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
-      cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
-    }
+    //    if isBuildingCross {
+    //      cmakeArguments.append(cmakeDefineFlag(target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
+    //      cmakeArguments.append(cmakeDefineFlag(target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
+    //      cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
+    //    }
     if let sysroot = sdkPath {
       cmakeArguments.append(cmakeDefineFlag(sysroot, "CMAKE_OSX_SYSROOT"))
     }
@@ -184,9 +208,6 @@ extension BuildEnvironment {
     try launch("cmake", cmakeArguments)
   }
 
-  public func meson(_ arguments: String?...) throws {
-    try meson(arguments)
-  }
   public func meson(_ arguments: [String?]) throws {
     try launch("meson",
                ["--prefix=\(prefix.root.path)",
@@ -196,17 +217,15 @@ extension BuildEnvironment {
                + arguments.compactMap {$0})
   }
 
-  public func configure(_ arguments: String?...) throws {
-    try configure(arguments)
-  }
+
 
   public func configure(_ arguments: [String?]) throws {
     var configureArguments = ["--prefix=\(prefix.root.path)"]
 
-    configureArguments.append("--host=\(target.gnuTripleString)")
+    configureArguments.append("--host=\(order.target.gnuTripleString)")
 
     arguments.forEach { $0.map { configureArguments.append($0) } }
-    
+
     try launch(path: "configure", configureArguments)
   }
 
@@ -219,27 +238,23 @@ extension BuildEnvironment {
   }
 }
 
-private let safeFilenameChars: StaticString = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-func genRandomFilename(prefix: String, length: Int) -> String {
-  var random = SystemRandomNumberGenerator()
-  return prefix + safeFilenameChars.withUTF8Buffer { buffer -> String in
-    assert(!buffer.isEmpty)
-    if #available(OSX 11.0, *) {
-      return String(unsafeUninitializedCapacity: length) { strBuffer -> Int in
-        for index in strBuffer.indices {
-          strBuffer[index] = buffer.randomElement(using: &random).unsafelyUnwrapped
-        }
-        return length
-      }
-    } else {
-      var string = ""
-      string.reserveCapacity(length)
-      for _ in 0..<length {
-        let char = Character(Unicode.Scalar(buffer.randomElement(using: &random).unsafelyUnwrapped))
-        string.append(char)
-      }
-      return string
-    }
+// MARK: Variadic Support
+
+extension BuildEnvironment {
+  public func launch(_ executableName: String, _ arguments: String?...) throws {
+    try launch(executableName, arguments)
+  }
+
+  public func launch(path: String, _ arguments: String?...) throws {
+    try launch(path: path, arguments)
+  }
+
+  public func meson(_ arguments: String?...) throws {
+    try meson(arguments)
+  }
+
+  public func configure(_ arguments: String?...) throws {
+    try configure(arguments)
   }
 }

@@ -5,7 +5,7 @@ public struct Ass: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("0.15.0")
+    "0.15.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

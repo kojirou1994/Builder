@@ -37,9 +37,9 @@ public struct BoringSSL: Package {
         try env.make(toolType: .ninja)
         //      try env.make(toolType: .ninja, "install")
 
-        try env.fm.createDirectory(at: env.prefix.lib)
-        try env.fm.copyItem(at: URL(fileURLWithPath: "crypto/libcrypto.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
-        try env.fm.copyItem(at: URL(fileURLWithPath: "ssl/libssl.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
+        try env.mkdir(env.prefix.lib)
+        try env.copyItem(at: URL(fileURLWithPath: "crypto/libcrypto.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
+        try env.copyItem(at: URL(fileURLWithPath: "ssl/libssl.\(env.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
       }
     }
 
@@ -48,7 +48,7 @@ public struct BoringSSL: Package {
       try build(shared: false)
     }
 
-    try env.fm.copyItem(at: URL(fileURLWithPath: "include"), toDirectory: env.prefix.root)
+    try env.copyItem(at: URL(fileURLWithPath: "include"), toDirectory: env.prefix.root)
 
   }
 }

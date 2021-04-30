@@ -20,6 +20,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Bzip2>.self,
       PackageCheckUpdateCommand<CAres>.self,
       PackageCheckUpdateCommand<Cas>.self,
+      PackageCheckUpdateCommand<Choco>.self,
       PackageCheckUpdateCommand<Cmake>.self,
       PackageCheckUpdateCommand<Corkscrew>.self,
       PackageCheckUpdateCommand<Ctmf>.self,

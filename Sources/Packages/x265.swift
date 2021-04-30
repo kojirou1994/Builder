@@ -92,12 +92,12 @@ public struct x265: Package {
 
       var extraLib = [String]()
       if enable10bit {
-        try env.fm.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
+        try env.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
                             to: URL(fileURLWithPath: "libx265_main10.a"))
         extraLib.append("x265_main10.a")
       }
       if enable12bit {
-        try env.fm.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
+        try env.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
                             to: URL(fileURLWithPath: "libx265_main12.a"))
         extraLib.append("x265_main12.a")
       }
@@ -117,7 +117,7 @@ public struct x265: Package {
 
       try env.make(toolType: .ninja)
 
-      try env.fm.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
+      try env.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
       switch env.target.system {
       case .macOS:
@@ -148,8 +148,8 @@ public struct x265: Package {
           .write(to: scriptFileURL, atomically: true, encoding: .utf8)
 
         let fh = try FileHandle(forReadingFrom: scriptFileURL)
-        try AnyExecutable(executableName: "ar", arguments: ["-M"])
-          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
+//        try AnyExecutable(executableName: "ar", arguments: ["-M"])
+//          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
       default: break
       }
 

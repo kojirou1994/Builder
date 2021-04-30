@@ -5,7 +5,7 @@ import Foundation
  */
 public struct PackageBuildSummary: Codable {
   public let order: PackageOrder
-//  public let buildMachine: BuildTriple = .native
+//  public let buildMachine: TargetTriple = .native
   public let startTime: Date
   public let endTime: Date
   /// built files
@@ -13,10 +13,7 @@ public struct PackageBuildSummary: Codable {
   public let reason: BuildReason
 }
 
-public enum DependencyTime {
-  case runTime
-  case buildTime
-}
+
 
 public enum BuildReason: Codable {
   public init(from decoder: Decoder) throws {

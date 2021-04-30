@@ -8,7 +8,7 @@ public struct Aom: Package {
   var examples: Bool = false
 
   public var defaultVersion: PackageVersion {
-    .stable("3.0.0")
+    "3.0.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

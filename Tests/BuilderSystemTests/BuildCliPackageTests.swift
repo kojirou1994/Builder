@@ -1,11 +1,10 @@
 import XCTest
-import Version
 @testable import BuildSystem
 
 final class BuildCliPackageTests: XCTestCase {
 
   func testDefaultPackageAvailablity() {
-    let allTargets = BuildTriple.all
+    let allTargets = TargetTriple.all
     var allPackagesMap = [String : Package.Type]()
 
     for package in allPackages {

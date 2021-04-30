@@ -5,16 +5,16 @@ import TSCUtility
 final class BuilderSystemTests: XCTestCase {
 
   func testTriple() {
-    for arch in BuildArch.allCases {
-      for system in BuildTargetSystem.allCases {
-        print(arch, system, BuildTriple(arch: arch, system: system).clangTripleString)
+    for arch in TargetArch.allCases {
+      for system in TargetSystem.allCases {
+        print(arch, system, TargetTriple(arch: arch, system: system).clangTripleString)
       }
     }
   }
 
   func testGetSDKPath() {
     let launcher = TSCExecutableLauncher(outputRedirection: .none)
-    for system in BuildTargetSystem.allCases where system.isApple {
+    for system in TargetSystem.allCases where system.isApple {
       XCTAssertNoThrow(try launcher.launch(executable: AnyExecutable(
                                             executableName: "xcrun",
                                             arguments: ["--sdk", system.sdkName, "--show-sdk-path"]),

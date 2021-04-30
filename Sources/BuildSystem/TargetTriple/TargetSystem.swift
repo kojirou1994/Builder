@@ -1,86 +1,4 @@
-public struct BuildTriple: Hashable, CustomStringConvertible, Codable {
-  public let arch: BuildArch
-  public let system: BuildTargetSystem
-
-  public var gnuTripleString: String {
-    "\(arch.gnuTripleString)-\(system.vendor)-\(system.gnuTripleString)"
-  }
-
-  public var clangTripleString: String {
-    "\(arch.clangTripleString)-\(system.vendor)-\(system.clangTripleString)"
-  }
-  
-  public var description: String {
-    "\(arch)-\(system)"
-  }
-
-  public static var native: Self {
-    .init(arch: .native, system: .native)
-  }
-
-  public static let all: [Self] = {
-    var r = [Self]()
-    for arch in BuildArch.allCases {
-      for system in BuildTargetSystem.allCases {
-        r.append(.init(arch: arch, system: system))
-      }
-    }
-    return r
-  }()
-
-  public static let allValid: [Self] = all.filter(\.isValid)
-
-  public var isValid: Bool {
-    switch (arch, system) {
-    case (.x86_64, .tvSimulator), (.arm64, .tvSimulator), (.arm64e, .tvSimulator),
-         (.arm64, .tvOS),
-         (.arm64, .iphoneOS), (.armv7, .iphoneOS), (.armv7s, .iphoneOS), (.arm64e, .iphoneOS),
-         (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator), (.arm64e, .iphoneSimulator),
-         (.x86_64, .macOS), (.arm64, .macOS), (.arm64e, .macOS),
-         (.x86_64, .macCatalyst), (.arm64, .macCatalyst), (.arm64e, .macCatalyst),
-         (.armv7, .watchOS),
-         (.x86_64, .watchSimulator), (.arm64, .watchSimulator),  (.arm64e, .watchSimulator):
-      return true
-    default:
-      return false
-    }
-  }
-}
-
-public enum BuildArch: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible, Codable {
-  case arm64
-  case arm64e
-  case armv7
-  case armv7s
-  case x86_64
-
-  public var gnuTripleString: String {
-    switch self {
-    case .arm64, .arm64e: return "aarch64"
-    case .x86_64: return rawValue
-    case .armv7, .armv7s: return "arm"
-    }
-  }
-
-  public var clangTripleString: String {
-    rawValue
-  }
-
-  public var description: String { rawValue }
-
-  public static var native: Self {
-    #if arch(x86_64)
-    return .x86_64
-    #elseif arch(arm64)
-    return .arm64
-    #else
-    #error("Unknown arch!")
-    #endif
-  }
-
-}
-
-public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, CustomStringConvertible, Codable {
+public enum TargetSystem: String, CaseIterable, ExpressibleByArgument, CustomStringConvertible, Codable {
   case macOS
   case macCatalyst
   case tvOS
@@ -94,7 +12,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
 
   public var description: String { rawValue }
 
-  var vendor: String {
+  public var vendor: String {
     switch self {
     case .macOS, .macCatalyst,
          .tvOS, .tvSimulator,
@@ -129,7 +47,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var isSimulator: Bool {
+  public var isSimulator: Bool {
     switch self {
     case  .tvSimulator, .iphoneSimulator,
           .watchSimulator:
@@ -139,7 +57,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
   }
 
   /// recommended cc
-  var cc: String {
+  public var cc: String {
     switch self {
     case .macOS, .macCatalyst,
          .tvOS, .tvSimulator,
@@ -151,7 +69,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var cxx: String {
+  public var cxx: String {
     switch self {
     case .macOS, .macCatalyst,
          .tvOS, .tvSimulator,
@@ -163,7 +81,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var gnuTripleString: String {
+  public var gnuTripleString: String {
     switch self {
     case .macOS, .macCatalyst:
       return "darwin"
@@ -176,7 +94,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var clangTripleString: String {
+  public var clangTripleString: String {
     switch self {
     case .macOS:
       return "darwin" // macosx
@@ -191,7 +109,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var minVersionClangFlag: String {
+  public var minVersionClangFlag: String {
     /*
      -mios-version-min=
      -mmacosx-version-min
@@ -219,7 +137,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     return "-m\(name)-version-min"
   }
 
-  var needSdkPath: Bool {
+  public var needSdkPath: Bool {
     switch self {
     case .linuxGNU:
       return false
@@ -227,7 +145,7 @@ public enum BuildTargetSystem: String, ExpressibleByArgument, CaseIterable, Cust
     }
   }
 
-  var sdkName: String {
+  public var sdkName: String {
     switch self {
     case .macOS, .macCatalyst: return "macosx"
     case .iphoneOS: return "iphoneos"

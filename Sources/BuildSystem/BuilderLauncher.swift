@@ -3,18 +3,18 @@ import TSCBasic
 
 public struct BuilderLauncher: ExecutableLauncher {
   public func generateProcess<T>(for executable: T) throws -> Process where T : Executable {
-    let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable, overridePath: environment["PATH"])
+    let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable, overridePath: environment[.path])
     let arguments = CollectionOfOne(launchPath) + executable.arguments
 
     if let workingDirectory = executable.currentDirectoryURL?.path {
       return .init(arguments: arguments,
-                   environment: environment,
+                   environment: environment.values,
                    workingDirectory: AbsolutePath(workingDirectory),
                    outputRedirection: tsc.outputRedirection,
                    verbose: false, startNewProcessGroup: tsc.startNewProcessGroup)
     } else {
       return .init(arguments: arguments,
-                   environment: environment,
+                   environment: environment.values,
                    outputRedirection: tsc.outputRedirection,
                    verbose: false, startNewProcessGroup: tsc.startNewProcessGroup)
     }
@@ -55,9 +55,9 @@ public struct BuilderLauncher: ExecutableLauncher {
 
   let dateFormatter: DateFormatter = .init()
 
-  let environment: [String : String]
+  let environment: EnvironmentValues
 
-  init(environment: [String : String]) {
+  init(environment: EnvironmentValues) {
     tsc = .init(outputRedirection: .none)
     self.environment = environment
   }

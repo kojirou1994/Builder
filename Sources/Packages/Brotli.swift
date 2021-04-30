@@ -49,7 +49,7 @@ public struct Brotli: Package {
       libbrotlienc-static.a
       """.split(separator: "\n")
         .forEach { filename in
-          try env.fm.moveItem(at: env.prefix.lib.appendingPathComponent(String(filename)),
+          try env.moveItem(at: env.prefix.lib.appendingPathComponent(String(filename)),
                               to: env.prefix.lib.appendingPathComponent(String(filename.dropLast("-static.a".count)) + ".a"))
         }
     }

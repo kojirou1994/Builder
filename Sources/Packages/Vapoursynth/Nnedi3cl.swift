@@ -4,7 +4,7 @@ public struct Nnedi3cl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("8")
+    "8"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

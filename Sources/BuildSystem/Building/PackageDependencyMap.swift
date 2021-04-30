@@ -57,16 +57,14 @@ public struct PackageDependencyMap {
   }
 
   /// not including the system packages
-  public var allPrefixes: [PackagePath] {
+  var allPrefixes: [PackagePath] {
     var r = [PackagePath]()
     r.append(contentsOf: packageDependencies.values)
     r.append(contentsOf: brewDependencies.values)
     return r
   }
-}
 
-extension PackageDependencyMap {
-  public struct Info {
-    public let path: PackagePath
+  var allPackagePrefixes: [PackagePath] {
+    .init(packageDependencies.values)
   }
 }

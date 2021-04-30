@@ -34,9 +34,9 @@ public struct NeoFFT3D: Package {
       let filename = "libneo-fft3d.\(env.target.system.sharedLibraryExtension)"
 
       let installDir = env.prefix.lib.appendingPathComponent("vapoursynth")
-      try env.fm.createDirectory(at: installDir)
+      try env.mkdir(installDir)
 
-      try env.fm.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
+      try env.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
     }
   }
 }

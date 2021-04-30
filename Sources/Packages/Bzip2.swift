@@ -32,7 +32,7 @@ public struct Bzip2: Package {
 
 //    try env.autoRemoveUnneedLibraryFiles()
 
-    try env.fm.createDirectory(at: env.prefix.pkgConfig)
+    try env.mkdir(env.prefix.pkgConfig)
     try pkgConfig(prefix: env.prefix.root.path)
       .write(to: env.prefix.pkgConfig.appendingPathComponent("bzip2.pc"), atomically: true, encoding: .utf8)
   }

@@ -45,9 +45,9 @@ public struct Go: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.fm.contentsOfDirectory(at: URL(fileURLWithPath: "."))
+    try FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: "."), includingPropertiesForKeys: nil, options: [])
       .forEach { content in
-        try env.fm.moveItem(at: content, to: env.prefix.appending(content.lastPathComponent))
+        try env.moveItem(at: content, to: env.prefix.appending(content.lastPathComponent))
       }
   }
 
