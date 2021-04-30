@@ -47,12 +47,6 @@ public struct Flac: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    switch env.order.target.arch {
-    case .arm64, .arm64e, .armv7, .armv7s:
-      env.environment.append("-mfpu=neon", for: .cflags, .ldflags)
-    default: break
-    }
-
     let useASM = env.order.target.arch == .x86_64
     try env.autogen()
     
@@ -60,15 +54,17 @@ public struct Flac: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-//      "--with-ogg=\(env.dependencyMap[Ogg.self].root.path)",
       configureEnableFlag(cpplibs, "cpplibs"),
       configureEnableFlag(true, "64-bit-words"),
       configureEnableFlag(false, "examples"),
-      configureEnableFlag(false, "oggtest"),
+      configureEnableFlag(env.strictMode, "exhaustive-tests"), /* VERY long, took 30 minutes on my i7-4770hq machine */
       configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true)
     )
 
     try env.make()
+    if env.strictMode {
+      try env.make("check")
+    }
     try env.make("install")
   }
 
