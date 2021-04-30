@@ -112,6 +112,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<TTempSmooth>.self,
       PackageBuildCommand<Utfcpp>.self,
       PackageBuildCommand<VagueDenoiser>.self,
+      PackageBuildCommand<Vapoursynth>.self,
       PackageBuildCommand<Vmaf>.self,
       PackageBuildCommand<Vorbis>.self,
       PackageBuildCommand<Vpx>.self,
