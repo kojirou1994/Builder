@@ -83,13 +83,15 @@ struct Builder {
       }
     }
 
+    // MARK: pyenv
     do {
-      let pyenvRoot = try AnyExecutable(executableName: "pyenv", arguments: ["root"])
+      let pyenvRoot = try AnyExecutable(executableName: "pyenv", arguments: ["prefix"])
         .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
         .utf8Output()
         .trimmingCharacters(in: .whitespacesAndNewlines)
-      logger.info("use pyenv root: \(pyenvRoot)")
-      envValues.append("\(pyenvRoot)/shims", for: .path)
+      logger.info("using python root: \(pyenvRoot)")
+      envValues.append("\(pyenvRoot)/bin", for: .path)
+      envValues.append("\(pyenvRoot)/lib/pkgconfig", for: .pkgConfigPath)
     } catch {
       logger.warning("Can't find pyenv root, you may install pyenv first.")
     }
@@ -356,23 +358,23 @@ extension Builder {
     do {
       let allPrefixes = Set(dependencyMap.allPrefixes)
 
-      // PKG_CONFIG_PATH
-      environment[.pkgConfigPath] = allPrefixes
-        .lazy.map(\.pkgConfig)
-        .filter { fm.fileExistance(at: $0) == .directory }
-        .map(\.path)
-        .joined(separator: ":")
+      allPrefixes.forEach { prefix in
+        // PKG_CONFIG_PATH
+        let pkgconfig = prefix.pkgConfig
+        if fm.fileExistance(at: pkgconfig) == .directory {
+          environment.append(pkgconfig.path, for: .pkgConfigPath)
+        }
 
-      /*
-       ACLOCAL
-       Doc: https://www.gnu.org/software/automake/manual/html_node/Macro-Search-Path.html
-       */
-      environment[.aclocalPath] = allPrefixes
-        .lazy
-        .map { $0.appending("share", "aclocal") }
-        .filter { fm.fileExistance(at: $0) == .directory }
-        .map(\.path)
-        .joined(separator: ":")
+        /*
+         ACLOCAL
+         Doc: https://www.gnu.org/software/automake/manual/html_node/Macro-Search-Path.html
+         */
+
+        let aclocal = prefix.appending("share", "aclocal")
+        if fm.fileExistance(at: aclocal) == .directory {
+          environment.append(aclocal.path, for: .aclocalPath)
+        }
+      }
 
       // PATH
       environment[.path] = (
