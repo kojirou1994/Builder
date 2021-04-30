@@ -122,6 +122,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Xz>.self,
       PackageBuildCommand<Yadifmod>.self,
       PackageBuildCommand<Yasm>.self,
+      PackageBuildCommand<Zimg>.self,
       PackageBuildCommand<Zlib>.self,
       PackageBuildCommand<Zstd>.self,
       PackageBuildCommand<Zvbi>.self,
