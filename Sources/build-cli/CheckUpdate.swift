@@ -61,6 +61,8 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Ilmbase>.self,
       PackageCheckUpdateCommand<ImageMagick>.self,
       PackageCheckUpdateCommand<Imath>.self,
+      PackageCheckUpdateCommand<Iperf2>.self,
+      PackageCheckUpdateCommand<Iperf3>.self,
       PackageCheckUpdateCommand<Jpcre2>.self,
       PackageCheckUpdateCommand<JpegXL>.self,
       PackageCheckUpdateCommand<KNLMeansCL>.self,

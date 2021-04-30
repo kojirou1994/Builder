@@ -61,6 +61,8 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Ilmbase>.self,
       PackageBuildCommand<ImageMagick>.self,
       PackageBuildCommand<Imath>.self,
+      PackageBuildCommand<Iperf2>.self,
+      PackageBuildCommand<Iperf3>.self,
       PackageBuildCommand<Jpcre2>.self,
       PackageBuildCommand<JpegXL>.self,
       PackageBuildCommand<KNLMeansCL>.self,
