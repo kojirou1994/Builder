@@ -19,9 +19,9 @@ public struct File: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .runTime(Zlib.self)
-      ])
+      ]
     )
   }
 

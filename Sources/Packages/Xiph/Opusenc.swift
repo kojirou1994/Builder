@@ -19,13 +19,13 @@ public struct Opusenc: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         .runTime(Opus.self),
-      ])
+      ]
     )
   }
 

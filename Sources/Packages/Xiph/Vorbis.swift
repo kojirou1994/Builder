@@ -19,13 +19,12 @@ public struct Vorbis: Package {
 
     return .init(
       source: source,
-      dependencies: .init(
-        packages: [
-          .buildTool(Autoconf.self),
-          .buildTool(Automake.self),
-          .buildTool(Libtool.self),
-          .runTime(Ogg.self),
-        ])
+      dependencies: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .runTime(Ogg.self),
+      ]
     )
   }
 
@@ -51,7 +50,7 @@ public struct Vorbis: Package {
 
   @Flag(inversion: .prefixedEnableDisable, help: "build the documentation.")
   var docs: Bool = false
-
+  
   public var tag: String {
     [
       examples ? "examples" : "",

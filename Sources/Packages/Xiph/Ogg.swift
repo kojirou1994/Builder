@@ -30,11 +30,11 @@ public struct Ogg: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-      ]),
+      ],
       products: [.library(name: "libogg", headers: ["ogg"])]
     )
   }

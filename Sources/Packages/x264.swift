@@ -27,7 +27,7 @@ public struct x264: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: deps)
+      dependencies: deps
     )
   }
 

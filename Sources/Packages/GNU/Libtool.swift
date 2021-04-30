@@ -22,7 +22,7 @@ public struct Libtool: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .buildTool(M4.self)),
+      dependencies: [.buildTool(M4.self)],
       supportedLibraryType: ltdl ? .all : nil
     )
   }

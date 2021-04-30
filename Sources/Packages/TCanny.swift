@@ -19,12 +19,10 @@ public struct TCanny: Package {
 
     return .init(
       source: source,
-      dependencies: .init(
-        packages: [
-          .buildTool(Cmake.self)
-        ],
-        otherPackages: [.pip(["meson"])]
-      )
+      dependencies: [
+        .buildTool(Cmake.self),
+        .pip(["meson"]),
+      ]
     )
   }
 

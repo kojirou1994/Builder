@@ -15,7 +15,7 @@ public struct Choco: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .buildTool(PkgConfig.self),
         .runTime(x265 { p in
           p.enable10bit = false
@@ -24,7 +24,7 @@ public struct Choco: Package {
         .runTime(Bluray { p in
           p.freetype = false
         }),
-      ]),
+      ],
       products: [
         .bin("choco-cli"),
       ],

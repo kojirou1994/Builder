@@ -15,11 +15,11 @@ public struct BoringSSL: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: .buildTool(Cmake.self),
+      dependencies: [
+        .buildTool(Cmake.self),
         .buildTool(Go.self),
         .buildTool(Ninja.self)
-      )
+      ]
     )
   }
 

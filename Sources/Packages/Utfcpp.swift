@@ -21,10 +21,10 @@ public struct Utfcpp: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-      ]),
+      ],
       products: [
         .bin("utf8cpp")
       ],

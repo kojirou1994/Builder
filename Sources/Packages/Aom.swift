@@ -22,12 +22,11 @@ public struct Aom: Package {
 
     return .init(
       source: source,
-      dependencies:
-        .init(packages: [
-          .buildTool(Cmake.self),
-          .buildTool(Ninja.self),
-          .buildTool(Yasm.self)
-        ])
+      dependencies: [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .buildTool(Yasm.self)
+      ]
     )
   }
 

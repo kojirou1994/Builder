@@ -39,14 +39,14 @@ public struct ImageMagick: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: .runTime(Webp.self),
+      dependencies: [
+        .runTime(Webp.self),
         .runTime(Freetype.self),
         .runTime(JpegXL.self),
         .runTime(Openexr.self),
         .runTime(Mozjpeg.self),
         .runTime(Xz.self)
-      )
+      ]
     )
   }
 

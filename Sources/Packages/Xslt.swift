@@ -19,14 +19,14 @@ public struct Xslt: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         .runTime(Xml2.self),
         .runTime(Gcrypt.self),
-      ])
+      ]
     )
   }
 

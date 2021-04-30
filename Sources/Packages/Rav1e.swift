@@ -19,9 +19,10 @@ public struct Rav1e: Package {
 
     return .init(
       source: source,
-      dependencies:
-        .init(packages: [.buildTool(Nasm.self)],
-              otherPackages: [.cargo(["cargo-c"])])
+      dependencies: [
+        .buildTool(Nasm.self),
+        .cargo(["cargo-c"]),
+      ]
     )
   }
 

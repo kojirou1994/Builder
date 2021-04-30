@@ -22,13 +22,13 @@ public struct Dvdread: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         dvdcss ? .runTime(Dvdcss.self) : nil,
-      ]),
+      ],
       products: [.library(name: "libdvdread", headers: ["dvdread"])]
     )
   }

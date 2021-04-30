@@ -19,7 +19,7 @@ public struct Png: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: .runTime(Zlib.self))
+      dependencies: [.runTime(Zlib.self)]
     )
   }
 

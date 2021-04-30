@@ -19,14 +19,14 @@ public struct Bluray: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         freetype ? .runTime(Freetype.self) : nil,
         .runTime(Xml2.self),
-      ])
+      ]
     )
   }
 

@@ -10,17 +10,17 @@ public struct Yasm: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    let dep: PackageDependencies
+    let dep: [PackageDependency]
     switch order.version {
     case .head:
-      dep = PackageDependencies(packages: [
+      dep = [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-      ])
+      ]
       source = .tarball(url: "https://github.com/yasm/yasm/archive/refs/heads/master.zip")
     case .stable(let version):
-      dep = .empty
+      dep = []
       source = .tarball(url: "https://www.tortall.net/projects/yasm/releases/yasm-\(version.toString()).tar.gz")
     }
 

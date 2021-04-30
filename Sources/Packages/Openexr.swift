@@ -52,15 +52,11 @@ public struct Openexr: Package {
     }
   }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> [PackageDependency] {
     if version < "3.0.0" {
-      return PackageDependencies(
-        packages: .runTime(Ilmbase.self)
-      )
+      return [.runTime(Ilmbase.self)]
     } else {
-      return PackageDependencies(
-        packages: .runTime(Imath.self)
-      )
+      return [.runTime(Imath.self)]
     }
   }
 

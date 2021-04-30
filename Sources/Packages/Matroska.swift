@@ -28,11 +28,11 @@ public struct Matroska: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .runTime(Ebml.self),
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-      ])
+      ]
     )
   }
 

@@ -542,31 +542,35 @@ extension Builder {
     }
 
     if currentLevel <= dependencyLevelLimit {
-      try dependencies.packages.forEach { dependencyPackage in
-        let dependencySummary = try buildPackageAndDependencies(
-          package: dependencyPackage.package,
-          // TODO: Optional specific dependency's version
-          order: .init(version: dependencyPackage.package.defaultVersion, target: dependencyPackage.options.target ?? order.target),
-          reason: .dependency(package: package.name, time: dependencyPackage.requiredTime),
-          prefix: prefix, parentLevel: currentLevel)
-        switch dependencyPackage.requiredTime {
-        case .buildTime: break
-        case .runTime:
-          runTimeDependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.packageSelfResult!.prefix)
-          runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
+      try dependencies.lazy.map(\.dependency).forEach { dependency in
+
+        switch dependency {
+        case .package(let dependencyPackage, options: let options):
+          let dependencySummary = try buildPackageAndDependencies(
+            package: dependencyPackage,
+            // TODO: Optional specific dependency's version
+            order: .init(version: dependencyPackage.defaultVersion, target: options.target ?? order.target),
+            reason: .dependency(package: package.name, time: options.requiredTime),
+            prefix: prefix, parentLevel: currentLevel)
+          switch options.requiredTime {
+          case .buildTime: break
+          case .runTime:
+            runTimeDependencyMap.add(package: dependencyPackage, prefix: dependencySummary.packageSelfResult!.prefix)
+            runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
+          }
+          dependencyMap.add(package: dependencyPackage, prefix: dependencySummary.packageSelfResult!.prefix)
+          dependencyMap.merge(dependencySummary.runTimeDependencyMap)
+        case let .other(manager: manager, names: names, requireLinked: requireLinked):
+          switch manager {
+          case .brew:
+            dependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
+            runTimeDependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
+          default:
+            logger.warning("Unimplemented other package manager \(manager)'s, required packages: \(names), continue in 4 seconds")
+            sleep(4)
+          }
         }
-        dependencyMap.add(package: dependencyPackage.package, prefix: dependencySummary.packageSelfResult!.prefix)
-        dependencyMap.merge(dependencySummary.runTimeDependencyMap)
-      }
-      try dependencies.otherPackages.forEach { otherPackages in
-        switch otherPackages.manager {
-        case .brew:
-          dependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
-          runTimeDependencyMap.mergeBrewDependency(try parseBrewDeps(otherPackages.names, requireLinked: otherPackages.requireLinked))
-        default:
-          logger.warning("Unimplemented other packages: \(otherPackages), continue in 4 seconds")
-          sleep(4)
-        }
+
       }
 
     } else {

@@ -19,12 +19,12 @@ public struct Iperf3: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .runTime(Openssl.self),
-      ])
+      ]
     )
   }
 

@@ -19,13 +19,13 @@ public struct Xml2: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [
+      dependencies:  [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         .runTime(Zlib.self),
-      ])
+      ]
     )
   }
 

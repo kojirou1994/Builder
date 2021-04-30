@@ -10,9 +10,15 @@ public struct Flac: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
+    var dependencies: [PackageDependency]
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/xiph/flac.git")
+      dependencies = [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .runTime(Ogg.self),
+      ]
     case .stable(let version):
       var versionString = version.toString(includeZeroPatch: false)
       if version < "1.0.3" {
@@ -25,18 +31,18 @@ public struct Flac: Package {
         suffix = "xz"
       }
       source = .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
+      dependencies = [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Ogg.self),
+      ]
     }
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: [
-          .buildTool(Autoconf.self),
-          .buildTool(Automake.self),
-          .buildTool(Libtool.self),
-          .buildTool(PkgConfig.self),
-          .runTime(Ogg.self)
-        ]),
+      dependencies: dependencies,
       products: [
         .bin("flac"),
         .bin("metaflac"),

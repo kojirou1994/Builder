@@ -22,13 +22,11 @@ public struct SvtAv1: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: [
-          .buildTool(Cmake.self),
-          .buildTool(Ninja.self),
-          .buildTool(Nasm.self)
-        ]
-      )
+      dependencies: [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .buildTool(Nasm.self),
+      ]
     )
   }
 

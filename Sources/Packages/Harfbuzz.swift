@@ -19,15 +19,13 @@ public struct Harfbuzz: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: [
-          .buildTool(Cmake.self),
-          .buildTool(Ninja.self),
-          .buildTool(PkgConfig.self),
-          .runTime(Freetype.self),
-          .runTime(Icu4c.self),
-        ]
-      )
+      dependencies: [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Freetype.self),
+        .runTime(Icu4c.self),
+      ]
     )
   }
 

@@ -19,11 +19,11 @@ public struct Iperf2: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-      ]),
+      ],
       supportedLibraryType: nil
     )
   }

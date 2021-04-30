@@ -31,7 +31,7 @@ public struct Fribidi: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: .runTime(Ninja.self))
+      dependencies: [.runTime(Ninja.self)]
     )
   }
 

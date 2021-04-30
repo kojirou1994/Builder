@@ -19,7 +19,10 @@ public struct TDeintMod: Package {
 
     return .init(
       source: source,
-      dependencies: .init(packages: [.buildTool(Ninja.self)], otherPackages: [.pip(["meson"])])
+      dependencies: [
+        .buildTool(Ninja.self),
+        .pip(["meson"])
+      ]
     )
   }
 

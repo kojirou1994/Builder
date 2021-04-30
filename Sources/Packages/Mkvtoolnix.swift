@@ -24,27 +24,26 @@ public struct Mkvtoolnix: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: [
-          .buildTool(Autoconf.self),
-          .buildTool(Automake.self),
-          .buildTool(Libtool.self),
-          .buildTool(PkgConfig.self),
-          .runTime(Vorbis.self),
-          .runTime(Ebml.self),
-          .runTime(Matroska.self),
-          .runTime(Pugixml.self),
-          .runTime(Pcre2.self),
-          .runTime(Fmt.self),
-          .runTime(Flac.self),
-          .runTime(Jpcre2.self),
-          .runTime(Gettext.self),
-          .runTime(Boost.self),
-          .runTime(NlohmannJson.self),
-          .runTime(Zlib.self),
-          .runTime(Dvdread.self),
-        ],
-        otherPackages: [.brew(["docbook-xsl"], requireLinked: false)])
+      dependencies: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vorbis.self),
+        .runTime(Ebml.self),
+        .runTime(Matroska.self),
+        .runTime(Pugixml.self),
+        .runTime(Pcre2.self),
+        .runTime(Fmt.self),
+        .runTime(Flac.self),
+        .runTime(Jpcre2.self),
+        .runTime(Gettext.self),
+        .runTime(Boost.self),
+        .runTime(NlohmannJson.self),
+        .runTime(Zlib.self),
+        .runTime(Dvdread.self),
+        .brew(["docbook-xsl"], requireLinked: false),
+      ]
     )
   }
   

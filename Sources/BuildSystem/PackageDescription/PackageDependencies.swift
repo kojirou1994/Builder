@@ -1,128 +1,60 @@
 public struct PackageDependency {
 
-  private init(_ package: Package, requiredTime: DependencyTime, options: Options = .init()) {
-    self.package = package
-    self.requiredTime = requiredTime
-    self.options = options
+  enum _Dependency {
+    case package(Package, options: PackageOptions)
+    case other(manager: OtherPackageManager, names: [String], requireLinked: Bool)
+
+    struct PackageOptions {
+      init(requiredTime: DependencyTime,
+           target: TargetTriple? = nil,
+           version: Range<Version>? = nil) {
+        self.requiredTime = requiredTime
+        self.target = target
+        self.version = version
+      }
+
+      // after target package is built, this package will be removed / ignored, not showing in dep tree
+      let requiredTime: DependencyTime
+      /// override the default build target, useful for building tools
+      let target: TargetTriple?
+      /// not working now
+      let version: Range<Version>?
+    }
   }
 
-  private init<T: Package>(_ package: T.Type, requiredTime: DependencyTime, options: Options = .init()) {
-    self.package = T.defaultPackage
-    self.requiredTime = requiredTime
-    self.options = options
-  }
+  let dependency: _Dependency
 
   public static func runTime<T: Package>(_ package: T.Type) -> Self {
-    .init(T.self, requiredTime: .runTime, options: .init())
+    .init(dependency: .package(T.defaultPackage, options: .init(requiredTime: .runTime)))
   }
 
   public static func runTime(_ package: Package) -> Self {
-    .init(package, requiredTime: .runTime, options: .init())
+    .init(dependency: .package(package, options: .init(requiredTime: .runTime)))
   }
 
   public static func buildTool<T: Package>(_ package: T.Type) -> Self {
-    .init(T.self, requiredTime: .buildTime, options: .init(target: .native))
-  }
-
-  internal let package: Package
-  // after target package is built, this package will be removed / ignored, not showing in dep tree
-  internal let requiredTime: DependencyTime
-  internal let options: Options
-
-  internal struct Options {
-    internal init(target: TargetTriple? = nil,
-                version: Range<Version>? = nil) {
-      self.target = target
-      self.version = version
-    }
-
-    /// override the default build target, useful for building tools
-    public let target: TargetTriple?
-    public let version: Range<Version>?
-  }
-
-}
-
-public enum OtherPackageManager: String {
-  case cargo
-  case brew
-  case pip
-}
-
-public struct OtherPackages: CustomStringConvertible {
-
-  internal let manager: OtherPackageManager
-  internal let names: [String]
-  internal let requireLinked: Bool
-
-  @available(*, deprecated, message: "bye-bye brew")
-  public static var brewAutoConf: Self {
-    .brew(["autoconf", "automake", "libtool"])
+    .init(dependency: .package(T.defaultPackage, options: .init(requiredTime: .buildTime, target: .native)))
   }
 
   public static func brew(_ names: [String], requireLinked: Bool = true) -> Self {
-    .init(manager: .brew, names: names, requireLinked: requireLinked)
+    .init(dependency: .other(manager: .brew, names: names, requireLinked: requireLinked))
   }
 
   public static func pip(_ names: [String]) -> Self {
-    .init(manager: .pip, names: names, requireLinked: false)
+    .init(dependency: .other(manager: .pip, names: names, requireLinked: false))
   }
 
   public static func cargo(_ names: [String]) -> Self {
-    .init(manager: .cargo, names: names, requireLinked: false)
+    .init(dependency: .other(manager: .cargo, names: names, requireLinked: false))
   }
 
-  public var description: String {
-    "\(manager.rawValue): \(names)"
+  enum OtherPackageManager: String {
+    case cargo
+    case brew
+    case pip
   }
 }
+
 /*
  .otherPackage(bin: "cargo-cinstall", package: .cargo("cargo-c"))
  */
-public struct PackageDependencies: CustomStringConvertible {
-  public init(packages: [PackageDependency?] = [], otherPackages: [OtherPackages] = []) {
-    self.packages = packages.compactMap { $0 }
-    self.otherPackages = otherPackages
-  }
-
-  public init(packages: PackageDependency?...) {
-    self.init(packages: packages)
-  }
-
-  let packages: [PackageDependency]
-  let otherPackages: [OtherPackages]
-
-  public var isEmpty: Bool {
-    packages.isEmpty && otherPackages.isEmpty
-  }
-
-  public static var empty: Self {
-    .init(packages: [], otherPackages: [])
-  }
-
-  public static func brew(_ formulas: [String]) -> Self {
-    .init(packages: [], otherPackages: [.init(manager: .brew, names: formulas, requireLinked: true)])
-  }
-
-  @available(*, deprecated, renamed: "PackageDependencies.init(packages:)")
-  public static func packages(_ packages: [PackageDependency?]) -> Self {
-    .init(packages: packages, otherPackages: [])
-  }
-
-  @available(*, deprecated, renamed: "PackageDependencies.init(packages:)")
-  public static func packages(_ packages: PackageDependency?...) -> Self {
-    PackageDependencies(packages: packages)
-  }
-
-  @available(*, deprecated, renamed: "PackageDependencies.init(packages:otherPackages:)")
-  public static func blend(packages: [PackageDependency?], brewFormulas: [String?]) -> Self {
-    .init(packages: packages, otherPackages: [.init(manager: .brew, names: brewFormulas.compactMap {$0}, requireLinked: true)])
-  }
-
-  public var description: String {
-    """
-     - packages: \(packages.map(\.package.name).sorted().joined(separator: ", "))
-     - others: \(otherPackages)
-    """
-  }
-}

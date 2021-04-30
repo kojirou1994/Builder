@@ -19,9 +19,9 @@ public struct Boost: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [
+      dependencies: [
         .runTime(Icu4c.self),
-      ])
+      ]
     )
   }
 

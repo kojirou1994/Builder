@@ -19,18 +19,16 @@ public struct Ass: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: [
-          .runTime(Freetype.self),
-          .runTime(Harfbuzz.self),
-          .runTime(Fribidi.self),
-          .buildTool(Nasm.self),
-          .buildTool(Autoconf.self),
-          .buildTool(Automake.self),
-          .buildTool(Libtool.self),
-          .buildTool(PkgConfig.self),
-        ]
-      )
+      dependencies: [
+        .runTime(Freetype.self),
+        .runTime(Harfbuzz.self),
+        .runTime(Fribidi.self),
+        .buildTool(Nasm.self),
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
+      ]
     )
   }
 
@@ -45,8 +43,8 @@ public struct Ass: Package {
       configureEnableFlag(false, "fontconfig"),
       configureEnableFlag(env.order.target.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true),
       nil
-//      "HARFBUZZ_CFLAGS=-I\(env.dependencyMap[Harfbuzz.self].include.path)",
-//      "HARFBUZZ_LIBS=-L\(env.dependencyMap[Harfbuzz.self].lib.path) -lharfbuzz"
+      //      "HARFBUZZ_CFLAGS=-I\(env.dependencyMap[Harfbuzz.self].include.path)",
+      //      "HARFBUZZ_LIBS=-L\(env.dependencyMap[Harfbuzz.self].lib.path) -lharfbuzz"
     )
 
     try env.make()

@@ -5,7 +5,7 @@ public struct Ninja: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable("1.10.2")
+    "1.10.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -19,7 +19,7 @@ public struct Ninja: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: .buildTool(Cmake.self)),
+      dependencies: [.buildTool(Cmake.self)],
       supportedLibraryType: nil
     )
   }

@@ -19,10 +19,10 @@ public struct NeoMiniDeen: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(
-        packages: .buildTool(Cmake.self),
-      .buildTool(Ninja.self)
-      )
+      dependencies: [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+      ]
     )
   }
 

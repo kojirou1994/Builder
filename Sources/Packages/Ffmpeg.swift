@@ -132,7 +132,7 @@ public struct Ffmpeg: Package {
     return r.sorted()
   }
 
-  public func dependencies(for version: PackageVersion) -> PackageDependencies {
+  public func dependencies(for version: PackageVersion) -> [PackageDependency] {
     var deps: [PackageDependency] = [
       .buildTool(Nasm.self),
       .buildTool(PkgConfig.self),
@@ -174,7 +174,7 @@ public struct Ffmpeg: Package {
       case .apple: break
       }
     }
-    return .init(packages: deps)
+    return deps
   }
 
   public var tag: String {

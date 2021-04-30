@@ -19,7 +19,7 @@ public struct Automake: Package {
 
     return .init(
       source: source,
-      dependencies: PackageDependencies(packages: [.buildTool(Autoconf.self), .buildTool(Libtool.self)]),
+      dependencies: [.buildTool(Autoconf.self), .buildTool(Libtool.self)],
       supportedLibraryType: nil
     )
   }
