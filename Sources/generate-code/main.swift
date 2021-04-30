@@ -71,14 +71,13 @@ let testAllPackagesFileURL =
   URL(fileURLWithPath: #filePath)
   .deletingLastPathComponent() // target
   .deletingLastPathComponent() // source
-  .deletingLastPathComponent() //package
-  .appendingPathComponent("Tests/BuilderSystemTests/AllPackages.swift")
+  .appendingPathComponent("PackagesInfo/AllPackages.swift")
 
 try """
 import BuildSystem
 import Packages
 
-let allPackages: [Package.Type] = [
+public let allPackages: [Package.Type] = [
 \(packageNames.map {"\($0).self,"}.joined(separator: "\n"))
 ]
 """

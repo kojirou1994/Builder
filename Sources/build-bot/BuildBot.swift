@@ -2,7 +2,7 @@ import ArgumentParser
 import Foundation
 import URLFileManager
 import BuildSystem
-import Packages
+import PackagesInfo
 
 struct CheckUpdate: ParsableCommand {
 

@@ -9,6 +9,7 @@ let package = Package(
   ],
   products: [
     .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"]),
+    .library(name: "Packages", targets: ["Packages"]),
     .executable(name: "build-cli", targets: ["build-cli"])
   ],
   dependencies: [
@@ -41,6 +42,11 @@ let package = Package(
       dependencies: [
         .target(name: "BuildSystem"),
       ]),
+    .target(
+      name: "PackagesInfo",
+      dependencies: [
+        .target(name: "Packages"),
+      ]),
     .executableTarget(
       name: "build-cli",
       dependencies: [
@@ -49,7 +55,7 @@ let package = Package(
     .executableTarget(
       name: "build-bot",
       dependencies: [
-        .target(name: "Packages"),
+        .target(name: "PackagesInfo"),
       ]),
     .executableTarget(
       name: "generate-code",
@@ -61,7 +67,7 @@ let package = Package(
       name: "BuilderSystemTests",
       dependencies: [
         .target(name: "BuildSystem"),
-        .target(name: "Packages"),
+        .target(name: "PackagesInfo"),
       ]),
   ]
 )

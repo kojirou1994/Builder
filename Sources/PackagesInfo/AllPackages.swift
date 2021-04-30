@@ -1,7 +1,7 @@
 import BuildSystem
 import Packages
 
-let allPackages: [Package.Type] = [
+public let allPackages: [Package.Type] = [
 AddGrain.self,
 Aom.self,
 Aribb24.self,
@@ -110,6 +110,7 @@ TDeintMod.self,
 TTempSmooth.self,
 Utfcpp.self,
 VagueDenoiser.self,
+Vapoursynth.self,
 Vmaf.self,
 Vorbis.self,
 Vpx.self,
@@ -120,6 +121,7 @@ Xslt.self,
 Xz.self,
 Yadifmod.self,
 Yasm.self,
+Zimg.self,
 Zlib.self,
 Zstd.self,
 Zvbi.self,

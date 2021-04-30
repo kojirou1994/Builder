@@ -1,5 +1,6 @@
 import XCTest
 @testable import BuildSystem
+import PackagesInfo
 
 final class BuildCliPackageTests: XCTestCase {
 
