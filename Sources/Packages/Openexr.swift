@@ -25,7 +25,7 @@ public struct Openexr: Package {
 
   public func build(with env: BuildEnvironment) throws {
     let srcRoot: String
-    if env.version < "3.0.0" {
+    if env.order.version < "3.0.0" {
       srcRoot = "OpenEXR/"
     } else {
       srcRoot = ""

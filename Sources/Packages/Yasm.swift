@@ -31,7 +31,7 @@ public struct Yasm: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    if env.version == .head {
+    if env.order.version == .head {
       try env.autogen()
     }
     try env.configure()

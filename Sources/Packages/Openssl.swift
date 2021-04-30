@@ -43,14 +43,14 @@ public struct Openssl: Package {
   public func build(with env: BuildEnvironment) throws {
 
     let os: String
-    switch env.target.system {
+    switch env.order.target.system {
     case .macOS:
-      os = "darwin64-\(env.target.arch.clangTripleString)-cc"
+      os = "darwin64-\(env.order.target.arch.clangTripleString)-cc"
     case .linuxGNU:
       //"linux-x86_64-clang"
-      os = "linux-\(env.target.arch.gnuTripleString)"
+      os = "linux-\(env.order.target.arch.gnuTripleString)"
     default:
-      os = env.target.clangTripleString
+      os = env.order.target.clangTripleString
     }
 
     try env.launch(

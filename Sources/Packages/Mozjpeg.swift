@@ -43,7 +43,7 @@ public struct Mozjpeg: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    switch env.target.arch {
+    switch env.order.target.arch {
     case .arm64:
       env.environment.append("-funwind-tables -Wall", for: .cflags)
     case .armv7:

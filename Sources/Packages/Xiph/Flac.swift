@@ -47,13 +47,13 @@ public struct Flac: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    switch env.target.arch {
+    switch env.order.target.arch {
     case .arm64, .arm64e, .armv7, .armv7s:
       env.environment.append("-mfpu=neon", for: .cflags, .ldflags)
     default: break
     }
 
-    let useASM = env.target.arch == .x86_64
+    let useASM = env.order.target.arch == .x86_64
     try env.autogen()
     
     try env.configure(

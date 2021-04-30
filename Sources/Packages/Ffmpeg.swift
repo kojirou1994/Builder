@@ -82,7 +82,7 @@ public struct Ffmpeg: Package {
 
     // MARK: External library
     Set(dependencyOptions).forEach { dependency in
-      guard dependency.supportsFFmpegVersion(env.version) else {
+      guard dependency.supportsFFmpegVersion(env.order.version) else {
         return
       }
       if dependency.isNonFree {
@@ -105,7 +105,7 @@ public struct Ffmpeg: Package {
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
-        if env.target.system.isApple {
+        if env.order.target.system.isApple {
           r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
                                           "appkit", "avfoundation", "coreimage"))
         }
@@ -125,7 +125,7 @@ public struct Ffmpeg: Package {
 //    r.insert("--extra-cflags=\(env.environment[.cflags])")
 //    r.insert("--extra-ldflags=\(env.environment[.ldflags])")
 
-    if env.target.system == .linuxGNU {
+    if env.order.target.system == .linuxGNU {
       r.insert("--extra-libs=-ldl -lpthread -lm -lz")
     }
 

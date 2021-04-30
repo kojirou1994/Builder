@@ -1,3 +1,5 @@
+import ExecutableDescription
+
 public struct MakeTool: Executable {
   public init(toolType: MakeToolType, parallelJobs: Int?, targets: [String] = []) {
     self.toolType = toolType

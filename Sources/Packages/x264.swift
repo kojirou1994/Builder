@@ -33,10 +33,10 @@ public struct x264: Package {
 
   public func build(with env: BuildEnvironment) throws {
 
-    let needGas = env.target.arch != .x86_64
+    let needGas = env.order.target.arch != .x86_64
 
     if needGas {
-      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.target.arch.gnuTripleString) -- \(env.cc)"
+      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.order.target.arch.gnuTripleString) -- \(env.cc)"
     }
 
     try env.configure(

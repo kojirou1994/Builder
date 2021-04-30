@@ -1,5 +1,6 @@
 import Foundation
 import TSCBasic
+import ExecutableLauncher
 
 public struct BuilderLauncher: ExecutableLauncher {
   public func generateProcess<T>(for executable: T) throws -> Process where T : Executable {

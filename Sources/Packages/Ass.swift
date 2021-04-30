@@ -43,7 +43,7 @@ public struct Ass: Package {
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, "fontconfig"),
-      configureEnableFlag(env.target.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true),
+      configureEnableFlag(env.order.target.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true),
       nil
 //      "HARFBUZZ_CFLAGS=-I\(env.dependencyMap[Harfbuzz.self].include.path)",
 //      "HARFBUZZ_LIBS=-L\(env.dependencyMap[Harfbuzz.self].lib.path) -lharfbuzz"

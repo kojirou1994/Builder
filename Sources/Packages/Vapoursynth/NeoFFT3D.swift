@@ -31,7 +31,7 @@ public struct NeoFFT3D: Package {
       try env.cmake(toolType: .ninja, "..")
 
       try env.make(toolType: .ninja)
-      let filename = "libneo-fft3d.\(env.target.system.sharedLibraryExtension)"
+      let filename = "libneo-fft3d.\(env.order.target.system.sharedLibraryExtension)"
 
       let installDir = env.prefix.lib.appendingPathComponent("vapoursynth")
       try env.mkdir(installDir)

@@ -51,7 +51,7 @@ public struct x265: Package {
     /*
      set -DNASM_EXECUTABLE="" for arm64
      */
-    let nasmEnabled = env.target.arch != .x86_64 ?
+    let nasmEnabled = env.order.target.arch != .x86_64 ?
       //      cmakeDefineFlag("", "NASM_EXECUTABLE")
       cmakeDefineFlag("yasm", "CMAKE_ASM_YASM_COMPILER")
       : nil
@@ -119,7 +119,7 @@ public struct x265: Package {
 
       try env.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
-      switch env.target.system {
+      switch env.order.target.system {
       case .macOS:
         try env.launch(
           "libtool",
@@ -147,7 +147,7 @@ public struct x265: Package {
           .joined(separator: "\n")
           .write(to: scriptFileURL, atomically: true, encoding: .utf8)
 
-        let fh = try FileHandle(forReadingFrom: scriptFileURL)
+        _ = try FileHandle(forReadingFrom: scriptFileURL)
 //        try AnyExecutable(executableName: "ar", arguments: ["-M"])
 //          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
       default: break

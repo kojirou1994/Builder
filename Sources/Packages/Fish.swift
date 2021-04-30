@@ -32,7 +32,7 @@ public struct Fish: Package {
 
   public func build(with env: BuildEnvironment) throws {
     env.environment.append("-lintl -liconv", for: .ldflags)
-    if env.target.system.isApple {
+    if env.order.target.system.isApple {
       env.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
     }
     try env.changingDirectory(env.randomFilename) { _ in

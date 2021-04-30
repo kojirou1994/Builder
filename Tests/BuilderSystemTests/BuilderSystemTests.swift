@@ -1,6 +1,7 @@
 import XCTest
 @testable import BuildSystem
 import TSCUtility
+import ExecutableLauncher
 
 final class BuilderSystemTests: XCTestCase {
 

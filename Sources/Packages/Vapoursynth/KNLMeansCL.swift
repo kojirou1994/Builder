@@ -22,7 +22,7 @@ public struct KNLMeansCL: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    if env.version > "1.1.1" {
+    if env.order.version > "1.1.1" {
       try env.changingDirectory(env.randomFilename) { _ in
         try env.meson("..")
 

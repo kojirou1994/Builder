@@ -1,6 +1,7 @@
 import URLFileManager
 import Logging
 import KwiftUtility
+import ExecutableDescription
 
 public class BuildEnvironment {
 
