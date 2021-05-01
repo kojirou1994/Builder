@@ -50,11 +50,6 @@ let package = Package(
     .executableTarget(
       name: "build-cli",
       dependencies: [
-        .target(name: "Packages"),
-      ]),
-    .executableTarget(
-      name: "build-bot",
-      dependencies: [
         .target(name: "PackagesInfo"),
       ]),
     .executableTarget(

@@ -4,7 +4,7 @@ import URLFileManager
 import BuildSystem
 import PackagesInfo
 
-struct CheckUpdate: ParsableCommand {
+struct BotCheckUpdate: ParsableCommand {
 
   @Option
   var workPath = "."
@@ -62,12 +62,11 @@ struct TestBuild: ParsableCommand {
   }
 }
 
-@main
-struct BuildBot: ParsableCommand {
+struct Bot: ParsableCommand {
 
   static var configuration: CommandConfiguration {
     .init(subcommands: [
-      CheckUpdate.self,
+      BotCheckUpdate.self,
       TestBuild.self,
     ])
   }

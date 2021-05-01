@@ -12,6 +12,7 @@ struct BuildCli: ParsableCommand {
       BuildAll.self,
       NewPackage.self,
       CheckUpdate.self,
+      Bot.self,
     ])
   }
 }
