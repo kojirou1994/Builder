@@ -116,6 +116,7 @@ struct Builder {
 
   let session = URLSession(configuration: .ephemeral)
   let fm = URLFileManager.default
+  /// base environment
   let env: BuildEnvironment
   let logger: Logger
   let builderDirectoryURL: URL
@@ -395,31 +396,30 @@ extension Builder {
       environment[.ldflags] = ""
 
       if order.target != .native { // isBuildingCross
-        switch order.target.system {
-        case .macCatalyst:
+        if order.target.system == .macCatalyst {
           /*
            Thanks:
            https://stackoverflow.com/questions/59903554/uikit-uikit-h-not-found-for-clang-building-mac-catalyst
            */
-          environment.append("-target", for: .cflags, .cxxflags)
-          environment.append(order.target.clangTripleString, for: .cflags, .cxxflags)
-        default:
-          environment.append("-arch", for: .cflags, .cxxflags)
-          environment.append(order.target.arch.clangTripleString, for: .cflags, .cxxflags)
+          environment.append("-target", for: .cflags, .cxxflags, .ldflags)
+          environment.append(order.target.clangTripleString, for: .cflags, .cxxflags, .ldflags)
         }
-        environment.append("-arch", for: .ldflags)
-        environment.append(order.target.arch.clangTripleString, for: .ldflags)
+        environment.append("-arch", for: .cflags, .cxxflags, .ldflags)
+        environment.append(order.target.arch.clangTripleString, for: .cflags, .cxxflags, .ldflags)
 
         if let sysroot = env.sdkPath {
           environment.append("-isysroot", for: .cflags, .cxxflags)
           environment.append(sysroot, for: .cflags, .cxxflags)
+          if order.target.system == .macCatalyst {
+            environment.append("-iframework", for: .ldflags)
+            environment.append(sysroot + "/System/iOSSupport/System/Library/Frameworks", for: .ldflags)
+            environment.append("-L\(sysroot)/System/iOSSupport/usr/lib", for: .ldflags)
+          }
         }
       }
       if env.enableBitcode {
         if recipe.supportsBitcode {
-          let bitcodeFlag = "-fembed-bitcode"
-          environment.append(bitcodeFlag, for: .cflags, .cxxflags)
-          environment.append(bitcodeFlag, for: .ldflags)
+          environment.append("-fembed-bitcode", for: .cflags, .cxxflags, .ldflags)
         } else {
           logger.warning("Package doesn't support bitcode, but bitcode is enabled!")
         }
