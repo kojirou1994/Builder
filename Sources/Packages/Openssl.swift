@@ -3,13 +3,13 @@ import BuildSystem
 public struct Openssl: Package {
   public init() {}
   public var defaultVersion: PackageVersion {
-    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["i"]))
+    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["k"]))
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
     switch order.target.system {
-    case .macOS, .linuxGNU:
+    case .macOS, .linuxGNU, .macCatalyst:
       switch order.target.arch {
       case .arm64, .x86_64:
         break
@@ -44,7 +44,7 @@ public struct Openssl: Package {
 
     let os: String
     switch env.order.target.system {
-    case .macOS:
+    case .macOS, .macCatalyst:
       os = "darwin64-\(env.order.target.arch.clangTripleString)-cc"
     case .linuxGNU:
       //"linux-x86_64-clang"
@@ -67,6 +67,9 @@ public struct Openssl: Package {
       try env.launch("make", "test")
     }
     try env.make(parallelJobs: 1, "install")
+    if env.libraryType == .shared {
+      try env.autoRemoveUnneedLibraryFiles()
+    }
   }
 
 }
