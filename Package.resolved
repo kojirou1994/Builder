@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "console-kit",
+        "repositoryURL": "https://github.com/vapor/console-kit.git",
+        "state": {
+          "branch": null,
+          "revision": "cfe8bcd58f74ffecb4f536d8237de146b634ecd3",
+          "version": "4.2.6"
+        }
+      },
+      {
         "package": "Executable",
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
@@ -24,8 +33,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
-          "revision": "831ed5e860a70e745bc1337830af4786b2576881",
-          "version": "0.4.1"
+          "revision": "986d191f94cec88f6350056da59c2e59e83d1229",
+          "version": "0.4.3"
         }
       },
       {
@@ -60,8 +69,8 @@
         "repositoryURL": "https://github.com/kojirou1994/URLFileManager.git",
         "state": {
           "branch": null,
-          "revision": "0e14b98abcd39ab0f2da51c44ee4a0cd7add2966",
-          "version": "0.1.2"
+          "revision": "b52f9567ee80ef991ebf9c76d0edc2d9a6b63c47",
+          "version": "0.1.3"
         }
       }
     ]

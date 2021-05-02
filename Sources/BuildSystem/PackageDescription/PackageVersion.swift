@@ -3,10 +3,23 @@ fileprivate let headVersion = "HEAD"
 public enum PackageVersion: LosslessStringConvertible, Equatable, Codable {
 
   public init?(_ description: String) {
-    self = .head
+    switch description {
+    case headVersion, "head":
+      self = .head
+    default:
+      guard let stableV = Version(description) else {
+        return nil
+      }
+      self = .stable(stableV)
+    }
   }
   public init(from decoder: Decoder) throws {
-    self = .head
+    let container = try decoder.singleValueContainer()
+    let string = try container.decode(String.self)
+    guard let v = Self(string) else {
+      throw DecodingError.dataCorruptedError(in: container, debugDescription: "\(string) is not a valid version.")
+    }
+    self = v
   }
 
   public func encode(to encoder: Encoder) throws {

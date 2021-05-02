@@ -19,6 +19,7 @@ let package = Package(
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "0.8.0"),
     .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
     .package(url: "https://github.com/apple/swift-crypto.git", from: "1.0.0"),
+    .package(url: "https://github.com/vapor/console-kit.git", from: "4.2.0"),
   ],
   targets: [
     .target(
@@ -51,6 +52,7 @@ let package = Package(
       name: "build-cli",
       dependencies: [
         .target(name: "PackagesInfo"),
+        .product(name: "ConsoleKit", package: "console-kit")
       ]),
     .executableTarget(
       name: "generate-code",
