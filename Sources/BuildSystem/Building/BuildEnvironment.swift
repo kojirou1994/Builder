@@ -186,9 +186,6 @@ extension BuildEnvironment {
       cmakeDefineFlag(prefix.root.path, "CMAKE_INSTALL_PREFIX"),
       cmakeDefineFlag("Release", "CMAKE_BUILD_TYPE")
     ]
-    arguments.forEach { argument in
-      argument.map { cmakeArguments.append($0) }
-    }
     switch toolType {
     case .ninja:
       cmakeArguments.append("-G")
@@ -196,15 +193,21 @@ extension BuildEnvironment {
     default:
       break
     }
-    //    if isBuildingCross {
-    //      cmakeArguments.append(cmakeDefineFlag(target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
-    //      cmakeArguments.append(cmakeDefineFlag(target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
-    //      cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
-    //    }
+    if isBuildingCross {
+      cmakeArguments.append(cmakeDefineFlag(order.target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
+      cmakeArguments.append(cmakeDefineFlag(order.target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
+      if order.target.system.isApple {
+        cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
+      }
+    }
     if let sysroot = sdkPath {
       cmakeArguments.append(cmakeDefineFlag(sysroot, "CMAKE_OSX_SYSROOT"))
     }
     cmakeArguments.append(cmakeDefineFlag(dependencyMap.allPrefixes.map(\.root.path).joined(separator: ";"), "CMAKE_PREFIX_PATH"))
+
+    arguments.forEach { argument in
+      argument.map { cmakeArguments.append($0) }
+    }
 
     try launch("cmake", cmakeArguments)
   }
