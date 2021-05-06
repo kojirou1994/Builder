@@ -8,7 +8,7 @@ public struct Aom: Package {
   var examples: Bool = false
 
   public var defaultVersion: PackageVersion {
-    "3.0.0"
+    "3.1.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -26,13 +26,16 @@ public struct Aom: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .buildTool(Yasm.self)
+      ],
+      products: [
+        .library(name: "aom", headers: ["aom"])
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
 
-    try env.changingDirectory(env.randomFilename) { _ in
+    try env.inRandomDirectory { _ in
       try env.cmake(
         toolType: .ninja,
         "..",
@@ -43,7 +46,8 @@ public struct Aom: Package {
         cmakeOnFlag(false, "ENABLE_TESTS"),
         cmakeOnFlag(false, "ENABLE_TOOLS"),
         cmakeOnFlag(env.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        nil
+        (env.order.target.arch == .x86_64 || env.isBuildingNative) ? nil : cmakeDefineFlag(0, "CONFIG_RUNTIME_CPU_DETECT"),
+        env.order.target.system == .watchOS ? cmakeDefineFlag("generic", "AOM_TARGET_CPU") : nil
       )
 
       try env.make(toolType: .ninja)
@@ -56,7 +60,9 @@ public struct Aom: Package {
   public var tag: String {
     [
       examples ? "examples" : ""
-    ].joined(separator: "_")
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
   }
 
 }
