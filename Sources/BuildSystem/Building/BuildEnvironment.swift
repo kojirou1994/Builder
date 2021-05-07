@@ -41,6 +41,12 @@ public class BuildEnvironment {
 
   /// need to test or ...
   public let strictMode: Bool
+
+  public var canRunTests: Bool {
+    strictMode && order.target.arch == .native && !order.target.system.isSimulator
+      && ( (order.target.system == .native) || (order.target.system == .macCatalyst && TargetSystem.native == .macOS) )
+  }
+
   /// c compiler
   public let cc: String
   /// cpp compiler
