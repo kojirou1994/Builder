@@ -268,3 +268,20 @@ extension BuildEnvironment {
     try configure(arguments)
   }
 }
+
+
+// MARK: Fix Autotools
+extension BuildEnvironment {
+  public func fixAutotoolsForDarwin() throws {
+    if order.target.system.isSimulator {
+      try replace(contentIn: "configure", matching: "cross_compiling=no", with: "cross_compiling=yes")
+    }
+    if order.target.system == .macCatalyst {
+      try replace(contentIn: "configure", matching: """
+      archive_cmds="\\$CC -dynamiclib
+      """, with: """
+      archive_cmds="\\$CC -dynamiclib -target \(order.target.clangTripleString)
+      """)
+    }
+  }
+}
