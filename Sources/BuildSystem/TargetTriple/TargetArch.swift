@@ -6,11 +6,12 @@ public enum TargetArch: String, CaseIterable, ExpressibleByArgument, CustomStrin
   case armv7k
   case arm64_32
   case x86_64
+  case x86_64h
 
   public var gnuTripleString: String {
     switch self {
     case .arm64, .arm64e: return "aarch64"
-    case .x86_64: return rawValue
+    case .x86_64, .x86_64h: return Self.x86_64.rawValue
     case .armv7, .armv7s, .armv7k, .arm64_32: return "arm"
     }
   }
