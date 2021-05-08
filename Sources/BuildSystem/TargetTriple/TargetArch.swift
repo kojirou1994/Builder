@@ -34,9 +34,36 @@ public enum TargetArch: String, CaseIterable, ExpressibleByArgument, CustomStrin
 
   public var is64Bits: Bool {
     switch self {
-    case .arm64, .arm64e, .x86_64: return true
-    default: return false
+    case .arm64, .arm64e, .x86_64, .x86_64h: return true
+    case .armv7, .armv7s, .armv7k, .arm64_32: return false
     }
   }
 
+  func canLaunch(arch: Self) -> Bool {
+    switch self {
+    case .x86_64, .x86_64h:
+      switch arch {
+      case .x86_64, .x86_64h:
+        return true
+      default:
+        return false
+      }
+    case .arm64e:
+      switch arch {
+      case .arm64, .arm64e:
+        return true
+      default:
+        return false
+      }
+    case .arm64:
+      switch arch {
+      case .arm64:
+        return true
+      default:
+        return false
+      }
+    default:
+      return false
+    }
+  }
 }
