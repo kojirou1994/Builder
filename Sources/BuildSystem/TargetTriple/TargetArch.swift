@@ -3,13 +3,15 @@ public enum TargetArch: String, CaseIterable, ExpressibleByArgument, CustomStrin
   case arm64e
   case armv7
   case armv7s
+  case armv7k
+  case arm64_32
   case x86_64
 
   public var gnuTripleString: String {
     switch self {
     case .arm64, .arm64e: return "aarch64"
     case .x86_64: return rawValue
-    case .armv7, .armv7s: return "arm"
+    case .armv7, .armv7s, .armv7k, .arm64_32: return "arm"
     }
   }
 
@@ -27,6 +29,13 @@ public enum TargetArch: String, CaseIterable, ExpressibleByArgument, CustomStrin
     #else
     #error("Unknown arch!")
     #endif
+  }
+
+  public var is64Bits: Bool {
+    switch self {
+    case .arm64, .arm64e, .x86_64: return true
+    default: return false
+    }
   }
 
 }
