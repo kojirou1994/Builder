@@ -52,6 +52,13 @@ struct BotCheckUpdate: ParsableCommand {
   }
 }
 
+
+/*
+ test build argument:
+ 1. strict-mode no-bitcode all library types
+ 2. strict-mode no-bitcode shared library types
+ 3. strict-mode (no)-bitcode static library types
+ */
 struct TestBuild: ParsableCommand {
 
   @Option

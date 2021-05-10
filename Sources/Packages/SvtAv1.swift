@@ -1,11 +1,15 @@
 import BuildSystem
 
+fileprivate let lastArmInvalidVersion: PackageVersion = "0.8.6"
+
+fileprivate let repoSource = PackageSource.repository(url: "https://gitlab.com/AOMediaCodec/SVT-AV1.git")
+
 public struct SvtAv1: Package {
 
   public init() {}
 
-  @Flag(inversion: .prefixedEnableDisable)
-  var apps: Bool = false
+  @Flag(inversion: .prefixedEnableDisable, help: "Disable apps to build for other systems")
+  var apps: Bool = true
 
   public var defaultVersion: PackageVersion {
     "0.8.6"
@@ -13,11 +17,16 @@ public struct SvtAv1: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    switch order.version {
-    case .head:
-      source = .tarball(url: "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/master/SVT-AV1-master.tar.gz")
-    case .stable(let version):
-      source = .tarball(url: "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v\(version.toString())/SVT-AV1-v\(version.toString()).tar.gz")
+    if order.target.arch.isARM, order.version < lastArmInvalidVersion {
+      // only head can compile for arm...
+      source = repoSource
+    } else {
+      switch order.version {
+      case .head:
+        source = repoSource
+      case .stable(let version):
+        source = .tarball(url: "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v\(version.toString())/SVT-AV1-v\(version.toString()).tar.gz")
+      }
     }
 
     return .init(
@@ -25,30 +34,38 @@ public struct SvtAv1: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        .buildTool(Nasm.self),
+        order.target.arch.isX86 ? .buildTool(Yasm.self) : nil,
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    // TODO: add BUILD_TESTING
+
+    let compileCOnly: String?
+    if env.order.version > lastArmInvalidVersion {
+      compileCOnly = nil
+    } else {
+      compileCOnly = cmakeOnFlag(!env.order.target.arch.isX86, "COMPILE_C_ONLY")
+    }
+
     func build(shared: Bool) throws {
 
-      let buildApps = apps && (env.libraryType != .all || (env.prefersStaticBin != shared))
-
-      try env.changingDirectory(env.randomFilename) { _ in
+      try env.inRandomDirectory { _ in
         try env.cmake(
           toolType: .ninja,
           "..",
-          cmakeOnFlag(false, "BUILD_SHARED_LIBS"),
-          cmakeOnFlag(true, "ENABLE_NASM"),
-          shared ? cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR") : nil,
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS", defaultEnabled: false),
-          cmakeOnFlag(env.isBuildingNative, "NATIVE", defaultEnabled: false),
-          cmakeOnFlag(buildApps, "BUILD_APPS")
+          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
+          cmakeOnFlag(env.isBuildingNative, "NATIVE"),
+          compileCOnly,
+//          cmakeOnFlag(env.strictMode, "BUILD_TESTING"), // tests can't compile!
+          cmakeOnFlag(apps, "BUILD_APPS")
         )
 
         try env.make(toolType: .ninja)
+        if env.canRunTests {
+//          try env.make(toolType: .ninja, "test")
+        }
         try env.make(toolType: .ninja, "install")
       }
     }
@@ -61,8 +78,10 @@ public struct SvtAv1: Package {
 
   public var tag: String {
     [
-      apps ? "apps" : ""
-    ].joined(separator: "_")
+      apps ? "" : "no-apps"
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
   }
 
 }

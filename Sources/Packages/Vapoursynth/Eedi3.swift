@@ -20,8 +20,13 @@ public struct Eedi3: Package {
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Ninja.self)
-      ]
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+        .runTime(Boost.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 

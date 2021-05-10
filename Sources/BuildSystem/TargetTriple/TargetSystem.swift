@@ -99,7 +99,7 @@ public enum TargetSystem: String, CaseIterable, ExpressibleByArgument, CustomStr
     case .macOS:
       return "darwin" // macosx
     case .macCatalyst:
-      return "ios13-macabi"
+      return "ios14-macabi"
     case .tvOS, .tvSimulator,
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator:

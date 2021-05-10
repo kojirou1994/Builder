@@ -23,14 +23,26 @@ public struct Vorbis: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
         .runTime(Ogg.self),
+      ],
+      products: [
+        .library(name: "vorbis", headers: ["vorbis/codec.h"]),
+        .library(name: "vorbisenc", headers: ["vorbis/vorbisenc.h"]),
+        .library(name: "vorbisfile", headers: ["vorbis/vorbisfile.h"]),
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
 
+//    if env.enableBitcode {
+//      try replace(contentIn: "configure.ac", matching: "-force_cpusubtype_ALL", with: "")
+//    }
+
     try env.autoreconf()
+
+    try env.fixAutotoolsForDarwin()
 
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -38,10 +50,13 @@ public struct Vorbis: Package {
       env.libraryType.sharedConfigureFlag,
       configureEnableFlag(examples, "examples"),
       configureEnableFlag(docs, "docs"),
-      configureEnableFlag(false, "oggtest"),
-      "--with-ogg-libraries=\(env.dependencyMap[Ogg.self].lib.path)",
-      "--with-ogg-includes=\(env.dependencyMap[Ogg.self].include.path)"
+      configureEnableFlag(false, "oggtest")
     )
+
+    try env.make()
+    if env.canRunTests {
+      try env.make("check")
+    }
     try env.make("install")
   }
 

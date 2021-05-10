@@ -17,12 +17,16 @@ public struct Ctmf: Package {
       source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CTMF/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
+    #warning("fftw")
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Ninja.self)
-      ]
-      // TODO: use pip meson
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 

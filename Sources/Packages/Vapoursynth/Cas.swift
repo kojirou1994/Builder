@@ -12,22 +12,21 @@ public struct Cas: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-AddGrain/archive/refs/heads/master.zip")
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CAS/archive/refs/heads/master.zip")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-AddGrain/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CAS/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
-      source: source
+      source: source,
+      dependencies: [
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
-  }
-  
-  public var headPackageSource: PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CAS/archive/refs/heads/master.zip")
-  }
-
-  public func stablePackageSource(for version: Version) -> PackageSource? {
-    .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CAS/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
   }
 
   public func build(with env: BuildEnvironment) throws {

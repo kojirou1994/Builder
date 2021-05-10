@@ -1,6 +1,6 @@
 import BuildSystem
 
-public struct DeLogo: Package {
+public struct Delogo: Package {
 
   public init() {}
 
@@ -18,7 +18,14 @@ public struct DeLogo: Package {
     }
 
     return .init(
-      source: source
+      source: source,
+      dependencies: [
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 
@@ -26,6 +33,7 @@ public struct DeLogo: Package {
     try env.launch("chmod", "+x", "configure")
     try env.launch(path: "./configure", "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)")
 
+    try replace(contentIn: "config.mak", matching: "include/vapoursynth", with: "include")
     try env.make()
     try env.make("install")
   }

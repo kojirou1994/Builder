@@ -1,11 +1,11 @@
 import BuildSystem
 
-public struct Xz: Package {
+public struct Mpfr: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "5.2.5"
+    "4.1.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,33 +14,26 @@ public struct Xz: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://ftp.gnu.org/gnu/mpfr/mpfr-\(version.toString()).tar.xz")
     }
 
     return .init(
       source: source,
-      products: [
-        .bin("xzdec"),
-        .bin("lzmadec"),
-        .bin("lzmainfo"),
-        .bin("xz"),
-        .library(name: "lzma", headers: ["lzma", "lzma.h"]),
+      dependencies: [
+        .runTime(Gmp.self)
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
 
-    try env.fixAutotoolsForDarwin()
-
     try env.configure(
-      configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag
     )
 
     try env.make()
-    if env.canRunTests {
+    if env.strictMode {
       try env.make("check")
     }
     try env.make("install")

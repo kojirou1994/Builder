@@ -20,8 +20,12 @@ public struct Bwdif: Package {
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Ninja.self)
-      ]
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 

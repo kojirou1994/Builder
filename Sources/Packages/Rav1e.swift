@@ -8,7 +8,21 @@ public struct Rav1e: Package {
     "0.4.1"
   }
 
+  /*
+   success targets:
+   aarch64-apple-darwin
+   aarch64-apple-ios
+   x86_64-apple-darwin
+   */
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
+    switch order.target.system {
+    case .macOS, .linuxGNU:
+      break
+    default:
+      throw PackageRecipeError.unsupportedTarget
+    }
+
     let source: PackageSource
     switch order.version {
     case .head:
@@ -34,6 +48,7 @@ public struct Rav1e: Package {
      */
     try env.launch("cargo", "install", "--root",
                    env.prefix.root.path,
+                   "--target", env.order.target.rustTripleString,
                    "--path", ".")
     var types: [String?] = []
     switch env.libraryType {
@@ -44,7 +59,8 @@ public struct Rav1e: Package {
     }
     try env.launch("cargo",
                    ["cinstall", "--prefix",
-                    env.prefix.root.path] + types)
+                    env.prefix.root.path,
+                    "--target", env.order.target.rustTripleString] + types)
   }
 
 

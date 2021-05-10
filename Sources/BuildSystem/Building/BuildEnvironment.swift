@@ -5,8 +5,8 @@ import ExecutableDescription
 
 public class BuildEnvironment {
 
-  internal init(version: PackageVersion, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType, target: TargetTriple, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?) {
-    self.order = .init(version: version, target: target)
+  internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?, external: ExternalPackageEnvironment) {
+    self.order = order
     self.source = source
     self.prefix = prefix
     self.dependencyMap = dependencyMap
@@ -14,31 +14,26 @@ public class BuildEnvironment {
     self.cc = cc
     self.cxx = cxx
     self.environment = environment
-    self.libraryType = libraryType
+    self._libraryType = libraryType
 
     self.logger = logger
     self.enableBitcode = enableBitcode
     self.sdkPath = sdkPath
     self.deployTarget = deployTarget
-  }  
+    self.external = external
+  }
 
-  
   internal let fm: URLFileManager = .init()
   public let order: PackageOrder
-  @available(*, deprecated, renamed: "order.version")
-  public var version: PackageVersion {
-    order.version
-  }
-  @available(*, deprecated, renamed: "order.target")
-  public var target: TargetTriple {
-    order.target
-  }
+
   public let source: PackageSource
+  /// the install prefix for current building package
   public let prefix: PackagePath
 
   /// requiered package dependencies, value is install prefix
   public let dependencyMap: PackageDependencyMap
 
+  public let external: ExternalPackageEnvironment
   /// need to test or ...
   public let strictMode: Bool
 
@@ -58,7 +53,16 @@ public class BuildEnvironment {
   public var environment: EnvironmentValues
 
   public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount + 2
-  public let libraryType: PackageLibraryBuildType
+
+  private let _libraryType: PackageLibraryBuildType?
+  public var libraryType: PackageLibraryBuildType {
+    get {
+      guard let v = _libraryType else {
+        fatalError("Your package says no library type is supported, why access this property now?")
+      }
+      return v
+    }
+  }
   public let prefersStaticBin: Bool = false
   let logger: Logger
 
@@ -67,7 +71,7 @@ public class BuildEnvironment {
   public let deployTarget: String?
 
   public var launcher: BuilderLauncher {
-    .init(environment: environment)
+    .init(environment: environment, outputRedirection: .none)
   }
 
 }
@@ -138,18 +142,29 @@ extension BuildEnvironment {
     try mkdir(URL(fileURLWithPath: path))
   }
 
+  public func createSymbolicLink(at url: URL, withDestinationURL destURL: URL) throws {
+    logger.info("symbolic link \(destURL.path) to \(url.path)")
+    try fm.createSymbolicLink(at: url, withDestinationURL: destURL)
+  }
+
   public func mkdir(_ url: URL) throws {
     try fm.createDirectory(at: url)
   }
 
   public func copyItem(at srcURL: URL,
-                       to dstURL: URL) throws {}
+                       to dstURL: URL) throws {
+    try fm.copyItem(at: srcURL, to: dstURL)
+  }
 
   public func copyItem(at srcURL: URL,
-                       toDirectory dstDirURL: URL) throws {}
+                       toDirectory dstDirURL: URL) throws {
+    try fm.copyItem(at: srcURL, toDirectory: dstDirURL)
+  }
 
   public func moveItem(at srcURL: URL,
-                       to dstURL: URL) throws {}
+                       to dstURL: URL) throws {
+    try fm.moveItem(at: srcURL, to: dstURL)
+  }
 
   private func launch<T>(_ executable: T) throws where T : Executable {
     _ = try launcher.launch(executable: executable, options: .init(checkNonZeroExitCode: true))
@@ -191,6 +206,7 @@ extension BuildEnvironment {
 
   public func cmake(toolType: MakeToolType, _ arguments: [String?]) throws {
     var cmakeArguments = [
+//      "--debug-output",
       cmakeDefineFlag(prefix.root.path, "CMAKE_INSTALL_PREFIX"),
       cmakeDefineFlag("Release", "CMAKE_BUILD_TYPE")
     ]
@@ -229,16 +245,16 @@ extension BuildEnvironment {
                + arguments.compactMap {$0})
   }
 
-
-
-  public func configure(_ arguments: [String?]) throws {
-    var configureArguments = ["--prefix=\(prefix.root.path)"]
-
-    configureArguments.append("--host=\(order.target.gnuTripleString)")
+  public func configure(directory: String =  ".", _ arguments: [String?]) throws {
+    var configureArguments = [
+      "--prefix=\(prefix.root.path)",
+      "--build=\(TargetTriple.native.gnuTripleString)",
+      "--host=\(order.target.gnuTripleString)",
+    ]
 
     arguments.forEach { $0.map { configureArguments.append($0) } }
 
-    try launch(path: "configure", configureArguments)
+    try launch(path: "\(directory)/configure", configureArguments)
   }
 
   public func autoreconf() throws {
@@ -266,23 +282,30 @@ extension BuildEnvironment {
     try meson(arguments)
   }
 
-  public func configure(_ arguments: String?...) throws {
-    try configure(arguments)
+  public func configure(directory: String =  ".", _ arguments: String?...) throws {
+    try configure(directory: directory, arguments)
   }
 }
 
 
 // MARK: Fix Autotools
 extension BuildEnvironment {
+  /// call this function before configure
   public func fixAutotoolsForDarwin() throws {
-    if order.target.system.isSimulator {
+    if isBuildingCross {
       try replace(contentIn: "configure", matching: "cross_compiling=no", with: "cross_compiling=yes")
     }
     if order.target.system == .macCatalyst {
       try replace(contentIn: "configure", matching: """
-      archive_cmds="\\$CC -dynamiclib
+      \\$CC -dynamiclib
       """, with: """
-      archive_cmds="\\$CC -dynamiclib -target \(order.target.clangTripleString)
+      \\$CC -dynamiclib -target \(order.target.clangTripleString)
+      """)
+
+      try replace(contentIn: "configure", matching: """
+      \\$CC \\$allow_undefined_flag
+      """, with: """
+      \\$CC \\$allow_undefined_flag -target \(order.target.clangTripleString)
       """)
     }
   }

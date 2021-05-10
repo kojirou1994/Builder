@@ -37,54 +37,50 @@ public struct x265: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        .buildTool(Nasm.self)
+        order.target.arch == .x86_64 ? .buildTool(Nasm.self) : nil,
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
 
-    try replace(contentIn: "source/CMakeLists.txt", matching: "set_target_properties(x265-shared PROPERTIES MACOSX_RPATH 1)", with: "")
-
     let srcDir = "../source"
+    let toolType: MakeToolType = .ninja
 
-    /*
-     set -DNASM_EXECUTABLE="" for arm64
-     */
-    let nasmEnabled = env.order.target.arch != .x86_64 ?
-      //      cmakeDefineFlag("", "NASM_EXECUTABLE")
-      cmakeDefineFlag("yasm", "CMAKE_ASM_YASM_COMPILER")
-      : nil
+    let asm = cmakeDefineFlag("/Users/kojirou/Executable/Shared/gas-preprocessor.pl ", "CMAKE_ASM_COMPILER")
+    let asmFlag = cmakeDefineFlag("-arch arm64 -as-type apple-clang -- \(env.cc)", "CMAKE_ASM_FLAGS")
 
     if enable12bit {
       try env.changingDirectory("12bit") { cwd in
         try env.cmake(
-          toolType: .ninja,
+          toolType: toolType,
           srcDir,
           "-DHIGH_BIT_DEPTH=ON",
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
           "-DENABLE_CLI=OFF",
           "-DMAIN12=ON",
-          nasmEnabled)
+          asm, asmFlag
+        )
 
-        try env.make(toolType: .ninja)
+        try env.make(toolType: toolType)
       }
     }
 
     if enable10bit {
       try env.changingDirectory("10bit") { cwd in
         try env.cmake(
-          toolType: .ninja,
+          toolType: toolType,
           srcDir,
           "-DHIGH_BIT_DEPTH=ON",
           "-DENABLE_HDR10_PLUS=ON",
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
           "-DENABLE_CLI=OFF",
-          nasmEnabled)
+          asm, asmFlag
+        )
 
-        try env.make(toolType: .ninja)
+        try env.make(toolType: toolType)
       }
     }
 
@@ -103,7 +99,7 @@ public struct x265: Package {
       }
 
       try env.cmake(
-        toolType: .ninja,
+        toolType: toolType,
         srcDir,
         cmakeDefineFlag(extraLib.joined(separator: ";"), "EXTRA_LIB"),
         cmakeDefineFlag("-L.", "EXTRA_LINK_FLAGS"),
@@ -112,10 +108,10 @@ public struct x265: Package {
         env.libraryType.sharedCmakeFlag,
         cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(cli, "ENABLE_CLI", defaultEnabled: true),
-        nasmEnabled
+        asm, asmFlag
       )
 
-      try env.make(toolType: .ninja)
+      try env.make(toolType: toolType)
 
       try env.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 

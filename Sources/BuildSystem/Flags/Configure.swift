@@ -19,6 +19,11 @@ public func configureWithFlag(_ value: Bool, _ package: String) -> String {
 }
 
 @inline(never)
+public func configureWithFlag<T: CustomStringConvertible>(_ value: T?, _ package: String) -> String? {
+  value.map { "--with-\(package)=\($0.description)" }
+}
+
+@inline(never)
 public func cmakeOnFlag(_ value: Bool, _ option: String) -> String {
   "-D\(option)=\(value ? "ON" : "OFF")"
 }
@@ -34,8 +39,8 @@ public func cmakeOnFlag(_ value: Bool, _ options: String...) -> [String] {
 }
 
 @inline(never)
-public func cmakeDefineFlag(_ value: String, _ option: String) -> String {
-  "-D\(option)=\(value)"
+public func cmakeDefineFlag<T: CustomStringConvertible>(_ value: T, _ option: String) -> String {
+  "-D\(option)=\(value.description)"
 }
 
 @inline(never)

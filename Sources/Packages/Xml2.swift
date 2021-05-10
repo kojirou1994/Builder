@@ -25,22 +25,31 @@ public struct Xml2: Package {
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         .runTime(Zlib.self),
+        .runTime(Xz.self),
+      ],
+      products: [
+        .library(name: "xml2", headers: ["libxml2"])
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+    try env.autogen()
+
+    try env.fixAutotoolsForDarwin()
 
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      "--without-python",
-      "--without-lzma"
+      "--without-python"
     )
 
     try env.make()
+
+    if env.canRunTests {
+      try env.make("check")
+    }
 
     try env.make("install")
   }

@@ -1,19 +1,19 @@
 import BuildSystem
 
-public struct Zimg: Package {
+public struct Isl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.0.1"
+    "0.23"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://github.com/sekrit-twc/zimg.git")
+      throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://github.com/sekrit-twc/zimg/archive/refs/tags/release-\(version.toString(includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "http://isl.gforge.inria.fr/isl-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
     return .init(
@@ -22,31 +22,21 @@ public struct Zimg: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-      ],
-      products: [
-        .library(name: "zimg", headers: ["zimg.h"])
+        .runTime(Gmp.self),
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
-
-    try env.fixAutotoolsForDarwin()
-
+    try env.autoreconf()
+    
     try env.configure(
       env.libraryType.staticConfigureFlag,
       env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(env.strictMode, "testapp"),
-      configureEnableFlag(env.strictMode, "example")
+      "--with-gmp-prefix=\(env.dependencyMap[Gmp.self])"
     )
 
     try env.make()
-
-    if env.canRunTests {
-      try env.make("check")
-    }
-
     try env.make("install")
   }
 }

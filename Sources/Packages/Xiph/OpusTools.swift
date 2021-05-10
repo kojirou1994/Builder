@@ -16,6 +16,12 @@ public struct OpusTools: Package {
     case .stable(let version):
       source = .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-tools-\(version.toString(includeZeroPatch: false)).tar.gz")
     }
+
+    var libraryType: PackageLibraryBuildType? = .all
+
+    if order.target.system == .macCatalyst {
+      libraryType = .static // auto tools don't support catalyst shared lib
+    }
     
     return .init(
       source: source,
@@ -35,7 +41,7 @@ public struct OpusTools: Package {
         .bin("opusenc"),
         .bin("opusinfo"),
       ],
-      supportedLibraryType: nil
+      supportedLibraryType: libraryType
     )
   }
   

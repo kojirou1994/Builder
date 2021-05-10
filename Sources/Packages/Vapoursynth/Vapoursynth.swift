@@ -33,11 +33,15 @@ public struct Vapoursynth: Package {
         .buildTool(Nasm.self),
         .runTime(Zimg.self),
         .pip(["cython"]),
-      ]
+      ],
+      supportedLibraryType: .shared
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
+    // uninstall if installed
+    try env.launch("pip", "uninstall", "vapoursynth", "-y")
+
     try env.autogen()
 
     try env.configure(
@@ -48,6 +52,16 @@ public struct Vapoursynth: Package {
     try env.make()
     try env.make("install")
 
-    try env.launch("pip", "install", ".")
+    // or manually install to site-packages:
+    do {
+      let sitePackagesDirectory = try env.external.pythonSitePackagesDirectoryURL()!
+      let pythonStr = sitePackagesDirectory.pathComponents.dropLast().last!
+      let soFilename = "vapoursynth.so"
+      let src = env.prefix.appending("lib", pythonStr, "site-packages", soFilename)
+      let dst = sitePackagesDirectory.appendingPathComponent(soFilename)
+      try? env.removeItem(at: dst)
+
+      try env.createSymbolicLink(at: dst, withDestinationURL: src)
+    }
   }
 }

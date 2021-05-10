@@ -1,12 +1,12 @@
 import Foundation
 
 public enum PackagePatch {
-  case remote(url: String, sha256: String)
+  case remote(url: String, sha256: String?)
   case raw(String)
 }
 
 public struct PackageSource: CustomStringConvertible {
-  let url: String
+  public let url: String
   let requirement: Requirement
   let patches: [PackagePatch]
   let mirrors: [String]

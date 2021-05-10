@@ -46,6 +46,9 @@ struct BuilderOptions: ParsableArguments {
   func validate() throws {
     try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
     try preconditionOrThrow((dependencyLevel ?? 1) > 0, ValidationError("dependencyLevel must > 0"))
+    if bitcode {
+      try preconditionOrThrow(library == .static, ValidationError("bitcode is enabled, but libraryType is set to \(library), bitcode is only enabled in static library!"))
+    }
   }
 
   var packageVersion: PackageVersion? {

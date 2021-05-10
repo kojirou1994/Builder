@@ -29,18 +29,27 @@ public struct Icu4c: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
+
+    let buildTools = env.order.target.system == .linuxGNU
+    || env.order.target.system == .macOS
+
     try env.changingDirectory("icu4c/source") { _ in
       try env.autoreconf()
 
       try env.configure(
         env.libraryType.staticConfigureFlag,
         env.libraryType.sharedConfigureFlag,
-        "--disable-samples",
-        "--disable-tests",
+        configureEnableFlag(false, "samples"),
+        configureEnableFlag(env.strictMode, "tests"),
+        configureEnableFlag(buildTools, "tools"),
+        configureEnableFlag(buildTools, "extras"),
         "--with-library-bits=64"
       )
 
       try env.make()
+      if env.strictMode {
+        try env.make("check")
+      }
       try env.make("install")
     }
   }

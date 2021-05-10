@@ -1,22 +1,22 @@
 import BuildSystem
 
-public struct Utfcpp: Package {
+public struct Lzo: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.1.2"
+    "2.10.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
     let source: PackageSource
     switch order.version {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      // test required repo
-      // https://github.com/nemtrif/utfcpp.git
-      source = .tarball(url: "https://github.com/nemtrif/utfcpp/archive/refs/tags/v\(version.toString()).tar.gz")
+      let versionString = version.toString(includeZeroPatch: false)
+      source = .tarball(url: "https://www.oberhumer.com/opensource/lzo/download/lzo-\(versionString).tar.gz")
     }
 
     return .init(
@@ -24,11 +24,11 @@ public struct Utfcpp: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
       ],
       products: [
-        .header("utf8cpp")
-      ],
-      supportedLibraryType: nil
+        .library(name: "lzo2", headers: ["lzo"]),
+      ]
     )
   }
 
@@ -37,13 +37,17 @@ public struct Utfcpp: Package {
       try env.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(true, "UTF8_SAMPLES"),
-        cmakeOnFlag(false, "UTF8_TESTS")
+        cmakeOnFlag(env.strictMode, "BUILD_TESTING"),
+        cmakeOnFlag(env.libraryType.buildShared, "ENABLE_SHARED"),
+        cmakeOnFlag(env.libraryType.buildStatic, "ENABLE_STATIC"),
+        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
-
+      
       try env.make(toolType: .ninja)
+      if env.canRunTests {
+        try env.make(toolType: .ninja, "test")
+      }
       try env.make(toolType: .ninja, "install")
     }
   }
-
 }

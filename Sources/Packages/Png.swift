@@ -24,7 +24,9 @@ public struct Png: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    
+
+    try env.fixAutotoolsForDarwin()
+
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,

@@ -66,8 +66,12 @@ struct Builder {
       sdkPath = nil
     }
 
+    var external = ExternalPackageEnvironment()
     var envValues = EnvironmentValues()
     envValues[.path] = ""
+    envValues[.pkgConfigPath] = ""
+
+    // MARK: cargo
     if case let cargoHome = envValues["CARGO_HOME"],
        !cargoHome.isEmpty {
       logger.info("use cargo root from env: \(cargoHome)")
@@ -85,13 +89,24 @@ struct Builder {
 
     // MARK: pyenv
     do {
-      let pyenvRoot = try AnyExecutable(executableName: "pyenv", arguments: ["prefix"])
+      let pyenvPrefix = try AnyExecutable(executableName: "pyenv", arguments: ["prefix"])
         .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
         .utf8Output()
         .trimmingCharacters(in: .whitespacesAndNewlines)
-      logger.info("using python root: \(pyenvRoot)")
-      envValues.append("\(pyenvRoot)/bin", for: .path)
-      envValues.append("\(pyenvRoot)/lib/pkgconfig", for: .pkgConfigPath)
+      let pythonVersion = try AnyExecutable(executableName: "pyenv", arguments: ["version-name"])
+        .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
+        .utf8Output()
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+      logger.info("using python root: \(pyenvPrefix), version: \(pythonVersion)")
+      if pythonVersion == "system" {
+        logger.warning("You are using system python for pyenv!")
+      }
+      let pythonPath = PackagePath(URL(fileURLWithPath: pyenvPrefix))
+
+      // TODO: add env if package requires python
+      envValues.append("\(pythonPath.bin.path)", for: .path)
+      envValues.append("\(pythonPath.pkgConfig.path)", for: .pkgConfigPath)
+      external.python = .init(path: pythonPath, version: pythonVersion)
     } catch {
       logger.warning("Can't find pyenv root, you may install pyenv first.")
     }
@@ -102,22 +117,45 @@ struct Builder {
     envValues.append("/sbin", for: .path)
 
     logger.info("Using PATH: \(envValues[.path])")
-    
+
+    self.defaultLibraryType = libraryType
+    self.mainTarget = target
+    self.packageRootPath = .init(productsDirectoryURL)
+    self.cc = cc
+    self.cxx = cxx
+    self.strictMode = strictMode
+    self.envValues = envValues
+    self.enableBitcode = enableBitcode
+    self.sdkPath = sdkPath
+    self.deployTarget = deployTarget
+    self.external = external
     self.env = .init(
-      version: .head, source: .repository(url: "", requirement: .branch("main")),
+      order: .init(version: .head, target: target), source: .repository(url: "", requirement: .branch("main")),
       prefix: .init(productsDirectoryURL),
       dependencyMap: .init(),
       strictMode: strictMode,
       cc: cc, cxx: cxx,
       environment: envValues,
-      libraryType: libraryType, target: target, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget)
+      libraryType: libraryType, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
 
   }
 
   let session = URLSession(configuration: .ephemeral)
   let fm = URLFileManager.default
   /// base environment
+  @available(*, deprecated, message: "move default values to builder root")
   let env: BuildEnvironment
+  let defaultLibraryType: PackageLibraryBuildType
+  let packageRootPath: PackagePath
+  let mainTarget: TargetTriple
+  let strictMode: Bool
+  let cc: String, cxx: String
+  let envValues: EnvironmentValues
+  let enableBitcode: Bool
+  let sdkPath: String?
+  let deployTarget: String?
+  let external: ExternalPackageEnvironment
+
   let logger: Logger
   let builderDirectoryURL: URL
   let workingDirectoryURL: URL
@@ -145,7 +183,7 @@ struct Builder {
       case .branch(let branch), .tag(let branch):
         try env.launch("git", "clone", "-b", branch, "--depth", "1", "--recursive", source.url, safeDirName)
       case .none:
-        fatalError()
+        try env.launch("git", "clone", "--depth", "1", "--recursive", source.url, safeDirName)
       case .revision(_):
         fatalError("Useless api")
       }
@@ -184,11 +222,11 @@ struct Builder {
       #warning("handle other tarball format")
       try env.launch("tar", "xf", dstFileURL.path)
 
-      let contents = try env.fm.contentsOfDirectory(at: env.fm.currentDirectory, options: [.skipsHiddenFiles])
-      if contents.count == 1, env.fm.fileExistance(at: contents[0]) == .directory {
+      let contents = try fm.contentsOfDirectory(at: env.fm.currentDirectory, options: [.skipsHiddenFiles])
+      if contents.count == 1, fm.fileExistance(at: contents[0]) == .directory {
         srcDirURL = contents[0]
       } else {
-        srcDirURL = env.fm.currentDirectory
+        srcDirURL = fm.currentDirectory
       }
     }
 
@@ -197,9 +235,11 @@ struct Builder {
       logger.info("Applying patch \(patch)")
       switch patch {
       case .raw(_): break
-      case let .remote(url: url, sha256: sha256):
+      case let .remote(url: url, sha256: _):
+        var gitApply = AnyExecutable(executableName: "git", arguments: ["apply"])
+        gitApply.currentDirectoryURL = srcDirURL
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
-          .append(AnyExecutable(executableName: "patch", arguments: ["-ruN", "-d", srcDirURL.path, "--verbose"]))
+          .append(gitApply)
         print(patcher)
         try patcher.run()
         patcher.waitUntilExit()
@@ -215,12 +255,13 @@ typealias PrefixGenerator = (_ prefixRoot: URL, Package, PackageOrder, PackageRe
 extension Builder {
 
   private func formPrefix(package: Package, order: PackageOrder, recipe: PackageRecipe,
+                          libraryType: PackageLibraryBuildType?,
                           isJoinedDependency: Bool = false) -> PackagePath {
     let result: URL
     if let generator = prefixGenerator {
-      result = generator(env.prefix.root, package, order, recipe, isJoinedDependency)
+      result = generator(packageRootPath.root, package, order, recipe, isJoinedDependency)
     } else {
-      var prefix = env.prefix.root
+      var prefix = packageRootPath.root
 
       // example root/curl/7.14-feature_hash/static-x86_64-macOS/
       prefix.appendPathComponent(package.name.safeFilename())
@@ -243,8 +284,8 @@ extension Builder {
 
       if addLibInfoInPrefix {
         var libInfos = [String]()
-        if recipe.supportedLibraryType != nil {
-          libInfos.append(env.libraryType.rawValue)
+        libraryType.map { libType in
+          libInfos.append(libType.rawValue)
         }
         libInfos.append(order.target.arch.rawValue)
         libInfos.append(order.target.system.rawValue)
@@ -257,14 +298,17 @@ extension Builder {
     return .init(result)
   }
 
-  private func canStartBuild(packageSupported: PackageLibraryBuildType) -> Bool {
-    switch (env.libraryType, packageSupported) {
+  private func shouldBuildLibraryTypeFor(packageSupported: PackageLibraryBuildType?) -> PackageLibraryBuildType? {
+    switch (defaultLibraryType, packageSupported) {
     case (.shared, .shared),
          (.static, .static),
          (_, .all):
-      return true
-    default:
-      return true
+      return defaultLibraryType
+    case (.shared, .static), (.all, .static),
+         (.static, .shared), (.all, .shared):
+      return packageSupported
+    case (_, nil):
+      return nil
     }
   }
 
@@ -291,8 +335,8 @@ extension Builder {
     let startTime = Date()
 
     let recipe = try package.recipe(for: order)
-    try recipe.supportedLibraryType
-      .map { try preconditionOrThrow(canStartBuild(packageSupported: $0)) }
+    let usedLibraryType = shouldBuildLibraryTypeFor(packageSupported: recipe.supportedLibraryType)
+    logger.info("Default library type: \(defaultLibraryType), package supported: \(recipe.supportedLibraryType?.description ?? "none"), finally used: \(usedLibraryType?.description ?? "none")")
 
     let usedPrefix: PackagePath
     var result: InternalBuildResult {
@@ -314,8 +358,8 @@ extension Builder {
     if let v = prefix {
       usedPrefix = v
     } else {
-      usedPrefix = formPrefix(package: package, order: order, recipe: recipe)
-      if env.fm.fileExistance(at: usedPrefix.root.appendingPathComponent(buildSummaryFilename)).exists {
+      usedPrefix = formPrefix(package: package, order: order, recipe: recipe, libraryType: usedLibraryType)
+      if fm.fileExistance(at: usedPrefix.root.appendingPathComponent(buildSummaryFilename)).exists {
         logger.info("Built package existed.")
         // MARK: Rebuild Handling
         switch (rebuildLevel, reason) {
@@ -324,7 +368,7 @@ extension Builder {
              (.runTime, .user),
              (.package, .user):
           logger.info("Rebuilding required, removing built package.")
-          try env.removeItem(at: usedPrefix.root)
+          try fm.removeItem(at: usedPrefix.root)
         default:
           return result
         }
@@ -335,13 +379,13 @@ extension Builder {
     if preferSystemPackage,
        case .dependency = reason,
        package.tag.isEmpty,
-       case let sdkPath = self.env.sdkPath ?? "",
+       case let sdkPath = sdkPath ?? "",
        let systemPackage = package.systemPackage(for: order, sdkPath: sdkPath) {
       logger.info("Using system package: \(package.name)")
       // auto generated pkgconfig
 
       let pkgConfigDirectoryURL = usedPrefix.pkgConfig
-      try env.fm.createDirectory(at: pkgConfigDirectoryURL)
+      try fm.createDirectory(at: pkgConfigDirectoryURL)
       try systemPackage.pkgConfigs.forEach { pkgConfig in
         logger.info("Writing system pkg config \(pkgConfig.name)")
         try pkgConfig.content
@@ -355,7 +399,7 @@ extension Builder {
     }
 
     // MARK: Setup Build Environment
-    var environment = env.environment
+    var environment = self.envValues
     do {
       let allPrefixes = Set(dependencyMap.allPrefixes)
 
@@ -407,7 +451,7 @@ extension Builder {
         environment.append("-arch", for: .cflags, .cxxflags, .ldflags)
         environment.append(order.target.arch.clangTripleString, for: .cflags, .cxxflags, .ldflags)
 
-        if let sysroot = env.sdkPath {
+        if let sysroot = sdkPath {
           environment.append("-isysroot", for: .cflags, .cxxflags)
           environment.append(sysroot, for: .cflags, .cxxflags)
           if order.target.system == .macCatalyst {
@@ -417,7 +461,7 @@ extension Builder {
           }
         }
       }
-      if env.enableBitcode {
+      if enableBitcode {
         if recipe.supportsBitcode {
           environment.append("-fembed-bitcode", for: .cflags, .cxxflags, .ldflags)
         } else {
@@ -425,8 +469,8 @@ extension Builder {
         }
       }
       
-      if let deployTarget = env.deployTarget {
-        let flag = "\(env.order.target.system.minVersionClangFlag)=\(deployTarget)"
+      if let deployTarget = deployTarget {
+        let flag = "\(order.target.system.minVersionClangFlag)=\(deployTarget)"
         environment.append(flag, for: .cflags, .cxxflags)
         environment.append(flag, for: .ldflags)
       }
@@ -443,15 +487,14 @@ extension Builder {
         environment.append("-O\(optimizeLevel)", for: .cflags, .cxxflags)
       }
 
-      environment[.cc] = env.cc
-      environment[.cxx] = env.cxx
+      environment[.cc] = cc
+      environment[.cxx] = cxx
     }
 
     let env = newBuildEnvironment(
-      version: order.version, source: recipe.source,
-      target: order.target,
+      order: order, source: recipe.source,
       dependencyMap: dependencyMap,
-      environment: environment,
+      environment: environment, libraryType: usedLibraryType,
       prefix: usedPrefix)
 
     let tmpWorkDirURL = workingDirectoryURL.appendingPathComponent(package.name + UUID().uuidString)
@@ -489,22 +532,22 @@ extension Builder {
   public func startBuild(package: Package, version: PackageVersion?) throws -> PackageBuildResult {
     if cleanAll {
       print("Cleaning products directory...")
-      try? env.removeItem(at: productsDirectoryURL)
+      try? fm.removeItem(at: productsDirectoryURL)
     }
     print("Cleaning working directory...")
-    try? env.removeItem(at: workingDirectoryURL)
+    try? fm.removeItem(at: workingDirectoryURL)
 
-    try env.mkdir(downloadCacheDirectory)
+    try fm.createDirectory(at: downloadCacheDirectory)
 
     let dependencyPrefix: PackagePath?
-    let order = PackageOrder(version: version ?? package.defaultVersion, target: env.order.target)
+    let order = PackageOrder(version: version ?? package.defaultVersion, target: mainTarget)
     let recipe = try package.recipe(for: order)
 
     if joinDependency {
-      dependencyPrefix = formPrefix(package: package, order: order, recipe: recipe, isJoinedDependency: true)
-      if env.fm.fileExistance(at: dependencyPrefix!.root).exists {
+      dependencyPrefix = formPrefix(package: package, order: order, recipe: recipe, libraryType: defaultLibraryType, isJoinedDependency: true)
+      if fm.fileExistance(at: dependencyPrefix!.root).exists {
         print("Removing dependency directory")
-        try env.removeItem(at: dependencyPrefix!.root)
+        try fm.removeItem(at: dependencyPrefix!.root)
       }
     } else {
       dependencyPrefix = nil
@@ -563,10 +606,16 @@ extension Builder {
           dependencyMap.add(package: dependencyPackage, prefix: dependencySummary.packageSelfResult!.prefix)
           dependencyMap.merge(dependencySummary.runTimeDependencyMap)
         case let .other(manager: manager, names: names, requireLinked: requireLinked):
+          if names.isEmpty {
+            return
+          }
           switch manager {
           case .brew:
             dependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
             runTimeDependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
+          case .pip:
+            try AnyExecutable(executableURL: external.pipExecutableURL.unwrap("No pip in pyenv!"), arguments: ["install"] + names)
+              .launch(use: TSCExecutableLauncher(outputRedirection: .none))
           default:
             logger.warning("Unimplemented other package manager \(manager)'s, required packages: \(names), continue in 4 seconds")
             sleep(4)
@@ -585,16 +634,16 @@ extension Builder {
   }
 
   func newBuildEnvironment(
-    version: PackageVersion, source: PackageSource,
-    target: TargetTriple,
+    order: PackageOrder, source: PackageSource,
     dependencyMap: PackageDependencyMap,
     environment: EnvironmentValues,
+    libraryType: PackageLibraryBuildType?,
     prefix: PackagePath) -> BuildEnvironment {
     .init(
-      version: version, source: source,
+      order: order, source: source,
       prefix: prefix, dependencyMap: dependencyMap,
-      strictMode: env.strictMode, cc: env.cc, cxx: env.cxx,
+      strictMode: strictMode, cc: cc, cxx: cxx,
       environment: environment,
-      libraryType: env.libraryType, target: target, logger: env.logger, enableBitcode: env.enableBitcode, sdkPath: env.sdkPath, deployTarget: env.deployTarget)
+      libraryType: libraryType, logger: env.logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
   }
 }

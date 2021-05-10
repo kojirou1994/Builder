@@ -14,6 +14,36 @@ public struct TargetTriple: Hashable, CustomStringConvertible, Codable {
   public var clangTripleString: String {
     "\(arch.clangTripleString)-\(system.vendor)-\(system.clangTripleString)"
   }
+
+  public var rustTripleString: String {
+    var triple = ""
+    switch arch {
+    case .arm64, .arm64e:
+      triple += "aarch64"
+    case .armv7s:
+      triple += "armv7s"
+    case .armv7, .armv7k, .arm64_32:
+      triple += "armv7"
+    case .x86_64, .x86_64h:
+      triple += "x86_64"
+    }
+    triple += "-"
+    if system.isApple {
+      triple += "apple-"
+    }
+    switch system {
+    case .linuxGNU: triple += "unknown-linux-gnu"
+    case .iphoneOS: triple += "ios"
+    case .iphoneSimulator: triple += "ios-sim"
+    case .macCatalyst: triple += "ios-macabi"
+    case .macOS: triple += "darwin"
+    case .tvOS: triple += "tvos"
+    case .tvSimulator: triple += "tvos"
+    case .watchOS: triple += "darwin"
+    case .watchSimulator: triple += "darwin"
+    }
+    return triple
+  }
   
   public var description: String {
     "\(arch)-\(system)"

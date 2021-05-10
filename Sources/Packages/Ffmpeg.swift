@@ -26,9 +26,59 @@ public struct Ffmpeg: Package {
       source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
+    var deps: [PackageDependency] = [
+      .buildTool(Nasm.self),
+      .buildTool(PkgConfig.self),
+    ]
+
+    dependencyOptions.forEach { dependency in
+      guard dependency.supportsFFmpegVersion(order.version) else {
+        return
+      }
+      switch dependency {
+      case .libopus:
+        deps.append(.runTime(Opus.self))
+      case .libvorbis:
+        deps.append(.runTime(Vorbis.self))
+      case .libfdkaac:
+        deps.append(.runTime(FdkAac.self))
+      case .libx264:
+        deps.append(.runTime(x264.self))
+      case .libx265:
+        deps.append(.runTime(x265.self))
+      case .libwebp:
+        deps.append(.runTime(Webp.self))
+      case .libaribb24:
+        deps.append(.runTime(Aribb24.self))
+      case .libopencore:
+        deps.append(.runTime(Opencore.self))
+      case .libass:
+        deps.append(.runTime(Ass.self))
+      case .libsvtav1:
+        deps.append(.runTime(SvtAv1.self))
+      case .librav1e:
+        switch order.target.system {
+        case .macOS, .linuxGNU:
+          deps.append(.runTime(Rav1e.self))
+        default: break // maybe need xargo
+        }
+      case .libsdl2:
+        switch order.target.system {
+        case .macOS, .linuxGNU:
+          deps.append(.runTime(Sdl2.self))
+        default: break
+        }
+      case .libmp3lame:
+        deps.append(.runTime(Lame.self))
+      case .libaom:
+        deps.append(.runTime(Aom.self))
+      case .apple: break
+      }
+    }
+
     return .init(
       source: source,
-      dependencies: dependencies(for: order.version)
+      dependencies: deps
     )
   }
 
@@ -64,9 +114,12 @@ public struct Ffmpeg: Package {
     var r = Set<String>([
       "--cc=\(env.cc)",
       "--cxx=\(env.cxx)",
-      "--prefix=\(env.prefix.root.path)",
+      "--prefix=\(env.prefix)",
     ])
     var licenses = Set<FFmpegLicense>()
+//    if env.isBuildingCross {
+//      r.insert(configureEnableFlag(true, "cross-compile"))
+//    }
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
 //    r.insert(configureEnableFlag(true, "pthreads"))
@@ -96,6 +149,15 @@ public struct Ffmpeg: Package {
         licenses.insert(.gpl)
       }
       switch dependency {
+      case .libsdl2, .librav1e:
+        switch env.order.target.system {
+        case .macOS, .linuxGNU:
+          break
+        default: return // maybe need xargo
+        }
+      default: break
+      }
+      switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
            .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom:
@@ -122,59 +184,11 @@ public struct Ffmpeg: Package {
       r.insert(configureEnableFlag(false, comp.rawValue))
     }
 
-//    r.insert("--extra-cflags=\(env.environment[.cflags])")
-//    r.insert("--extra-ldflags=\(env.environment[.ldflags])")
-
     if env.order.target.system == .linuxGNU {
       r.insert("--extra-libs=-ldl -lpthread -lm -lz")
     }
 
     return r.sorted()
-  }
-
-  public func dependencies(for version: PackageVersion) -> [PackageDependency] {
-    var deps: [PackageDependency] = [
-      .buildTool(Nasm.self),
-      .buildTool(PkgConfig.self),
-    ]
-
-    dependencyOptions.forEach { dependency in
-      guard dependency.supportsFFmpegVersion(version) else {
-        return
-      }
-      switch dependency {
-      case .libopus:
-        deps.append(.runTime(Opus.self))
-      case .libvorbis:
-        deps.append(.runTime(Vorbis.self))
-      case .libfdkaac:
-        deps.append(.runTime(FdkAac.self))
-      case .libx264:
-        deps.append(.runTime(x264.self))
-      case .libx265:
-        deps.append(.runTime(x265.self))
-      case .libwebp:
-        deps.append(.runTime(Webp.self))
-      case .libaribb24:
-        deps.append(.runTime(Aribb24.self))
-      case .libopencore:
-        deps.append(.runTime(Opencore.self))
-      case .libass:
-        deps.append(.runTime(Ass.self))
-      case .libsvtav1:
-        deps.append(.runTime(SvtAv1.self))
-      case .librav1e:
-        deps.append(.runTime(Rav1e.self))
-      case .libsdl2:
-        deps.append(.runTime(Sdl2.self))
-      case .libmp3lame:
-        deps.append(.runTime(Lame.self))
-      case .libaom:
-        deps.append(.runTime(Aom.self))
-      case .apple: break
-      }
-    }
-    return deps
   }
 
   public var tag: String {

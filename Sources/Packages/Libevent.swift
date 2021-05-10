@@ -1,11 +1,11 @@
 import BuildSystem
 
-public struct Utfcpp: Package {
+public struct Libevent: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.1.2"
+    "2.1.12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,9 +14,7 @@ public struct Utfcpp: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      // test required repo
-      // https://github.com/nemtrif/utfcpp.git
-      source = .tarball(url: "https://github.com/nemtrif/utfcpp/archive/refs/tags/v\(version.toString()).tar.gz")
+      source = .tarball(url: "https://github.com/libevent/libevent/archive/refs/tags/release-\(version.toString(includeZeroPatch: false))-stable.tar.gz")
     }
 
     return .init(
@@ -24,26 +22,23 @@ public struct Utfcpp: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-      ],
-      products: [
-        .header("utf8cpp")
-      ],
-      supportedLibraryType: nil
+        .runTime(Openssl.self),
+      ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
     try env.inRandomDirectory { _ in
+
       try env.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(true, "UTF8_SAMPLES"),
-        cmakeOnFlag(false, "UTF8_TESTS")
+        cmakeDefineFlag(env.libraryType == .all ? "BOTH" : env.libraryType.rawValue, "EVENT__LIBRARY_TYPE")
       )
 
       try env.make(toolType: .ninja)
       try env.make(toolType: .ninja, "install")
     }
-  }
 
+  }
 }

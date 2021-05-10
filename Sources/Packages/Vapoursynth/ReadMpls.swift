@@ -18,7 +18,14 @@ public struct ReadMpls: Package {
     }
 
     return .init(
-      source: source
+      source: source,
+      dependencies: [
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 

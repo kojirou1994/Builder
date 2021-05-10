@@ -17,7 +17,7 @@ public struct Fribidi: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    .stable("1.0.10")
+    "1.0.10"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -31,7 +31,7 @@ public struct Fribidi: Package {
 
     return .init(
       source: source,
-      dependencies: [.runTime(Ninja.self)]
+      dependencies: [.buildTool(Ninja.self)]
     )
   }
 

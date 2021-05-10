@@ -11,13 +11,13 @@ public struct Flac: Package {
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     var dependencies: [PackageDependency]
+
     switch order.version {
     case .head:
       source = .repository(url: "https://github.com/xiph/flac.git")
       dependencies = [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        .runTime(Ogg.self),
       ]
     case .stable(let version):
       var versionString = version.toString(includeZeroPatch: false)
@@ -36,8 +36,11 @@ public struct Flac: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
-        .runTime(Ogg.self),
       ]
+    }
+
+    if ogg {
+      dependencies.append(.runTime(Ogg.self))
     }
 
     return .init(
@@ -46,7 +49,8 @@ public struct Flac: Package {
       products: [
         .bin("flac"),
         .bin("metaflac"),
-        .library(name: "libFLAC", headers: ["FLAC"])
+        .library(name: "FLAC", headers: ["FLAC"]),
+        .library(name: "FLAC++", headers: ["FLAC++"]),
       ]
     )
   }
@@ -55,7 +59,9 @@ public struct Flac: Package {
 
     let useASM = env.order.target.arch == .x86_64
     try env.autogen()
-    
+
+    try env.fixAutotoolsForDarwin()
+
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
@@ -68,18 +74,24 @@ public struct Flac: Package {
     )
 
     try env.make()
-    if env.strictMode {
+    if env.canRunTests {
       try env.make("check")
     }
     try env.make("install")
   }
 
-  @Flag(inversion: .prefixedEnableDisable)
+  @Flag(inversion: .prefixedNo)
   var cpplibs: Bool = false
+
+  @Flag(inversion: .prefixedNo)
+  var ogg: Bool = true
 
   public var tag: String {
     [
-      cpplibs ? "CPPLIBS" : ""
-    ].joined(separator: "_")
+      cpplibs ? "CPPLIBS" : "",
+      ogg ? "" : "NO-OGG",
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
   }
 }

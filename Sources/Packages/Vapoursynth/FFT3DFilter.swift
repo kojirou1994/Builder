@@ -13,8 +13,16 @@ public struct FFT3DFilter: Package {
       source = .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
+    #warning("fftw")
     return .init(
-      source: source
+      source: source,
+      dependencies: [
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 

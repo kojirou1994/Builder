@@ -23,7 +23,11 @@ public struct Zlib: Package {
   }
 
   public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "configure", "--prefix=\(env.prefix.root.path)", "--64")
+    try env.launch(path: "configure",
+                   "--prefix=\(env.prefix.root.path)",
+                   env.order.target.arch.is64Bits ? "--64" : nil
+    )
+    
     try env.make()
     try env.make("install")
     try env.autoRemoveUnneedLibraryFiles()

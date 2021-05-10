@@ -12,18 +12,10 @@ public struct Ogg: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-
-    switch order.target.system {
-    case .macCatalyst:
-      throw PackageRecipeError.unsupportedTarget
-    default:
-      break
-    }
-
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/xiph/ogg.git")
     case .stable(let version):
       source = .tarball(url: "https://downloads.xiph.org/releases/ogg/libogg-\(version.toString()).tar.gz")
     }
@@ -35,12 +27,16 @@ public struct Ogg: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
       ],
-      products: [.library(name: "libogg", headers: ["ogg"])]
+      products: [
+        .library(name: "libogg", headers: ["ogg"]),
+      ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
     try env.autoreconf()
+
+    try env.fixAutotoolsForDarwin()
 
     try env.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
@@ -49,6 +45,9 @@ public struct Ogg: Package {
     )
 
     try env.make()
+    if env.canRunTests {
+      try env.make("check")
+    }
     try env.make(parallelJobs: 1, "install")
   }
 

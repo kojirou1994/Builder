@@ -21,61 +21,61 @@ public struct Zstd: Package {
       source: source,
       dependencies: [
         .buildTool(Cmake.self),
-        .buildTool(Ninja.self)
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        programs ? .runTime(Xz.self) : nil,
+        programs ? .runTime(Lz4.self) : nil,
+      ],
+      products: [
+        .library(name: "zstd", headers: ["zdict.h", "zstd_errors.h", "zstd.h"])
       ]
     )
   }
 
-  /*
-   // Choose the type of build.
-   CMAKE_BUILD_TYPE:STRING=Release
+  @Flag(inversion: .prefixedEnableDisable, help: "Disable programs to build on tvOS or other systems")
+  var programs: Bool = true
 
-   // Executable file format
-   CMAKE_EXECUTABLE_FORMAT:STRING=MACHO
+  @Flag(inversion: .prefixedEnableDisable)
+  var legacy: Bool = true
 
-   // Install path prefix, prepended onto install directories.
-   CMAKE_INSTALL_PREFIX:PATH=/usr/local
+  public var tag: String {
+    [
+      programs ? "" : "NO-PROGRAMS",
+      legacy ? "" : "NO-LEGACY",
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
+  }
 
-   // Build architectures for OSX
-   CMAKE_OSX_ARCHITECTURES:STRING=
-
-   // Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value.
-   CMAKE_OSX_DEPLOYMENT_TARGET:STRING=
-
-   // The product will be built against the headers and libraries located inside the indicated SDK.
-   CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk
-
-   // BUILD CONTRIB
-   ZSTD_BUILD_CONTRIB:BOOL=ON
-
-   // BUILD PROGRAMS
-   ZSTD_BUILD_PROGRAMS:BOOL=ON
-
-   // BUILD TESTS
-   ZSTD_BUILD_TESTS:BOOL=OFF
-
-   // LEGACY SUPPORT
-   ZSTD_LEGACY_SUPPORT:BOOL=OFF
-
-   // PROGRAMS LINK SHARED
-   ZSTD_PROGRAMS_LINK_SHARED:BOOL=OFF
-   */
   public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/cmake/build") { _ in
-      try env.cmake(
-        toolType: .ninja,
-        "..",
-        cmakeOnFlag(true, "ZSTD_LZ4_SUPPORT"),
-        cmakeOnFlag(true, "ZSTD_LZMA_SUPPORT"),
-        cmakeOnFlag(true, "ZSTD_ZLIB_SUPPORT"),
-        cmakeOnFlag(env.libraryType.buildStatic, "ZSTD_BUILD_STATIC"),
-        cmakeOnFlag(env.libraryType.buildShared, "ZSTD_BUILD_SHARED"),
-        cmakeOnFlag(false, "ZSTD_BUILD_PROGRAMS"),
-        "-G", "Ninja"
-      )
+    try env.changingDirectory("build/cmake") { _ in
 
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try env.inRandomDirectory { _ in
+        try env.cmake(
+          toolType: .ninja,
+          "..",
+          cmakeOnFlag(env.libraryType.buildStatic, "ZSTD_BUILD_STATIC"),
+          cmakeOnFlag(env.libraryType.buildShared, "ZSTD_BUILD_SHARED"),
+          cmakeOnFlag(env.strictMode, "ZSTD_BUILD_TESTS"),
+          cmakeOnFlag(legacy, "ZSTD_LEGACY_SUPPORT"),
+          cmakeOnFlag(programs, "ZSTD_BUILD_PROGRAMS"),
+          cmakeOnFlag(env.libraryType == .shared || (env.libraryType == .all && !env.prefersStaticBin), "ZSTD_PROGRAMS_LINK_SHARED"),
+          cmakeOnFlag(programs, "ZSTD_LZ4_SUPPORT", defaultEnabled: false),
+          cmakeOnFlag(programs, "ZSTD_LZMA_SUPPORT", defaultEnabled: false),
+          cmakeOnFlag(programs, "ZSTD_ZLIB_SUPPORT", defaultEnabled: false),
+          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          cmakeDefineFlag("@loader_path/../lib", "CMAKE_BUILD_RPATH") // fix for test time dyld error
+        )
+
+        try env.make(toolType: .ninja)
+
+        if env.canRunTests {
+          try env.make(toolType: .ninja, "test")
+        }
+
+        try env.make(toolType: .ninja, "install")
+      }
+
     }
   }
 }

@@ -43,23 +43,12 @@ public struct BuilderLauncher: ExecutableLauncher {
 
   public typealias LaunchResult = TSCExecutableLauncher.LaunchResult
 
-  var tsc: TSCExecutableLauncher
-
-  public var outputRedirection: Process.OutputRedirection {
-    get {
-      tsc.outputRedirection
-    }
-    set {
-      tsc = .init(outputRedirection: newValue)
-    }
-  }
-
-  let dateFormatter: DateFormatter = .init()
+  let tsc: TSCExecutableLauncher
 
   let environment: EnvironmentValues
 
-  init(environment: EnvironmentValues) {
-    tsc = .init(outputRedirection: .none)
+  init(environment: EnvironmentValues, outputRedirection: TSCExecutableLauncher.Process.OutputRedirection) {
+    tsc = .init(outputRedirection: outputRedirection)
     self.environment = environment
   }
 

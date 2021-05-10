@@ -12,9 +12,9 @@ public struct Fmtconv: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/EleonoreMizo/fmtconv/archive/refs/heads/master.zip")
+      throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://github.com/EleonoreMizo/fmtconv/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/EleonoreMizo/fmtconv/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz", patches: [.remote(url: "https://github.com/EleonoreMizo/fmtconv/commit/5e0340d35e4dfd58209fd85c51c6e348840014c3.patch", sha256: "")])
     }
 
     return .init(
@@ -23,7 +23,8 @@ public struct Fmtconv: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-      ]
+      ],
+      supportedLibraryType: .shared
     )
   }
 

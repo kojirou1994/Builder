@@ -16,7 +16,16 @@ public struct AddGrain: Package {
       source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-AddGrain/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
-    return .init(source: source)
+    return .init(
+      source: source,
+      dependencies: [
+        .pip(["meson"]),
+        .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Vapoursynth.self),
+      ],
+      supportedLibraryType: .shared
+    )
   }
 
   public func build(with env: BuildEnvironment) throws {

@@ -1,5 +1,5 @@
 import XCTest
-@testable import BuildSystem
+import BuildSystem
 import TSCUtility
 import ExecutableLauncher
 

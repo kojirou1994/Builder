@@ -20,7 +20,7 @@ public struct EnvironmentValues {
     }
   }
 
-  public mutating func append(_ value: String, for keys: EnvironmentKey...) {
+  public mutating func append(_ value: String, toHead: Bool = false, for keys: EnvironmentKey...) {
     keys.forEach { key in
       let separator: String
       switch key {
@@ -36,17 +36,20 @@ public struct EnvironmentValues {
   }
 
 
-  public mutating func append(_ value: String, for keys: EnvironmentKey..., separator: String) {
+  public mutating func append(_ value: String, toHead: Bool = false, for keys: EnvironmentKey..., separator: String) {
     guard !value.isEmpty else {
       return
     }
     for key in keys {
-      var result = self[key]
-      if !result.isEmpty {
-        result.append(separator)
+      if toHead {
+        let oldValue = self[key]
+        self[key] = value + (oldValue.isEmpty ? "" : separator) + oldValue
+      } else {
+        if !self[key].isEmpty {
+          self[key].append(separator)
+        }
+        self[key].append(value)
       }
-      result.append(value)
-      self[key] = result
     }
   }
 

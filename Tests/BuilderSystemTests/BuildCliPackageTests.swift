@@ -1,6 +1,7 @@
 import XCTest
-@testable import BuildSystem
+import BuildSystem
 import PackagesInfo
+import Packages
 
 final class BuildCliPackageTests: XCTestCase {
 
@@ -43,4 +44,28 @@ final class BuildCliPackageTests: XCTestCase {
     }
   }
 
+  struct HelpGeneric<T: Package>: ParsableCommand {
+    static var configuration: CommandConfiguration {
+      .init(commandName: T.name,
+            abstract: "",
+            discussion: "",
+            helpNames: nil
+      )
+    }
+
+    @OptionGroup
+    var package: T
+  }
+
+  func testDocumentGenerate() {
+    print(PackageBuildCommand<Ffmpeg>.helpMessage())
+
+    print(HelpGeneric<Ffmpeg>.helpMessage())
+  }
+
+  func testSpeed() {
+    measure {
+      _ = allPackages
+    }
+  }
 }

@@ -1,11 +1,11 @@
 import BuildSystem
 
-public struct Xz: Package {
+public struct Hwloc: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "5.2.5"
+    "2.4.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,35 +14,29 @@ public struct Xz: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://download.open-mpi.org/release/hwloc/v\(version.major).\(version.minor)/hwloc-\(version.toString()).tar.bz2")
     }
 
     return .init(
       source: source,
-      products: [
-        .bin("xzdec"),
-        .bin("lzmadec"),
-        .bin("lzmainfo"),
-        .bin("xz"),
-        .library(name: "lzma", headers: ["lzma", "lzma.h"]),
+      dependencies: [
+        .buildTool(PkgConfig.self),
+        .runTime(Xml2.self),
       ]
     )
   }
 
   public func build(with env: BuildEnvironment) throws {
-
-    try env.fixAutotoolsForDarwin()
+//    try env.autoreconf()
 
     try env.configure(
-      configureEnableFlag(false, CommonOptions.dependencyTracking),
       env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      env.libraryType.sharedConfigureFlag,
+      "--disable-cairo",
+      "--without-x"
     )
 
     try env.make()
-    if env.canRunTests {
-      try env.make("check")
-    }
     try env.make("install")
   }
 

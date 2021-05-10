@@ -18,6 +18,12 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
   @OptionGroup
   var package: T
 
+  @Option
+  var arch: [TargetArch] = TargetArch.allCases
+
+  @Option
+  var system: [TargetSystem] = TargetSystem.allCases
+
   @Option(help: "Pack xcframework using specific library(.a) filename.")
   var packXc: String?
 
@@ -35,7 +41,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     var failedTargets = [TargetTriple]()
     let unsupportedTargets = [TargetTriple]()
 
-    for target in TargetTriple.allValid {
+    for target in TargetTriple.allValid where Set(arch).contains(target.arch) && Set(system).contains(target.system) {
       do {
         print("Building \(target)")
         let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)

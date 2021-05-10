@@ -1,4 +1,4 @@
-public struct PackageDependency {
+public struct PackageDependency: CustomStringConvertible {
 
   enum _Dependency {
     case package(Package, options: PackageOptions)
@@ -53,8 +53,23 @@ public struct PackageDependency {
     case brew
     case pip
   }
+
+  public var description: String {
+    switch dependency {
+    case let .package(package, options: options):
+      return "\(package.name)-\(package.defaultVersion)-\(package.tag)"
+    case let .other(manager: manager, names: names, requireLinked: _):
+      return "\(manager.rawValue)-\(names)"
+    }
+  }
 }
 
 /*
  .otherPackage(bin: "cargo-cinstall", package: .cargo("cargo-c"))
  */
+
+public enum RustChannel {
+  case stable
+  case beta
+  case nightly
+}

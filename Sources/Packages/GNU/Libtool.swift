@@ -30,11 +30,9 @@ public struct Libtool: Package {
   public func build(with env: BuildEnvironment) throws {
 
     try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(ltdl, "ltdl-install"),
-//      "--program-prefix=g"
-      nil
+      configureEnableFlag(ltdl && env.libraryType.buildStatic, "static"),
+      configureEnableFlag(ltdl && env.libraryType.buildShared, "shared"),
+      configureEnableFlag(ltdl, "ltdl-install")
     )
 
     try env.make()
