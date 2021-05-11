@@ -80,6 +80,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Lsmash>.self,
       PackageBuildCommand<LsmashWorks>.self,
       PackageBuildCommand<Lz4>.self,
+      PackageBuildCommand<Lzfse>.self,
       PackageBuildCommand<Lzo>.self,
       PackageBuildCommand<M4>.self,
       PackageBuildCommand<Matroska>.self,

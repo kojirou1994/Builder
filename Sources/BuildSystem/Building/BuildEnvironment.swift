@@ -54,7 +54,7 @@ public class BuildEnvironment {
 
   public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount + 2
 
-  private let _libraryType: PackageLibraryBuildType?
+  internal var _libraryType: PackageLibraryBuildType?
   public var libraryType: PackageLibraryBuildType {
     get {
       guard let v = _libraryType else {

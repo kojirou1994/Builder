@@ -497,7 +497,7 @@ extension Builder {
       environment: environment, libraryType: usedLibraryType,
       prefix: usedPrefix)
 
-    let tmpWorkDirURL = workingDirectoryURL.appendingPathComponent(package.name + UUID().uuidString)
+    let tmpWorkDirURL = workingDirectoryURL.appendingPathComponent(genRandomFilename(prefix: package.name + "-", length: 8))
 
     try env.fm.createDirectory(at: usedPrefix.root)
     do {
@@ -507,7 +507,23 @@ extension Builder {
         let srcDir = try checkout(package: package, version: order.version, source: recipe.source, directoryName: package.name)
 
         try env.changingDirectory(srcDir) { _ in
-          try package.build(with: env)
+          // TODO: re-checkout or make clean ?
+          if usedLibraryType == .all, !recipe.canBuildAllLibraryTogether {
+            // build separately
+            if env.prefersStaticBin {
+              env._libraryType = .shared
+              try package.build(with: env)
+              env._libraryType = .static
+              try package.build(with: env)
+            } else {
+              env._libraryType = .static
+              try package.build(with: env)
+              env._libraryType = .shared
+              try package.build(with: env)
+            }
+          } else {
+            try package.build(with: env)
+          }
         }
       }
     } catch {

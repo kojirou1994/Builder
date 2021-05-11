@@ -80,6 +80,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Lsmash>.self,
       PackageCheckUpdateCommand<LsmashWorks>.self,
       PackageCheckUpdateCommand<Lz4>.self,
+      PackageCheckUpdateCommand<Lzfse>.self,
       PackageCheckUpdateCommand<Lzo>.self,
       PackageCheckUpdateCommand<M4>.self,
       PackageCheckUpdateCommand<Matroska>.self,
