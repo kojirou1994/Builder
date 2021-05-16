@@ -26,17 +26,17 @@ public struct NeoFFT3D: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(toolType: .ninja, "..")
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(toolType: .ninja, "..")
 
-      try env.make(toolType: .ninja)
-      let filename = "libneo-fft3d.\(env.order.target.system.sharedLibraryExtension)"
+      try context.make(toolType: .ninja)
+      let filename = "libneo-fft3d.\(context.order.target.system.sharedLibraryExtension)"
 
-      let installDir = env.prefix.lib.appendingPathComponent("vapoursynth")
-      try env.mkdir(installDir)
+      let installDir = context.prefix.lib.appendingPathComponent("vapoursynth")
+      try context.mkdir(installDir)
 
-      try env.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
+      try context.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
     }
   }
 }

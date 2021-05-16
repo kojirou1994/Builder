@@ -33,16 +33,16 @@ public struct Eedi3: Package {
   /*
    Requires Boost unless specify -Dopencl=false.
    */
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     try replace(contentIn: "meson.build",
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.meson("..")
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.meson("..")
 
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

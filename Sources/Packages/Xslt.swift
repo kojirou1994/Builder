@@ -30,20 +30,20 @@ public struct Xslt: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+    try context.autoreconf()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       "--without-python",
       nil
     )
 
-    try env.make()
+    try context.make()
 
-    try env.make("install")
+    try context.make("install")
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

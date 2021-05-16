@@ -11,7 +11,7 @@ public struct Mozjpeg: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/heads/master.zip")
+      source = .repository(url: "https://github.com/mozilla/mozjpeg.git")
     case .stable(let version):
       source = .tarball(url: "https://github.com/mozilla/mozjpeg/archive/refs/tags/v\(version.toString()).tar.gz")
     }
@@ -21,6 +21,7 @@ public struct Mozjpeg: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+        .buildTool(Nasm.self),
         .runTime(Png.self),
       ],
       products: [
@@ -41,29 +42,25 @@ public struct Mozjpeg: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    switch env.order.target.arch {
-    case .arm64:
-      env.environment.append("-funwind-tables -Wall", for: .cflags)
-    case .armv7:
-      env.environment.append("-mfloat-abi=softfp -Wall", for: .cflags)
-    default: break
-    }
-
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+    try context.inRandomDirectory { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        env.libraryType.staticCmakeFlag,
-        env.libraryType.sharedCmakeFlag,
+        context.libraryType.staticCmakeFlag,
+        context.libraryType.sharedCmakeFlag,
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "PNG_SUPPORTED"),
         cmakeOnFlag(true, "WITH_TURBOJPEG"),
+        cmakeOnFlag(false, "WITH_12BIT"), // simd will be disabled if 12bit is enabled
+//        cmakeOnFlag(true, "WITH_JPEG7"),
+//        cmakeOnFlag(true, "WITH_JPEG8"),
         nil
       )
 
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 

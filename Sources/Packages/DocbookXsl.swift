@@ -38,19 +38,19 @@ public struct DocbookXsl: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(env.libraryType.buildStatic, "CARES_STATIC", defaultEnabled: false),
-        cmakeOnFlag(env.libraryType.buildShared, "CARES_SHARED", defaultEnabled: true),
-        cmakeOnFlag(env.isBuildingCross, "CARES_STATIC_PIC", defaultEnabled: false)
+        cmakeOnFlag(context.libraryType.buildStatic, "CARES_STATIC", defaultEnabled: false),
+        cmakeOnFlag(context.libraryType.buildShared, "CARES_SHARED", defaultEnabled: true),
+        cmakeOnFlag(context.isBuildingCross, "CARES_STATIC_PIC", defaultEnabled: false)
       )
 
-      try env.make(toolType: .ninja)
+      try context.make(toolType: .ninja)
 
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
   }
 

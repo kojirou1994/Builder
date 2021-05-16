@@ -29,26 +29,26 @@ public struct Gcc: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.inRandomDirectory { _ in
-      try env.configure(
+    try context.inRandomDirectory { _ in
+      try context.configure(
         directory: "..",
-        env.libraryType.staticConfigureFlag,
-        env.libraryType.sharedConfigureFlag,
-        configureWithFlag(env.dependencyMap[Gmp.self], "gmp"),
-        configureWithFlag(env.dependencyMap[Mpfr.self], "mpfr"),
-        configureWithFlag(env.dependencyMap[Mpc.self], "mpc"),
-        configureWithFlag(env.dependencyMap[Isl.self], "isl"),
+        context.libraryType.staticConfigureFlag,
+        context.libraryType.sharedConfigureFlag,
+        configureWithFlag(context.dependencyMap[Gmp.self], "gmp"),
+        configureWithFlag(context.dependencyMap[Mpfr.self], "mpfr"),
+        configureWithFlag(context.dependencyMap[Mpc.self], "mpc"),
+        configureWithFlag(context.dependencyMap[Isl.self], "isl"),
         configureWithFlag("kojirou", "pkgversion"),
-        configureWithFlag(env.sdkPath, "sysroot"),
+        configureWithFlag(context.sdkPath, "sysroot"),
         configureEnableFlag(false, "multilib"),
         configureEnableFlag(false, "bootstrap"),
         configureWithFlag(true, "system-zlib")
       )
 
-      try env.make()
-      try env.make("install")
+      try context.make()
+      try context.make("install")
     }
   }
 

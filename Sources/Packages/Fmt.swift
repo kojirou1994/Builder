@@ -26,25 +26,25 @@ public struct Fmt: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.cmake(
+      try context.changingDirectory(context.randomFilename) { _ in
+        try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeOnFlag(false, "FMT_TEST"),
           cmakeOnFlag(shared, "BUILD_SHARED_LIBS")
         )
 
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
+        try context.make(toolType: .ninja)
+        try context.make(toolType: .ninja, "install")
       }
     }
 
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
+    try build(shared: context.libraryType.buildShared)
+    if context.libraryType == .all {
       try build(shared:false)
     }
   }

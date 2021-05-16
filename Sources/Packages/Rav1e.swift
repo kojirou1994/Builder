@@ -40,27 +40,27 @@ public struct Rav1e: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     // TODO: add BUILD_TESTING
     /*
      system "cargo", "install", *std_cargo_args
      system "cargo", "cinstall", "--prefix", prefix
      */
-    try env.launch("cargo", "install", "--root",
-                   env.prefix.root.path,
-                   "--target", env.order.target.rustTripleString,
+    try context.launch("cargo", "install", "--root",
+                   context.prefix.root.path,
+                   "--target", context.order.target.rustTripleString,
                    "--path", ".")
     var types: [String?] = []
-    switch env.libraryType {
+    switch context.libraryType {
     case .shared, .static:
       types.append("--library-type")
-      types.append(env.libraryType == .shared ? "cdylib" : "staticlib")
+      types.append(context.libraryType == .shared ? "cdylib" : "staticlib")
     default: break
     }
-    try env.launch("cargo",
+    try context.launch("cargo",
                    ["cinstall", "--prefix",
-                    env.prefix.root.path,
-                    "--target", env.order.target.rustTripleString] + types)
+                    context.prefix.root.path,
+                    "--target", context.order.target.rustTripleString] + types)
   }
 
 

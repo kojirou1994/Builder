@@ -25,20 +25,20 @@ public struct Lsmash: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     #if os(macOS)
     try replace(contentIn: "configure", matching: ",--version-script,liblsmash.ver", with: "")
     #endif
 
-    try env.configure(
-      configureEnableFlag(env.libraryType.buildStatic, "static", defaultEnabled: true),
-      configureEnableFlag(env.libraryType.buildShared, "shared", defaultEnabled: false)
+    try context.configure(
+      configureEnableFlag(context.libraryType.buildStatic, "static", defaultEnabled: true),
+      configureEnableFlag(context.libraryType.buildShared, "shared", defaultEnabled: false)
     )
 
-    try env.make()
+    try context.make()
 
-    try env.make(enableCli ? "install" : "install-lib")
+    try context.make(enableCli ? "install" : "install-lib")
   }
 
   public var tag: String {

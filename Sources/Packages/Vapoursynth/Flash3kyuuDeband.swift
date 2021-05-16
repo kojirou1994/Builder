@@ -24,15 +24,15 @@ public struct Flash3kyuuDeband: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "./waf", "configure", "--prefix=\(env.prefix.root.path)")
-    try env.launch(path: "./waf", "build")
-//    try env.launch(path: "./waf", "install")
-    let filename = "build/libf3kdb.\(env.order.target.system.sharedLibraryExtension)"
+  public func build(with context: BuildContext) throws {
+    try context.launch(path: "./waf", "configure", "--prefix=\(context.prefix.root.path)")
+    try context.launch(path: "./waf", "build")
+//    try context.launch(path: "./waf", "install")
+    let filename = "build/libf3kdb.\(context.order.target.system.sharedLibraryExtension)"
 
-    let installDir = env.prefix.lib.appendingPathComponent("vapoursynth")
-    try env.mkdir(installDir)
+    let installDir = context.prefix.lib.appendingPathComponent("vapoursynth")
+    try context.mkdir(installDir)
 
-    try env.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
+    try context.copyItem(at: URL(fileURLWithPath: filename), toDirectory: installDir)
   }
 }

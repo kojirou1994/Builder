@@ -26,31 +26,31 @@ public struct Brotli: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
-      try env.make(toolType: .ninja)
+      try context.make(toolType: .ninja)
 
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
 
-    try env.autoRemoveUnneedLibraryFiles()
-    if env.libraryType.buildStatic {
+    try context.autoRemoveUnneedLibraryFiles()
+    if context.libraryType.buildStatic {
       try """
       libbrotlicommon-static.a
       libbrotlidec-static.a
       libbrotlienc-static.a
       """.split(separator: "\n")
         .forEach { filename in
-          try env.moveItem(at: env.prefix.lib.appendingPathComponent(String(filename)),
-                              to: env.prefix.lib.appendingPathComponent(String(filename.dropLast("-static.a".count)) + ".a"))
+          try context.moveItem(at: context.prefix.lib.appendingPathComponent(String(filename)),
+                              to: context.prefix.lib.appendingPathComponent(String(filename.dropLast("-static.a".count)) + ".a"))
         }
     }
   }

@@ -5,16 +5,18 @@ public struct JpegXL: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.3.6"
+    "0.3.7"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    let repoUrl = "https://gitlab.com/wg1/jpeg-xl.git"
+
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("master"))
+      source = .repository(url: repoUrl)
     case .stable(let version):
-      source = .repository(url: "https://gitlab.com/wg1/jpeg-xl.git", requirement: .branch("v\(version.toString())"))
+      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString(includeZeroPatch: false))"))
     }
 
     return .init(
@@ -22,33 +24,40 @@ public struct JpegXL: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Brotli.self),
         .runTime(Mozjpeg.self),
         .runTime(Ilmbase.self),
         .runTime(Openexr.self),
-        .runTime(Giflib.self)
+        .runTime(Webp.self),
+        .runTime(Giflib.self),
+        .runTime(Highway.self),
       ]
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     try replace(contentIn: "CMakeLists.txt", matching: "find_package(Python COMPONENTS Interpreter)", with: "") // disable manpages
 
-    try env.changingDirectory(env.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
 
-      try env.cmake(
+      try context.cmake(
         toolType: .ninja,
         "..",
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "SJPEG_BUILD_EXAMPLES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
-        cmakeOnFlag(false, "BUILD_TESTING"),
-        nil
+        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
+        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
+        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
+        cmakeOnFlag(false, "BUILD_TESTING")
       )
 
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
 
-    try env.autoRemoveUnneedLibraryFiles()
+    try context.autoRemoveUnneedLibraryFiles()
   }
 }

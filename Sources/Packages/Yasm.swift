@@ -30,12 +30,12 @@ public struct Yasm: Package {
       supportedLibraryType: .static)
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    if env.order.version == .head {
-      try env.autogen()
+  public func build(with context: BuildContext) throws {
+    if context.order.version == .head {
+      try context.autogen()
     }
-    try env.configure()
-    try env.make()
-    try env.make("install")
+    try context.configure()
+    try context.make()
+    try context.make("install")
   }
 }

@@ -25,22 +25,22 @@ public struct Boost: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "bootstrap.sh",
-                   "--prefix=\(env.prefix.root.path)",
-                   "--libdir=\(env.prefix.lib.path)",
+  public func build(with context: BuildContext) throws {
+    try context.launch(path: "bootstrap.sh",
+                   "--prefix=\(context.prefix.root.path)",
+                   "--libdir=\(context.prefix.lib.path)",
                    "--without-libraries=\(["python", "mpi"].joined(separator: ","))",
-                   "--with-icu=\(env.dependencyMap[Icu4c.self].root.path)"
+                   "--with-icu=\(context.dependencyMap[Icu4c.self].root.path)"
     )
-    try env.launch(path: "b2", "headers")
-    try env.launch(path: "b2",
-                   "--prefix=\(env.prefix.root.path)",
-                   "--libdir=\(env.prefix.lib.path)",
+    try context.launch(path: "b2", "headers")
+    try context.launch(path: "b2",
+                   "--prefix=\(context.prefix.root.path)",
+                   "--libdir=\(context.prefix.lib.path)",
                    "-d2",
-                   "-j\(env.parallelJobs ?? 8)",
+                   "-j\(context.parallelJobs ?? 8)",
                    "install",
 //                   "threading=multi,single",
-                   "link=\(env.libraryType.link)"
+                   "link=\(context.libraryType.link)"
     )
   }
 }

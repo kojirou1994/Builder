@@ -38,30 +38,30 @@ public struct Vapoursynth: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     // uninstall if installed
-    try env.launch("pip", "uninstall", "vapoursynth", "-y")
+    try context.launch("pip", "uninstall", "vapoursynth", "-y")
 
-    try env.autogen()
+    try context.autogen()
 
-    try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+    try context.configure(
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
 
     // or manually install to site-packages:
     do {
-      let sitePackagesDirectory = try env.external.pythonSitePackagesDirectoryURL()!
+      let sitePackagesDirectory = try context.external.pythonSitePackagesDirectoryURL()!
       let pythonStr = sitePackagesDirectory.pathComponents.dropLast().last!
       let soFilename = "vapoursynth.so"
-      let src = env.prefix.appending("lib", pythonStr, "site-packages", soFilename)
+      let src = context.prefix.appending("lib", pythonStr, "site-packages", soFilename)
       let dst = sitePackagesDirectory.appendingPathComponent(soFilename)
-      try? env.removeItem(at: dst)
+      try? context.removeItem(at: dst)
 
-      try env.createSymbolicLink(at: dst, withDestinationURL: src)
+      try context.createSymbolicLink(at: dst, withDestinationURL: src)
     }
   }
 }

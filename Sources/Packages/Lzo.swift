@@ -32,22 +32,22 @@ public struct Lzo: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.inRandomDirectory { _ in
-      try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.inRandomDirectory { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(env.strictMode, "BUILD_TESTING"),
-        cmakeOnFlag(env.libraryType.buildShared, "ENABLE_SHARED"),
-        cmakeOnFlag(env.libraryType.buildStatic, "ENABLE_STATIC"),
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
+        cmakeOnFlag(context.libraryType.buildShared, "ENABLE_SHARED"),
+        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
       
-      try env.make(toolType: .ninja)
-      if env.canRunTests {
-        try env.make(toolType: .ninja, "test")
+      try context.make(toolType: .ninja)
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
       }
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

@@ -50,40 +50,40 @@ public struct ImageMagick: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-//    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+//    try context.autoreconf()
 //    var libs = [
 //      "-ljpeg",
 //    ]
 
-//    if env.libraryType == .shared {
+//    if context.libraryType == .shared {
 //      libs.append("-rpath")
-//      libs.append(env.dependencyMap[Mozjpeg.self].lib.path)
+//      libs.append(context.dependencyMap[Mozjpeg.self].lib.path)
 //    }
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       "--with-quantum-depth=\(quantumDepth.rawValue)",
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       configureEnableFlag(true, "opencl"),
       configureEnableFlag(false, "deprecated"),
-      configureWithFlag(env.libraryType.buildShared, "modules"), // Modules may only be built if building shared libraries is enabled.
+      configureWithFlag(context.libraryType.buildShared, "modules"), // Modules may only be built if building shared libraries is enabled.
       configureWithFlag(true, "freetype"),
       configureWithFlag(true, "webp"),
       configureWithFlag(false, "magick-plus-plus"),
       configureWithFlag(true, "jxl"),
       configureWithFlag(false, "openexr"),
-//      "CFLAGS=\(env.environment["CFLAGS", default: ""])",
-//      "LDFLAGS=\(env.environment["LDFLAGS", default: ""])",
+//      "CFLAGS=\(context.environment["CFLAGS", default: ""])",
+//      "LDFLAGS=\(context.environment["LDFLAGS", default: ""])",
 //      "JPEG_DELEGATE_TRUE=1"
 //      "LIBS=\(libs.joined(separator: " "))",
       nil
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

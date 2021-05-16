@@ -55,29 +55,29 @@ public struct Flac: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    let useASM = env.order.target.arch == .x86_64
-    try env.autogen()
+    let useASM = context.order.target.arch == .x86_64
+    try context.autogen()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(cpplibs, "cpplibs"),
       configureEnableFlag(true, "64-bit-words"),
       configureEnableFlag(false, "examples"),
-      configureEnableFlag(env.strictMode, "exhaustive-tests"), /* VERY long, took 30 minutes on my i7-4770hq machine */
+      configureEnableFlag(context.strictMode, "exhaustive-tests"), /* VERY long, took 30 minutes on my i7-4770hq machine */
       configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true)
     )
 
-    try env.make()
-    if env.canRunTests {
-      try env.make("check")
+    try context.make()
+    if context.canRunTests {
+      try context.make("check")
     }
-    try env.make("install")
+    try context.make("install")
   }
 
   @Flag(inversion: .prefixedNo)

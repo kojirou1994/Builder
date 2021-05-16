@@ -68,10 +68,10 @@ public struct Vpx: Package {
    generic-gnu
    */
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     // TODO: Support Linux
     var vpxArch: String {
-      switch env.order.target.arch {
+      switch context.order.target.arch {
       case .arm64, .arm64e:
         return "arm64"
       case .x86_64, .x86_64h:
@@ -79,35 +79,32 @@ public struct Vpx: Package {
       case .armv7: return "armv7"
       case .armv7s: return "armv7s"
       default:
-        return env.order.target.arch.gnuTripleString
+        return context.order.target.arch.gnuTripleString
       }
     }
 
-    try env.launch(
+    try context.launch(
       path: "configure",
-      "--prefix=\(env.prefix)",
+      "--prefix=\(context.prefix)",
       "--target=\(vpxArch)-darwin20-gcc",
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, "examples"),
-      configureEnableFlag(env.strictMode, "unit-tests"),
+      configureEnableFlag(context.strictMode, "unit-tests"),
       configureEnableFlag(true, "pic"),
       configureEnableFlag(true, "vp9-highbitdepth")
     )
 
-    try env.make()
+    try context.make()
 
-    if env.canRunTests {
-      try env.make("test") // many downloads, very slow!
+    if context.canRunTests {
+      try context.make("test") // many downloads, very slow!
     }
 
-    try env.make("install")
+    try context.make("install")
 
-    if env.libraryType.buildShared {
-      let dylibPath = env.prefix.lib.appendingPathComponent("libvpx.6.dylib").path
-      try env.launch("install_name_tool", "-id", dylibPath, dylibPath)
-    }
+    try context.fixDylibsID()
   }
 
 }

@@ -24,17 +24,17 @@ public struct Ninja: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(
         toolType: .make, 
         ".."
         /* -DBUILD_TESTING */
       )
 
-      try env.make()
+      try context.make()
 
-      try env.make("install")
+      try context.make("install")
     }
   }
 

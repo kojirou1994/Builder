@@ -9,6 +9,14 @@ public struct Gmp: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+
+    switch order.target.arch {
+    case .armv7, .armv7k, .armv7s, .arm64_32:
+      throw PackageRecipeError.unsupportedTarget
+    default:
+      break
+    }
+
     let source: PackageSource
     switch order.version {
     case .head:
@@ -21,23 +29,29 @@ public struct Gmp: Package {
       source: source,
       dependencies: [
         .buildTool(M4.self)
+      ],
+      products: [
+        .library(name: "gmp", headers: ["gmp.h"]),
+        .library(name: "gmpxx", headers: ["gmpxx.h"]),
       ]
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.configure(
+    try context.fixAutotoolsForDarwin()
+
+    try context.configure(
       configureEnableFlag(true, "cxx"),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag
     )
 
-    try env.make()
-    if env.strictMode {
-      try env.make("check")
+    try context.make()
+    if context.canRunTests {
+      try context.make("check")
     }
-    try env.make("install")
+    try context.make("install")
   }
 
 }

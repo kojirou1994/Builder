@@ -74,15 +74,15 @@ public struct Webp: Package {
    SDL support : no
    vwebp_sdl   : no
    */
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       "--disable-gl",
       "--disable-sdl",
       "--disable-png",
@@ -96,9 +96,9 @@ public struct Webp: Package {
       "--enable-libwebpextras"
     )
 
-    try env.make()
+    try context.make()
     
-    try env.make("install")
+    try context.make("install")
   }
 
 }

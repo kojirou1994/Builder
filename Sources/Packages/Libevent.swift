@@ -27,17 +27,17 @@ public struct Libevent: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.inRandomDirectory { _ in
+  public func build(with context: BuildContext) throws {
+    try context.inRandomDirectory { _ in
 
-      try env.cmake(
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeDefineFlag(env.libraryType == .all ? "BOTH" : env.libraryType.rawValue, "EVENT__LIBRARY_TYPE")
+        cmakeDefineFlag(context.libraryType == .all ? "BOTH" : context.libraryType.rawValue, "EVENT__LIBRARY_TYPE")
       )
 
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
 
   }

@@ -32,14 +32,14 @@ public struct Choco: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    let flags = try env.launchResult("pkg-config", ["--libs", "--static", "x265", "libbluray"])
+  public func build(with context: BuildContext) throws {
+    let flags = try context.launchResult("pkg-config", ["--libs", "--static", "x265", "libbluray"])
       .utf8Output()
       .trimmingCharacters(in: .whitespacesAndNewlines)
       .split(separator: " ")
 
     var arguments = ["build", "-c", "release"] as [String?]
-    if env.libraryType == .static {
+    if context.libraryType == .static {
       flags.forEach { flag in
         if flag.hasPrefix("-R") {
           print("invalid libs: \(flag)")
@@ -48,9 +48,9 @@ public struct Choco: Package {
         }
       }
     }
-    try env.launch("swift", arguments)
-    try env.mkdir(env.prefix.bin)
-    try env.copyItem(at: URL(fileURLWithPath: ".build/release/choco-cli"), toDirectory: env.prefix.bin)
+    try context.launch("swift", arguments)
+    try context.mkdir(context.prefix.bin)
+    try context.copyItem(at: URL(fileURLWithPath: ".build/release/choco-cli"), toDirectory: context.prefix.bin)
   }
 
 }

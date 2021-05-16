@@ -25,17 +25,17 @@ public struct File: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.configure(
+  public func build(with context: BuildContext) throws {
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(true, "fsect-man5")
     )
 
-    try env.make()
+    try context.make()
 
-    try env.make("install")
+    try context.make("install")
   }
 
 }

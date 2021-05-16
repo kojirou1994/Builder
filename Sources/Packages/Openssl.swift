@@ -28,19 +28,19 @@ public struct Openssl: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-//    let os = "\(env.order.target.system.openssl)-\(env.order.target.arch.clangTripleString)"
-//    switch env.order.target.system {
-//    case .macOS, .macCatalyst,
-//         .iphoneOS, .iphoneSimulator,
-//         .watchOS, .watchSimulator,
-//         .tvOS, .tvSimulator:
-//      os = "darwin\(env.order.target.arch.is64Bits ? "64" : "")-\(env.order.target.arch.clangTripleString)-cc"
-//    case .linuxGNU:
-//      //"linux-x86_64-clang"
-//      os = "linux-\(env.order.target.arch.gnuTripleString)"
-//    }
+    let os: String// = "\(context.order.target.system.openssl)-\(context.order.target.arch.clangTripleString)"
+    switch context.order.target.system {
+    case .macOS, .macCatalyst,
+         .iphoneOS, .iphoneSimulator,
+         .watchOS, .watchSimulator,
+         .tvOS, .tvSimulator:
+      os = "darwin\(context.order.target.arch.is64Bits ? "64" : "")-\(context.order.target.arch.clangTripleString)-cc"
+    case .linuxGNU:
+      //"linux-x86_64-clang"
+      os = "linux-\(context.order.target.arch.gnuTripleString)"
+    }
     /*
      pick os/compiler from:
      BS2000-OSD BSD-generic32 BSD-generic64 BSD-ia64 BSD-sparc64 BSD-sparcv8
@@ -70,25 +70,25 @@ public struct Openssl: Package {
      vxworks-mips vxworks-ppc405 vxworks-ppc60x vxworks-ppc750 vxworks-ppc750-debug
      vxworks-ppc860 vxworks-ppcgen vxworks-simlinux
      */
-    let os = "darwin64-arm64-cc"
+//    let os = "darwin64-arm64-cc"
 
-    try env.launch(
+    try context.launch(
       path: "Configure",
-      "--prefix=\(env.prefix.root.path)",
-      "--openssldir=\(env.prefix.appending("etc", "openssl").path)",
-      env.libraryType.buildShared ? "shared" : "no-shared",
-      env.canRunTests ? nil : "no-tests",
+      "--prefix=\(context.prefix.root.path)",
+      "--openssldir=\(context.prefix.appending("etc", "openssl").path)",
+      context.libraryType.buildShared ? "shared" : "no-shared",
+      context.canRunTests ? nil : "no-tests",
       os,
-      env.order.target.arch.is64Bits ? "enable-ec_nistp_64_gcc_128" : nil
+      context.order.target.arch.is64Bits ? "enable-ec_nistp_64_gcc_128" : nil
     )
 
-    try env.make()
-    if env.canRunTests {
-      try env.make("test")
+    try context.make()
+    if context.canRunTests {
+      try context.make("test")
     }
-    try env.make("install")
-    if env.libraryType == .shared {
-      try env.autoRemoveUnneedLibraryFiles()
+    try context.make("install")
+    if context.libraryType == .shared {
+      try context.autoRemoveUnneedLibraryFiles()
     }
   }
 

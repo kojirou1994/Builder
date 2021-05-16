@@ -24,20 +24,14 @@ public struct Giflib: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     // parallel not supported
-    let prefix = "PREFIX=\(env.prefix.root.path)"
-    try env.launch("make", "install", prefix)
-    try env.launch("make", "install-man", prefix)
+    let prefix = "PREFIX=\(context.prefix.root.path)"
+    try context.launch("make", "install", prefix)
+    try context.launch("make", "install-man", prefix)
 
-    try env.autoRemoveUnneedLibraryFiles()
-//    try env.autogen()
-//    try env.configure(
-//      configureEnableFlag(false, CommonOptions.dependencyTracking),
-//      env.libraryType.sharedConfigureFlag,
-//      env.libraryType.staticConfigureFlag
-//    )
+    try context.autoRemoveUnneedLibraryFiles()
+    try context.fixDylibsID()
   }
-
 
 }

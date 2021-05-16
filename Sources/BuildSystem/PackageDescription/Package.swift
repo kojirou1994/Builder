@@ -17,7 +17,7 @@ public protocol Package: ParsableArguments, CustomStringConvertible, Encodable {
   /// - Parameter order: information about the building
   func recipe(for order: PackageOrder) throws -> PackageRecipe
 
-  func build(with env: BuildEnvironment) throws
+  func build(with env: BuildContext) throws
 
   func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage?
 

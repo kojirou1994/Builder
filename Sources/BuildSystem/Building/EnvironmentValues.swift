@@ -20,6 +20,12 @@ public struct EnvironmentValues {
     }
   }
 
+  public mutating func remove(_ keys: EnvironmentKey...) {
+    keys.forEach { key in
+      values[key.string] = nil
+    }
+  }
+
   public mutating func append(_ value: String, toHead: Bool = false, for keys: EnvironmentKey...) {
     keys.forEach { key in
       let separator: String

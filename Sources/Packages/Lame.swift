@@ -23,21 +23,21 @@ public struct Lame: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     try replace(contentIn: "include/libmp3lame.sym", matching: "lame_init_old\n", with: "")
 
-//    try env.autoreconf()
+//    try context.autoreconf()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(env.isBuildingNative, "nasm"),
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
+      configureEnableFlag(context.isBuildingNative, "nasm"),
       configureEnableFlag(false, "frontend")
     )
 
-    try env.make("install")
+    try context.make("install")
   }
 
 }

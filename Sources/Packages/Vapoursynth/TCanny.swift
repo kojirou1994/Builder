@@ -29,16 +29,16 @@ public struct TCanny: Package {
   /*
    Requires Boost unless specify -Dopencl=false.
    */
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     try replace(contentIn: "meson.build",
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try env.changingDirectory("build") { _ in
-      try env.meson("..")
+    try context.changingDirectory("build") { _ in
+      try context.meson("..")
 
-      try env.launch("ninja")
-      try env.launch("ninja", "install")
+      try context.launch("ninja")
+      try context.launch("ninja", "install")
     }
   }
 }

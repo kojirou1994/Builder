@@ -24,6 +24,7 @@ public struct x264: Package {
 //      deps.append(.init(Ffmpeg.minimalDecoder))
     }
     deps.append(.buildTool(Nasm.self))
+    deps.append(.buildTool(GasPreprocessor.self))
 
     return .init(
       source: source,
@@ -31,22 +32,22 @@ public struct x264: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    let needGas = env.order.target.arch != .x86_64
+    let needGas = context.order.target.arch != .x86_64
 
     if needGas {
-      env.environment["AS"] = "tools/gas-preprocessor.pl -arch \(env.order.target.arch.gnuTripleString) -- \(env.cc)"
+      context.environment["AS"] = "tools/gas-preprocessor.pl -arch \(context.order.target.arch.gnuTripleString) -- \(context.cc)"
     }
 
-    try env.configure(
-      configureEnableFlag(cli, "cli", defaultEnabled: true),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+    try context.configure(
+      configureEnableFlag(true, "cli"),
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
 //      configureEnableFlag(true, "lto"),
       configureEnableFlag(true, "strip"),
       configureEnableFlag(true, "pic"),
-      needGas ? "--extra-asflags=\(env.environment[.cflags])" : nil,
+      needGas ? "--extra-asflags=\(context.environment[.cflags])" : nil,
 
       configureEnableFlag(false, "avs"),
       configureEnableFlag(libav, "swscale", defaultEnabled: true),
@@ -57,9 +58,9 @@ public struct x264: Package {
       configureEnableFlag(lsmash, "lsmash", defaultEnabled: true)
     )
 
-    try env.make()
+    try context.make()
 
-    try env.make("install")
+    try context.make("install")
   }
 
   enum Mp4Support: String, ExpressibleByArgument {
@@ -78,12 +79,8 @@ public struct x264: Package {
   @Flag(inversion: .prefixedEnableDisable)
   var libav: Bool = false
 
-  @Flag(inversion: .prefixedEnableDisable)
-  var cli: Bool = false
-
   public var tag: String {
     [
-      cli ? "CLI" : "",
       lsmash ? "LSMASH" : "",
       libav ? "LIBAV" : ""
     ].joined()

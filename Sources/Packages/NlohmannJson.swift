@@ -27,20 +27,20 @@ public struct NlohmannJson: Package {
     )
   }
   
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(env.strictMode, "JSON_BuildTests"),
+        cmakeOnFlag(context.strictMode, "JSON_BuildTests"),
         cmakeOnFlag(true, "JSON_MultipleHeaders")
       )
       
-      try env.make(toolType: .ninja)
-      if env.strictMode {
-        try env.make(toolType: .ninja, "test")
+      try context.make(toolType: .ninja)
+      if context.strictMode {
+        try context.make(toolType: .ninja, "test")
       }
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
   }
   

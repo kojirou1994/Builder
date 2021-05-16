@@ -3,7 +3,7 @@ import Logging
 import KwiftUtility
 import ExecutableDescription
 
-public class BuildEnvironment {
+public class BuildContext {
 
   internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?, external: ExternalPackageEnvironment) {
     self.order = order
@@ -54,13 +54,16 @@ public class BuildEnvironment {
 
   public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount + 2
 
-  internal var _libraryType: PackageLibraryBuildType?
-  public var libraryType: PackageLibraryBuildType {
+  private var _libraryType: PackageLibraryBuildType?
+  public internal(set) var libraryType: PackageLibraryBuildType {
     get {
       guard let v = _libraryType else {
         fatalError("Your package says no library type is supported, why access this property now?")
       }
       return v
+    }
+    set {
+      _libraryType = newValue
     }
   }
   public let prefersStaticBin: Bool = false
@@ -77,7 +80,7 @@ public class BuildEnvironment {
 }
 
 // MARK: Target
-extension BuildEnvironment {
+extension BuildContext {
   public var host: TargetTriple { .native }
 
   public var isBuildingNative: Bool {
@@ -90,7 +93,7 @@ extension BuildEnvironment {
 }
 
 // MARK: FM Utilities
-extension BuildEnvironment {
+extension BuildContext {
 
   public func changingDirectory(_ path: String, _ block: (URL) throws -> ()) throws {
     try changingDirectory(URL(fileURLWithPath: path), block)
@@ -190,7 +193,7 @@ extension BuildEnvironment {
 public typealias LaunchResult = BuilderLauncher.LaunchResult
 
 // MARK: Common Build Systems
-extension BuildEnvironment {
+extension BuildContext {
 
   public func make(toolType: MakeToolType = .make,
                    parallelJobs: Int? = nil,
@@ -236,13 +239,39 @@ extension BuildEnvironment {
     try launch("cmake", cmakeArguments)
   }
 
+  public func mesonCrossFile() -> String {
+    """
+    [binaries]
+    c = '\(cc)'
+    objc = '\(cc)'
+    cpp = '\(cxx)'
+    ar = 'ar'
+    ld = 'ld'
+    strip = 'strip'
+    cmake = 'cmake'
+    pkgconfig = 'pkg-config'
+
+    [host_machine]
+    system = '\(order.target.system.mesonSystemName)'
+    cpu_family = '\(order.target.arch.mesonCPUFamily)'
+    cpu = '\(order.target.arch.clangTripleString)'
+    endian = 'little'
+    """
+  }
+
   public func meson(_ arguments: [String?]) throws {
-    try launch("meson",
-               ["--prefix=\(prefix.root.path)",
-                "--buildtype=release",
-                //                "--wrap-mode=nofallback
-               ]
-               + arguments.compactMap {$0})
+    var mesonArguments = ["--prefix=\(prefix.root.path)",
+                     "--buildtype=release",
+                     //                "--wrap-mode=nofallback
+    ]
+    if isBuildingCross {
+      let crossFile = randomFilename + ".txt"
+      try mesonCrossFile().write(toFile: crossFile, atomically: true, encoding: .utf8)
+      mesonArguments.append("--cross-file")
+      mesonArguments.append(crossFile)
+    }
+    mesonArguments += arguments.compactMap {$0}
+    try launch("meson", mesonArguments)
   }
 
   public func configure(directory: String =  ".", _ arguments: [String?]) throws {
@@ -269,7 +298,7 @@ extension BuildEnvironment {
 
 // MARK: Variadic Support
 
-extension BuildEnvironment {
+extension BuildContext {
   public func launch(_ executableName: String, _ arguments: String?...) throws {
     try launch(executableName, arguments)
   }
@@ -289,7 +318,7 @@ extension BuildEnvironment {
 
 
 // MARK: Fix Autotools
-extension BuildEnvironment {
+extension BuildContext {
   /// call this function before configure
   public func fixAutotoolsForDarwin() throws {
     if isBuildingCross {
@@ -307,6 +336,20 @@ extension BuildEnvironment {
       """, with: """
       \\$CC \\$allow_undefined_flag -target \(order.target.clangTripleString)
       """)
+    }
+  }
+}
+
+extension BuildContext {
+  public func fixDylibsID() throws {
+    if order.target.system.isApple, libraryType.buildShared {
+      try fm.contentsOfDirectory(at: prefix.lib)
+        .filter { $0.pathExtension == TargetSystem.macOS.sharedLibraryExtension }
+        .filter { try (fm.attributesOfItem(atURL: $0)[.type] as! FileAttributeType) == .typeRegular }
+        .forEach { dylibURL in
+          let dylibPath = dylibURL.path
+          try launch("install_name_tool", "-id", dylibPath, dylibPath)
+        }
     }
   }
 }

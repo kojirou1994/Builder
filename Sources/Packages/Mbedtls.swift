@@ -35,22 +35,22 @@ public struct Mbedtls: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     // enable pthread
     try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")
     try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_C", with: "#define MBEDTLS_THREADING_C")
 
-    try env.inRandomDirectory { _ in
-      try env.cmake(
+    try context.inRandomDirectory { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(env.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
-        cmakeOnFlag(env.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
+        cmakeOnFlag(context.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
+        cmakeOnFlag(context.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
-        cmakeOnFlag(env.strictMode, "ENABLE_TESTING"),
+        cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
         cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT"),
         cmakeOnFlag(true, "ENABLE_PROGRAMS")
       )
@@ -59,11 +59,11 @@ public struct Mbedtls: Package {
        tls -> x509 & crypto
        x509 -> crypto
        */
-      try env.make(toolType: .ninja)
-      if env.canRunTests {
-        try env.make(toolType: .ninja, "test")
+      try context.make(toolType: .ninja)
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
       }
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
 
   }

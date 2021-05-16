@@ -8,7 +8,7 @@ public enum PackagePatch {
 public struct PackageSource: CustomStringConvertible {
   public let url: String
   let requirement: Requirement
-  let patches: [PackagePatch]
+  public var patches: [PackagePatch]
   let mirrors: [String]
 
   enum Requirement {

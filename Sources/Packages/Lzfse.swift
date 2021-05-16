@@ -33,22 +33,22 @@ public struct Lzfse: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.inRandomDirectory { _ in
-      try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.inRandomDirectory { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(env.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeOnFlag(!env.strictMode, "LZFSE_DISABLE_TESTS"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeOnFlag(!context.strictMode, "LZFSE_DISABLE_TESTS"),
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
-      try env.make(toolType: .ninja)
-      if env.canRunTests {
-        try env.make(toolType: .ninja, "test")
+      try context.make(toolType: .ninja)
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
       }
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

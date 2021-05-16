@@ -22,19 +22,19 @@ public struct Bzip2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     try replace(contentIn: "Makefile", matching: "$(PREFIX)/man", with: "$(PREFIX)/share/man")
 
-    try env.make("install",
-                 "PREFIX=\(env.prefix.root.path)",
-                 "CC=\(env.cc)")
+    try context.make("install",
+                 "PREFIX=\(context.prefix.root.path)",
+                 "CC=\(context.cc)")
 
-//    try env.autoRemoveUnneedLibraryFiles()
+//    try context.autoRemoveUnneedLibraryFiles()
 
-    try env.mkdir(env.prefix.pkgConfig)
-    try pkgConfig(prefix: env.prefix.root.path)
-      .write(to: env.prefix.pkgConfig.appendingPathComponent("bzip2.pc"), atomically: true, encoding: .utf8)
+    try context.mkdir(context.prefix.pkgConfig)
+    try pkgConfig(prefix: context.prefix.root.path)
+      .write(to: context.prefix.pkgConfig.appendingPathComponent("bzip2.pc"), atomically: true, encoding: .utf8)
   }
 
   private func pkgConfig(prefix: String) -> String {

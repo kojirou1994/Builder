@@ -24,15 +24,15 @@ public struct Automake: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.configure()
-    try env.make()
-    try env.make("install")
+    try context.configure()
+    try context.make()
+    try context.make("install")
 
 //    try """
-//    \(env.dependencyMap[Libtool.self].appending("share", "aclocal").path)
-//    """.write(to: env.prefix.appending("share", "aclocal", "dirlist"), atomically: true, encoding: .utf8)
+//    \(context.dependencyMap[Libtool.self].appending("share", "aclocal").path)
+//    """.write(to: context.prefix.appending("share", "aclocal", "dirlist"), atomically: true, encoding: .utf8)
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

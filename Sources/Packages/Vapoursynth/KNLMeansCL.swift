@@ -33,8 +33,8 @@ public struct KNLMeansCL: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    if env.order.version > lastAutoToolsVersion {
+  public func build(with context: BuildContext) throws {
+    if context.order.version > lastAutoToolsVersion {
       /*
        thanks to:
        https://unix.stackexchange.com/questions/408963/meson-doesnt-find-the-boost-libraries
@@ -46,22 +46,22 @@ public struct KNLMeansCL: Package {
           cxx.find_library('boost_filesystem'),
         ]
         """)
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.meson("..")
+      try context.changingDirectory(context.randomFilename) { _ in
+        try context.meson("..")
 
-        try env.launch("ninja")
-        try env.launch("ninja", "install")
+        try context.launch("ninja")
+        try context.launch("ninja", "install")
       }
     } else {
       try replace(contentIn: "GNUmakefile", matching: "$(STRIP) $(LIBNAME)", with: "")
-      try env.launch(
+      try context.launch(
         path: "./configure",
-        "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)",
-        "--cxx=\(env.cxx)"
+        "--install=\(context.prefix.lib.appendingPathComponent("vapoursynth").path)",
+        "--cxx=\(context.cxx)"
         )
 
-      try env.make()
-      try env.make("install")
+      try context.make()
+      try context.make("install")
     }
 
   }

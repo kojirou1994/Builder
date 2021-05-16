@@ -44,10 +44,10 @@ public struct Go: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     try FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: "."), includingPropertiesForKeys: nil, options: [])
       .forEach { content in
-        try env.moveItem(at: content, to: env.prefix.appending(content.lastPathComponent))
+        try context.moveItem(at: content, to: context.prefix.appending(content.lastPathComponent))
       }
   }
 

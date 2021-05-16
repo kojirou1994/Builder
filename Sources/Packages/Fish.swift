@@ -29,20 +29,20 @@ public struct Fish: Package {
     )
   }
   
-  public func build(with env: BuildEnvironment) throws {
-    env.environment.append("-lintl -liconv", for: .ldflags)
-    if env.order.target.system.isApple {
-      env.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
+  public func build(with context: BuildContext) throws {
+    context.environment.append("-lintl -liconv", for: .ldflags)
+    if context.order.target.system.isApple {
+      context.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
     }
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.cmake(
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.cmake(
         toolType: .ninja,
         "..",
         nil
       )
       
-      try env.make(toolType: .ninja)
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
   

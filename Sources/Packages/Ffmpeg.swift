@@ -4,13 +4,13 @@ public struct Ffmpeg: Package {
 
   public init() {}
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.launch(path: "configure", configureOptions(env: env))
+    try context.launch(path: "configure", configureOptions(context: context))
 
-    try env.make()
+    try context.make()
 
-    try env.make("install")
+    try context.make("install")
   }
 
   public var defaultVersion: PackageVersion {
@@ -110,14 +110,14 @@ public struct Ffmpeg: Package {
   @Flag(inversion: .prefixedEnableDisable)
   var autodetect: Bool = false
 
-  private func configureOptions(env: BuildEnvironment) throws -> [String] {
+  private func configureOptions(context: BuildContext) throws -> [String] {
     var r = Set<String>([
-      "--cc=\(env.cc)",
-      "--cxx=\(env.cxx)",
-      "--prefix=\(env.prefix)",
+      "--cc=\(context.cc)",
+      "--cxx=\(context.cxx)",
+      "--prefix=\(context.prefix)",
     ])
     var licenses = Set<FFmpegLicense>()
-//    if env.isBuildingCross {
+//    if context.isBuildingCross {
 //      r.insert(configureEnableFlag(true, "cross-compile"))
 //    }
 
@@ -126,16 +126,16 @@ public struct Ffmpeg: Package {
     extraVersion.map { _ = r.insert("--extra-version=\($0)") }
 
     // static/shared library
-    if env.libraryType == .static {
+    if context.libraryType == .static {
       r.insert("--pkg-config-flags=--static")
     }
 
-    r.formUnion([env.libraryType.staticConfigureFlag,
-                 env.libraryType.sharedConfigureFlag])
+    r.formUnion([context.libraryType.staticConfigureFlag,
+                 context.libraryType.sharedConfigureFlag])
 
     // MARK: External library
     Set(dependencyOptions).forEach { dependency in
-      guard dependency.supportsFFmpegVersion(env.order.version) else {
+      guard dependency.supportsFFmpegVersion(context.order.version) else {
         return
       }
       if dependency.isNonFree {
@@ -150,7 +150,7 @@ public struct Ffmpeg: Package {
       }
       switch dependency {
       case .libsdl2, .librav1e:
-        switch env.order.target.system {
+        switch context.order.target.system {
         case .macOS, .linuxGNU:
           break
         default: return // maybe need xargo
@@ -167,7 +167,7 @@ public struct Ffmpeg: Package {
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
-        if env.order.target.system.isApple {
+        if context.order.target.system.isApple {
           r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
                                           "appkit", "avfoundation", "coreimage"))
         }
@@ -184,7 +184,7 @@ public struct Ffmpeg: Package {
       r.insert(configureEnableFlag(false, comp.rawValue))
     }
 
-    if env.order.target.system == .linuxGNU {
+    if context.order.target.system == .linuxGNU {
       r.insert("--extra-libs=-ldl -lpthread -lm -lz")
     }
 
@@ -331,7 +331,7 @@ extension Ffmpeg {
       switch self {
       case .libsvtav1:
         if case .stable(let stableVersion) = version {
-          return "4.4"... ~= stableVersion
+          return stableVersion >= "4.4"
         }
       default:
         break

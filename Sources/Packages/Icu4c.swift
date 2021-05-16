@@ -28,29 +28,55 @@ public struct Icu4c: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    let buildTools = env.order.target.system == .linuxGNU
-    || env.order.target.system == .macOS
+    let buildTools = context.order.target.system == .linuxGNU
+    || context.order.target.system == .macOS
 
-    try env.changingDirectory("icu4c/source") { _ in
-      try env.autoreconf()
+    var crossBuild: String?
+    if context.isBuildingCross {
+      try context.inRandomDirectory { cwd in
+        crossBuild = configureWithFlag(cwd.path, "cross-build")
 
-      try env.configure(
-        env.libraryType.staticConfigureFlag,
-        env.libraryType.sharedConfigureFlag,
+        let savedEnv = context.environment
+        defer {
+          context.environment = savedEnv
+        }
+        context.environment.remove(.cflags, .cxxflags, .ldflags)
+
+        let platform: String
+        switch TargetSystem.native {
+        case .macOS:
+          platform = "MacOSX"
+        case .linuxGNU:
+          platform = "Linux"
+        default: fatalError()
+        }
+        try context.launch(path: "../icu4c/source/runConfigureICU", platform)
+        try context.make()
+      }
+    }
+
+    try context.changingDirectory("icu4c/source") { cwd in
+      try context.autoreconf()
+
+      try context.fixAutotoolsForDarwin()
+
+      try context.configure(
+        context.libraryType.staticConfigureFlag,
+        context.libraryType.sharedConfigureFlag,
         configureEnableFlag(false, "samples"),
-        configureEnableFlag(env.strictMode, "tests"),
+        configureEnableFlag(context.strictMode, "tests"),
         configureEnableFlag(buildTools, "tools"),
         configureEnableFlag(buildTools, "extras"),
-        "--with-library-bits=64"
+        crossBuild
       )
 
-      try env.make()
-      if env.strictMode {
-        try env.make("check")
+      try context.make()
+      if context.strictMode {
+        try context.make("check")
       }
-      try env.make("install")
+      try context.make("install")
     }
   }
 

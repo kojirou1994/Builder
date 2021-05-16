@@ -34,7 +34,7 @@ public struct Handbrake: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "configure", ["--launch", "--launch-jobs=\(env.parallelJobs ?? 4)"])
+  public func build(with context: BuildContext) throws {
+    try context.launch(path: "configure", ["--launch", "--launch-jobs=\(context.parallelJobs ?? 4)"])
   }
 }

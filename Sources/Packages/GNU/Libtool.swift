@@ -27,16 +27,16 @@ public struct Libtool: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.configure(
-      configureEnableFlag(ltdl && env.libraryType.buildStatic, "static"),
-      configureEnableFlag(ltdl && env.libraryType.buildShared, "shared"),
+    try context.configure(
+      configureEnableFlag(ltdl && context.libraryType.buildStatic, "static"),
+      configureEnableFlag(ltdl && context.libraryType.buildShared, "shared"),
       configureEnableFlag(ltdl, "ltdl-install")
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

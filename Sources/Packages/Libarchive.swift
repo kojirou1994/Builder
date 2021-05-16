@@ -46,11 +46,11 @@ public struct Libarchive: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     /*
      still failed:
-    switch env.order.target.system {
+    switch context.order.target.system {
     case .watchOS, .watchSimulator,
          .tvOS, .tvSimulator:
       try [
@@ -65,12 +65,12 @@ public struct Libarchive: Package {
     }
     */
 
-    try env.inRandomDirectory { _ in
+    try context.inRandomDirectory { _ in
 
-      let enableShared = env.libraryType == .shared || ( env.libraryType == .all && !env.prefersStaticBin )
-      let enableTests = env.canRunTests && env.order.target.system != .macCatalyst /* tests require system() function */
+      let enableShared = context.libraryType == .shared || ( context.libraryType == .all && !context.prefersStaticBin )
+      let enableTests = context.canRunTests && context.order.target.system != .macCatalyst /* tests require system() function */
 
-      try env.cmake(
+      try context.cmake(
         toolType: .ninja,
         "..",
         cmakeOnFlag(enableTests, "BUILD_TESTING"),
@@ -81,16 +81,16 @@ public struct Libarchive: Package {
         cmakeOnFlag(true, "ENABLE_LZO"),
         cmakeOnFlag(true, "ENABLE_MBEDTLS"),
         // ENABLE_NETTLE
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
-      try env.make(toolType: .ninja)
+      try context.make(toolType: .ninja)
       if enableTests {
-        try env.make(toolType: .ninja, "test")
+        try context.make(toolType: .ninja, "test")
       }
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
 
-      try env.autoRemoveUnneedLibraryFiles()
+      try context.autoRemoveUnneedLibraryFiles()
     }
   }
 }

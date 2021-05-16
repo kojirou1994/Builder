@@ -36,19 +36,19 @@ public struct Gcrypt: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      "--with-gpg-error-prefix=\(env.dependencyMap[GpgError.self].root.path)",
-      configureEnableFlag(env.isBuildingNative, "asm", defaultEnabled: true)
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
+      "--with-gpg-error-prefix=\(context.dependencyMap[GpgError.self].root.path)",
+      configureEnableFlag(context.isBuildingNative, "asm", defaultEnabled: true)
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

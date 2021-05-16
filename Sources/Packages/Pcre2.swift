@@ -27,13 +27,13 @@ public struct Pcre2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+    try context.autoreconf()
     
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(true, "pcre2-16"),
       configureEnableFlag(true, "pcre2-32"),
       configureEnableFlag(true, "pcre2grep-libz"),
@@ -41,8 +41,8 @@ public struct Pcre2: Package {
       //configureEnableFlag(true, "jit") // not for apple silicon
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

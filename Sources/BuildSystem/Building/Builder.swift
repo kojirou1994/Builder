@@ -144,7 +144,7 @@ struct Builder {
   let fm = URLFileManager.default
   /// base environment
   @available(*, deprecated, message: "move default values to builder root")
-  let env: BuildEnvironment
+  let env: BuildContext
   let defaultLibraryType: PackageLibraryBuildType
   let packageRootPath: PackagePath
   let mainTarget: TargetTriple
@@ -510,16 +510,21 @@ extension Builder {
           // TODO: re-checkout or make clean ?
           if usedLibraryType == .all, !recipe.canBuildAllLibraryTogether {
             // build separately
+            func build(libraryType: PackageLibraryBuildType) throws {
+              let savedEnv = env.environment
+              defer {
+                env.environment = savedEnv
+              }
+              env.libraryType = libraryType
+              try package.build(with: env)
+            }
+
             if env.prefersStaticBin {
-              env._libraryType = .shared
-              try package.build(with: env)
-              env._libraryType = .static
-              try package.build(with: env)
+              try build(libraryType: .shared)
+              try build(libraryType: .static)
             } else {
-              env._libraryType = .static
-              try package.build(with: env)
-              env._libraryType = .shared
-              try package.build(with: env)
+              try build(libraryType: .static)
+              try build(libraryType: .shared)
             }
           } else {
             try package.build(with: env)
@@ -654,7 +659,7 @@ extension Builder {
     dependencyMap: PackageDependencyMap,
     environment: EnvironmentValues,
     libraryType: PackageLibraryBuildType?,
-    prefix: PackagePath) -> BuildEnvironment {
+    prefix: PackagePath) -> BuildContext {
     .init(
       order: order, source: source,
       prefix: prefix, dependencyMap: dependencyMap,

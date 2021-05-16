@@ -19,15 +19,15 @@ public struct LsmashWorks: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.changingDirectory("VapourSynth") { _ in
-      try env.configure(
+    try context.changingDirectory("VapourSynth") { _ in
+      try context.configure(
       )
 
-      try env.make()
+      try context.make()
 
-      try env.make("install")
+      try context.make("install")
     }
   }
 

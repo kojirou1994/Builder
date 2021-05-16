@@ -33,25 +33,25 @@ public struct Xml2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       "--without-python"
     )
 
-    try env.make()
+    try context.make()
 
-    if env.canRunTests {
-      try env.make("check")
+    if context.canRunTests {
+      try context.make("check")
     }
 
-    try env.make("install")
+    try context.make("install")
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

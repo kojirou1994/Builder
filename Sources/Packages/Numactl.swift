@@ -27,9 +27,9 @@ public struct Numactl: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.configure()
-    try env.make("install")
+  public func build(with context: BuildContext) throws {
+    try context.configure()
+    try context.make("install")
   }
 
 }

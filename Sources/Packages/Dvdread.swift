@@ -33,18 +33,18 @@ public struct Dvdread: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+    try context.autoreconf()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureWithFlag(dvdcss, "libdvdcss")
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
   public var tag: String {

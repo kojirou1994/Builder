@@ -28,16 +28,16 @@ public struct Fmtconv: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/unix") { _ in
-      try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory("build/unix") { _ in
+      try context.autogen()
 
-      try env.configure(
+      try context.configure(
         
       )
 
-      try env.make()
-      try env.make("install")
+      try context.make()
+      try context.make("install")
     }
   }
 }

@@ -23,29 +23,24 @@ public struct Ebml: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self)
       ],
-      products: [.library(name: "libebml", headers: ["ebml"])]
+      products: [
+        .library(name: "libebml", headers: ["ebml"]),
+      ]
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
+    // can't build both static and shared library, the headers are different
+    try context.inRandomDirectory { _ in
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
+      )
 
-    func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.cmake(
-          toolType: .ninja,
-          "..",
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS")
-        )
-
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
-      }
-    }
-
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
-      try build(shared: false)
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 

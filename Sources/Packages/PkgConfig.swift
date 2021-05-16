@@ -28,16 +28,16 @@ public struct PkgConfig: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+    try context.autoreconf()
 
-    try env.configure(
+    try context.configure(
       configureWithFlag(true, "internal-glib"),
       configureEnableFlag(false, "host-tool")
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

@@ -23,8 +23,8 @@ public struct Rmff: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.make("install", "CC=\(env.cc)", "prefix=\(env.prefix.root.path)")
+  public func build(with context: BuildContext) throws {
+    try context.make("install", "CC=\(context.cc)", "prefix=\(context.prefix.root.path)")
   }
 
 }

@@ -27,18 +27,18 @@ public struct Opencore: Package {
     )
   }
   
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.autoreconf()
+    try context.autoreconf()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

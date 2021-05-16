@@ -23,23 +23,23 @@ public struct Png: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag
     )
 
-    try env.make()
+    try context.make()
 
-    if env.strictMode {
-      try env.make("test")
+    if context.canRunTests {
+      try context.make("test")
     }
 
-    try env.make("install")
+    try context.make("install")
   }
 
 }

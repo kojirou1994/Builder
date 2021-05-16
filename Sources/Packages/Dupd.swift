@@ -23,7 +23,7 @@ public struct Dupd: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.make("install", "INSTALL_PREFIX=\(env.prefix.root.path)")
+  public func build(with context: BuildContext) throws {
+    try context.make("install", "INSTALL_PREFIX=\(context.prefix.root.path)")
   }
 }

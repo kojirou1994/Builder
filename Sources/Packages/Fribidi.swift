@@ -4,15 +4,15 @@ public struct Fribidi: Package {
 
   public init() {}
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.meson(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.meson(
         "..",
-        "--default-library=\(env.libraryType.mesonFlag)"
+        "--default-library=\(context.libraryType.mesonFlag)"
       )
 
-      try env.launch("ninja")
-      try env.launch("ninja", "install")
+      try context.launch("ninja")
+      try context.launch("ninja", "install")
     }
   }
 

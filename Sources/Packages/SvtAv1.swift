@@ -17,7 +17,7 @@ public struct SvtAv1: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    if order.target.arch.isARM, order.version < lastArmInvalidVersion {
+    if order.target.arch.isARM, order.version <= lastArmInvalidVersion {
       // only head can compile for arm...
       source = repoSource
     } else {
@@ -39,39 +39,39 @@ public struct SvtAv1: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     let compileCOnly: String?
-    if env.order.version > lastArmInvalidVersion {
+    if context.order.version > lastArmInvalidVersion {
       compileCOnly = nil
     } else {
-      compileCOnly = cmakeOnFlag(!env.order.target.arch.isX86, "COMPILE_C_ONLY")
+      compileCOnly = cmakeOnFlag(!context.order.target.arch.isX86, "COMPILE_C_ONLY")
     }
 
     func build(shared: Bool) throws {
 
-      try env.inRandomDirectory { _ in
-        try env.cmake(
+      try context.inRandomDirectory { _ in
+        try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
-          cmakeOnFlag(env.isBuildingNative, "NATIVE"),
+          cmakeOnFlag(context.isBuildingNative, "NATIVE"),
           compileCOnly,
-//          cmakeOnFlag(env.strictMode, "BUILD_TESTING"), // tests can't compile!
+//          cmakeOnFlag(context.strictMode, "BUILD_TESTING"), // tests can't compile!
           cmakeOnFlag(apps, "BUILD_APPS")
         )
 
-        try env.make(toolType: .ninja)
-        if env.canRunTests {
-//          try env.make(toolType: .ninja, "test")
+        try context.make(toolType: .ninja)
+        if context.canRunTests {
+//          try context.make(toolType: .ninja, "test")
         }
-        try env.make(toolType: .ninja, "install")
+        try context.make(toolType: .ninja, "install")
       }
     }
 
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
+    try build(shared: context.libraryType.buildShared)
+    if context.libraryType == .all {
       try build(shared: false)
     }
   }

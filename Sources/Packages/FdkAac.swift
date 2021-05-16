@@ -27,14 +27,14 @@ public struct FdkAac: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
-    try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
+    try context.configure(
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(example, "example")
     )
-    try env.make("install")
+    try context.make("install")
   }
   
   @Flag(inversion: .prefixedEnableDisable, help: "Enable example encoding program.")

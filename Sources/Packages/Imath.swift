@@ -22,30 +22,29 @@ public struct Imath: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self)
-      ]
+      ],
+      products: [
+        .library(name: "Imath", headers: ["Imath"]),
+      ],
+      canBuildAllLibraryTogether: false
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-
-    func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.cmake(
-          toolType: .ninja,
-          "..",
-          cmakeOnFlag(false, "BUILD_TESTING"),
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
-          cmakeDefineFlag("", "IMATH_STATIC_LIB_SUFFIX")
-        )
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
+  public func build(with context: BuildContext) throws {
+    try context.inRandomDirectory { _ in
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeDefineFlag("", "IMATH_STATIC_LIB_SUFFIX")
+      )
+      try context.make(toolType: .ninja)
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
       }
-    }
-
-    try build(shared: env.libraryType.buildShared)
-
-    if env.libraryType == .all {
-      try build(shared: false)
+      try context.make(toolType: .ninja, "install")
     }
   }
 

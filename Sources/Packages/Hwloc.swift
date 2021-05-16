@@ -26,18 +26,18 @@ public struct Hwloc: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-//    try env.autoreconf()
+  public func build(with context: BuildContext) throws {
+//    try context.autoreconf()
 
-    try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+    try context.configure(
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       "--disable-cairo",
       "--without-x"
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

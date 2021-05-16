@@ -20,12 +20,12 @@ public struct Corkscrew: Package {
     return .init(source: source, supportedLibraryType: nil)
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.configure()
+  public func build(with context: BuildContext) throws {
+    try context.configure()
     
-    try env.make()
+    try context.make()
 
-    try env.make("install")
+    try context.make("install")
   }
 
 }

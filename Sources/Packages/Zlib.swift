@@ -22,15 +22,15 @@ public struct Zlib: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "configure",
-                   "--prefix=\(env.prefix.root.path)",
-                   env.order.target.arch.is64Bits ? "--64" : nil
+  public func build(with context: BuildContext) throws {
+    try context.launch(path: "configure",
+                   "--prefix=\(context.prefix.root.path)",
+                   context.order.target.arch.is64Bits ? "--64" : nil
     )
     
-    try env.make()
-    try env.make("install")
-    try env.autoRemoveUnneedLibraryFiles()
+    try context.make()
+    try context.make("install")
+    try context.autoRemoveUnneedLibraryFiles()
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

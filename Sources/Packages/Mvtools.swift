@@ -21,12 +21,12 @@ public struct Mvtools: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.meson("..")
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.meson("..")
 
-      try env.launch("ninja")
-      try env.launch("ninja", "install")
+      try context.launch("ninja")
+      try context.launch("ninja", "install")
     }
   }
 }

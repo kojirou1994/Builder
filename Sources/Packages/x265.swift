@@ -10,9 +10,6 @@ public struct x265: Package {
   @Flag(name: [.customLong("12")], inversion: .prefixedNo)
   var enable12bit: Bool = true
 
-  @Flag(inversion: .prefixedEnableDisable)
-  var cli: Bool = false
-
 //  public func validate() throws {
 //    guard enable8bit || enable10bit || enable12bit else {
 //      throw ValidationError("No enabled bit settings!")
@@ -24,7 +21,8 @@ public struct x265: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-    let source: PackageSource
+
+    var source: PackageSource
     switch order.version {
     case .head:
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .branch("master"))
@@ -32,27 +30,36 @@ public struct x265: Package {
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
     }
 
+    if order.target.arch.isARM {
+      source.patches += [
+        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A00-darwin-Revert-Add-aarch64-support-Part-2.patch", sha256: nil),
+        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A01-darwin-neon-support-for-arm64.patch", sha256: nil),
+        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A02-threads-priority.patch", sha256: nil)
+      ]
+    }
+
     return .init(
       source: source,
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        order.target.arch == .x86_64 ? .buildTool(Nasm.self) : nil,
+        .buildTool(PkgConfig.self),
+        .buildTool(Nasm.self),
       ]
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     let srcDir = "../source"
     let toolType: MakeToolType = .ninja
 
-    let asm = cmakeDefineFlag("/Users/kojirou/Executable/Shared/gas-preprocessor.pl ", "CMAKE_ASM_COMPILER")
-    let asmFlag = cmakeDefineFlag("-arch arm64 -as-type apple-clang -- \(env.cc)", "CMAKE_ASM_FLAGS")
+    let asm: String? = nil // context.order.target.arch.isARM ?  cmakeDefineFlag("/Users/kojirou/Executable/Shared/gas-preprocessor.pl ", "CMAKE_ASM_COMPILER") : nil
+    let asmFlag: String? = nil // context.order.target.arch.isARM ? cmakeDefineFlag("-arch arm64 -as-type apple-clang -- \(context.cc)", "CMAKE_ASM_FLAGS") : nil
 
     if enable12bit {
-      try env.changingDirectory("12bit") { cwd in
-        try env.cmake(
+      try context.changingDirectory("12bit") { cwd in
+        try context.cmake(
           toolType: toolType,
           srcDir,
           "-DHIGH_BIT_DEPTH=ON",
@@ -63,13 +70,13 @@ public struct x265: Package {
           asm, asmFlag
         )
 
-        try env.make(toolType: toolType)
+        try context.make(toolType: toolType)
       }
     }
 
     if enable10bit {
-      try env.changingDirectory("10bit") { cwd in
-        try env.cmake(
+      try context.changingDirectory("10bit") { cwd in
+        try context.cmake(
           toolType: toolType,
           srcDir,
           "-DHIGH_BIT_DEPTH=ON",
@@ -80,44 +87,44 @@ public struct x265: Package {
           asm, asmFlag
         )
 
-        try env.make(toolType: toolType)
+        try context.make(toolType: toolType)
       }
     }
 
-    try env.changingDirectory("8bit") { _ in
+    try context.changingDirectory("8bit") { _ in
 
       var extraLib = [String]()
       if enable10bit {
-        try env.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
+        try context.moveItem(at: URL(fileURLWithPath: "../10bit/libx265.a"),
                             to: URL(fileURLWithPath: "libx265_main10.a"))
         extraLib.append("x265_main10.a")
       }
       if enable12bit {
-        try env.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
+        try context.moveItem(at: URL(fileURLWithPath: "../12bit/libx265.a"),
                             to: URL(fileURLWithPath: "libx265_main12.a"))
         extraLib.append("x265_main12.a")
       }
 
-      try env.cmake(
+      try context.cmake(
         toolType: toolType,
         srcDir,
         cmakeDefineFlag(extraLib.joined(separator: ";"), "EXTRA_LIB"),
         cmakeDefineFlag("-L.", "EXTRA_LINK_FLAGS"),
         cmakeOnFlag(enable10bit, "LINKED_10BIT"),
         cmakeOnFlag(enable12bit, "LINKED_12BIT"),
-        env.libraryType.sharedCmakeFlag,
-        cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        cmakeOnFlag(cli, "ENABLE_CLI", defaultEnabled: true),
+        context.libraryType.sharedCmakeFlag,
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeOnFlag(true, "ENABLE_CLI"),
         asm, asmFlag
       )
 
-      try env.make(toolType: toolType)
+      try context.make(toolType: toolType)
 
-      try env.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
+      try context.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
-      switch env.order.target.system {
-      case .macOS:
-        try env.launch(
+      switch context.order.target.system {
+      case .macOS, .macCatalyst:
+        try context.launch(
           "libtool",
           "-static",
           "-o", "libx265.a",
@@ -149,15 +156,14 @@ public struct x265: Package {
       default: break
       }
 
-      try env.make(toolType: .ninja, "install")
+      try context.make(toolType: .ninja, "install")
     }
 
-    try env.autoRemoveUnneedLibraryFiles()
+    try context.autoRemoveUnneedLibraryFiles()
   }
 
   public var tag: String {
     [
-      cli ? "ENABLE_CLI" : "",
 //      enable8bit ? "" : "NO_8BIT",
       enable10bit ? "" : "NO_10BIT",
       enable12bit ? "" : "NO_12BIT",

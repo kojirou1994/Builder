@@ -47,33 +47,33 @@ public struct Zstd: Package {
     .joined(separator: "_")
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/cmake") { _ in
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory("build/cmake") { _ in
 
-      try env.inRandomDirectory { _ in
-        try env.cmake(
+      try context.inRandomDirectory { _ in
+        try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeOnFlag(env.libraryType.buildStatic, "ZSTD_BUILD_STATIC"),
-          cmakeOnFlag(env.libraryType.buildShared, "ZSTD_BUILD_SHARED"),
-          cmakeOnFlag(env.strictMode, "ZSTD_BUILD_TESTS"),
+          cmakeOnFlag(context.libraryType.buildStatic, "ZSTD_BUILD_STATIC"),
+          cmakeOnFlag(context.libraryType.buildShared, "ZSTD_BUILD_SHARED"),
+          cmakeOnFlag(context.strictMode, "ZSTD_BUILD_TESTS"),
           cmakeOnFlag(legacy, "ZSTD_LEGACY_SUPPORT"),
           cmakeOnFlag(programs, "ZSTD_BUILD_PROGRAMS"),
-          cmakeOnFlag(env.libraryType == .shared || (env.libraryType == .all && !env.prefersStaticBin), "ZSTD_PROGRAMS_LINK_SHARED"),
+          cmakeOnFlag(context.libraryType == .shared || (context.libraryType == .all && !context.prefersStaticBin), "ZSTD_PROGRAMS_LINK_SHARED"),
           cmakeOnFlag(programs, "ZSTD_LZ4_SUPPORT", defaultEnabled: false),
           cmakeOnFlag(programs, "ZSTD_LZMA_SUPPORT", defaultEnabled: false),
           cmakeOnFlag(programs, "ZSTD_ZLIB_SUPPORT", defaultEnabled: false),
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeDefineFlag("@loader_path/../lib", "CMAKE_BUILD_RPATH") // fix for test time dyld error
         )
 
-        try env.make(toolType: .ninja)
+        try context.make(toolType: .ninja)
 
-        if env.canRunTests {
-          try env.make(toolType: .ninja, "test")
+        if context.canRunTests {
+          try context.make(toolType: .ninja, "test")
         }
 
-        try env.make(toolType: .ninja, "install")
+        try context.make(toolType: .ninja, "install")
       }
 
     }

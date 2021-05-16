@@ -88,3 +88,30 @@ public enum TargetArch: String, CaseIterable, ExpressibleByArgument, CustomStrin
     }
   }
 }
+
+// MARK: Meson
+extension TargetArch {
+  public var mesonCPUFamily: String {
+    switch self {
+    case .arm64, .arm64e: return "aarch64"
+    case .x86_64, .x86_64h: return "x86_64"
+    case .armv7, .armv7s, .armv7k, .arm64_32: return "arm"
+    }
+  }
+}
+
+extension TargetSystem {
+  public var mesonSystemName: String {
+    switch self {
+    case .linuxGNU:
+      return "linux"
+    default:
+      return "darwin"
+    }
+  }
+}
+
+
+extension BuildContext {
+  
+}

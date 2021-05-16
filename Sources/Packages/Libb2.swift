@@ -33,24 +33,24 @@ public struct Libb2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(TargetArch.native.canLaunch(arch: env.order.target.arch) && env.order.target.system == .native, "native"),
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
+      configureEnableFlag(TargetArch.native.canLaunch(arch: context.order.target.arch) && context.order.target.system == .native, "native"),
       configureEnableFlag(false, "fat")
     )
 
-    let forceEnv = "CFLAGS=\(env.environment[.cflags])"
-    try env.make(forceEnv)
-    if env.canRunTests {
-      try env.make("check", forceEnv)
+    let forceEnv = "CFLAGS=\(context.environment[.cflags])"
+    try context.make(forceEnv)
+    if context.canRunTests {
+      try context.make("check", forceEnv)
     }
-    try env.make("install", forceEnv)
+    try context.make("install", forceEnv)
   }
 }

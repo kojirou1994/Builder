@@ -32,28 +32,24 @@ public struct Matroska: Package {
         .runTime(Ebml.self),
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+      ],
+      products: [
+        .library(name: "matroska", headers: ["matroska"]),
       ]
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.cmake(
-          toolType: .ninja,
-          "..",
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS")
-        )
+  public func build(with context: BuildContext) throws {
+    try context.inRandomDirectory { _ in
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
+      )
 
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
-      }
-    }
-
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
-      try build(shared:false)
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 

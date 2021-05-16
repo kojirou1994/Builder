@@ -67,14 +67,14 @@ public struct TargetTriple: Hashable, CustomStringConvertible, Codable {
 
   public var isValid: Bool {
     switch (arch, system) {
-    case (.x86_64, .tvSimulator), (.x86_64h, .tvSimulator), (.arm64, .tvSimulator), (.arm64e, .tvSimulator),
+    case (.x86_64, .tvSimulator),  (.arm64, .tvSimulator), (.arm64e, .tvSimulator),
          (.arm64, .tvOS),
          (.armv7, .iphoneOS), (.armv7s, .iphoneOS), (.arm64, .iphoneOS), (.arm64e, .iphoneOS),
-         (.x86_64, .iphoneSimulator), (.x86_64h, .iphoneSimulator), (.arm64, .iphoneSimulator), (.arm64e, .iphoneSimulator),
-         (.x86_64, .macOS), (.x86_64h, .macOS), (.arm64, .macOS), (.arm64e, .macOS),
-         (.x86_64, .macCatalyst), (.x86_64h, .macCatalyst), (.arm64, .macCatalyst), (.arm64e, .macCatalyst),
+         (.x86_64, .iphoneSimulator), (.arm64, .iphoneSimulator), (.arm64e, .iphoneSimulator),
+         (.x86_64, .macOS), (.arm64, .macOS), (.arm64e, .macOS),
+         (.x86_64, .macCatalyst), (.arm64, .macCatalyst), (.arm64e, .macCatalyst),
          (.armv7k, .watchOS), (.arm64_32, .watchOS),
-         (.x86_64, .watchSimulator), (.x86_64h, .watchSimulator), (.arm64, .watchSimulator),  (.arm64e, .watchSimulator):
+         (.x86_64, .watchSimulator), (.arm64, .watchSimulator),  (.arm64e, .watchSimulator):
       return true
     default:
       return false

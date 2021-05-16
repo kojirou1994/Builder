@@ -28,16 +28,16 @@ public struct Jpcre2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autoreconf()
-    try env.configure(
+  public func build(with context: BuildContext) throws {
+    try context.autoreconf()
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
 }

@@ -6,57 +6,67 @@ public struct Openexr: Package {
 
   public var defaultVersion: PackageVersion {
     "2.5.5"
+//    "3.0.1"
+  }
+
+  public static var legacyVersion: PackageVersion {
+    "2.5.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/AcademySoftwareFoundation/openexr.git")
     case .stable(let version):
       source = .tarball(url: "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v\(version.toString()).tar.gz")
     }
 
     return .init(
       source: source,
-      dependencies: dependencies(for: order.version)
+      dependencies: dependencies(for: order.version),
+      canBuildAllLibraryTogether: false
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
     let srcRoot: String
-    if env.order.version < "3.0.0" {
+    if context.order.version < "3.0.0" {
       srcRoot = "OpenEXR/"
     } else {
       srcRoot = ""
     }
 
-    func build(shared: Bool) throws {
-      try env.changingDirectory(srcRoot + env.randomFilename) { _ in
-        try env.cmake(
-          toolType: .ninja,
-          "..",
-          cmakeOnFlag(false, "BUILD_TESTING"),
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
-          cmakeDefineFlag("", "OPENEXR_STATIC_LIB_SUFFIX")
-        )
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
+    try context.changingDirectory(srcRoot + context.randomFilename) { _ in
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeDefineFlag("", "OPENEXR_STATIC_LIB_SUFFIX")
+      )
+      try context.make(toolType: .ninja)
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
       }
-    }
-
-    try build(shared: env.libraryType.buildShared)
-
-    if env.libraryType == .all {
-      try build(shared: false)
+      try context.make(toolType: .ninja, "install")
     }
   }
 
   public func dependencies(for version: PackageVersion) -> [PackageDependency] {
     if version < "3.0.0" {
-      return [.runTime(Ilmbase.self)]
+      return [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .runTime(Ilmbase.self),
+      ]
     } else {
-      return [.runTime(Imath.self)]
+      return [
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
+        .runTime(Imath.self),
+      ]
     }
   }
 

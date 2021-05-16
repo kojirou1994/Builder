@@ -33,10 +33,10 @@ public struct Nasm: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
-    try env.configure()
-//    try env.make("rdf")
-    try env.make("install")//, "install_rdf")
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
+    try context.configure()
+//    try context.make("rdf")
+    try context.make("install")//, "install_rdf")
   }
 }

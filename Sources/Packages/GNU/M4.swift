@@ -39,14 +39,14 @@ public struct M4: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.configure(
+    try context.configure(
 
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {

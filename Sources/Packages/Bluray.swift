@@ -42,11 +42,11 @@ public struct Bluray: Package {
    Build examples:                no
    */
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.configure(
+  public func build(with context: BuildContext) throws {
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, "examples"),
       configureEnableFlag(false, "doxygen-doc"),
       configureEnableFlag(false, "doxygen-dot"),
@@ -58,8 +58,8 @@ public struct Bluray: Package {
       configureWithFlag(false, "fontconfig")
     )
 
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 
   @Flag(inversion: .prefixedEnableDisable)

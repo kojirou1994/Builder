@@ -29,24 +29,24 @@ public struct Zimg: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
-      configureEnableFlag(env.strictMode, "testapp"),
-      configureEnableFlag(env.strictMode, "example")
+    try context.configure(
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
+      configureEnableFlag(context.strictMode, "testapp"),
+      configureEnableFlag(context.strictMode, "example")
     )
 
-    try env.make()
+    try context.make()
 
-    if env.canRunTests {
-      try env.make("check")
+    if context.canRunTests {
+      try context.make("check")
     }
 
-    try env.make("install")
+    try context.make("install")
   }
 }

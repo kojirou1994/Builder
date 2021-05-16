@@ -35,31 +35,28 @@ public struct Freetype: Package {
         .runTime(Bzip2.self),
         .runTime(Brotli.self),
         withHarfbuzz ? .runTime(Harfbuzz.self) : nil
-      ]
+      ],
+      canBuildAllLibraryTogether: false
     )
   }
   
-  public func build(with env: BuildEnvironment) throws {
-    
-    func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
-        try env.cmake(
-          toolType: .ninja,
-          "..",
-          cmakeOnFlag(true, "FT_WITH_BROTLI"),
-          cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
-          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
-        )
-        
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
-      }
-    }
-    
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
-      try build(shared: false)
+  public func build(with context: BuildContext) throws {
+
+    try replace(contentIn: "CMakeLists.txt", matching: "find_package(HarfBuzz ${HARFBUZZ_MIN_VERSION})", with: "")
+
+    try context.inRandomDirectory { _ in
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeOnFlag(true, "FT_WITH_BROTLI"),
+        cmakeOnFlag(false, "FT_WITH_HARFBUZZ"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
+        cmakeDefineFlag(context.prefix.lib, "CMAKE_INSTALL_NAME_DIR")
+      )
+
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

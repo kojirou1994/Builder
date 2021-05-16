@@ -29,12 +29,12 @@ public struct Delogo: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch("chmod", "+x", "configure")
-    try env.launch(path: "./configure", "--install=\(env.prefix.lib.appendingPathComponent("vapoursynth").path)")
+  public func build(with context: BuildContext) throws {
+    try context.launch("chmod", "+x", "configure")
+    try context.launch(path: "./configure", "--install=\(context.prefix.lib.appendingPathComponent("vapoursynth").path)")
 
     try replace(contentIn: "config.mak", matching: "include/vapoursynth", with: "include")
-    try env.make()
-    try env.make("install")
+    try context.make()
+    try context.make("install")
   }
 }

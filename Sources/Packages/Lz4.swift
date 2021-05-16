@@ -31,22 +31,22 @@ public struct Lz4: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory("build/cmake") { _ in
-      try env.inRandomDirectory { _ in
-        try env.cmake(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory("build/cmake") { _ in
+      try context.inRandomDirectory { _ in
+        try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeOnFlag(env.libraryType.buildStatic, "BUILD_STATIC_LIBS"),
-          cmakeOnFlag(env.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+          cmakeOnFlag(context.libraryType.buildStatic, "BUILD_STATIC_LIBS"),
+          cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
           cmakeOnFlag(false, "LZ4_BUILD_LEGACY_LZ4C"),
           cmakeOnFlag(true, "LZ4_BUILD_CLI"),
           cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-          cmakeDefineFlag(env.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
         )
 
-        try env.make(toolType: .ninja)
-        try env.make(toolType: .ninja, "install")
+        try context.make(toolType: .ninja)
+        try context.make(toolType: .ninja, "install")
       }
     }
     // TODO: link lz4c to lz4

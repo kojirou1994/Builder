@@ -47,17 +47,17 @@ public struct Mkvtoolnix: Package {
     )
   }
   
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.autogen()
+    try context.autogen()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, "qt"),
-      "--with-docbook-xsl-root=\(env.dependencyMap["docbook-xsl"].appending("docbook-xsl").path)"
+      "--with-docbook-xsl-root=\(context.dependencyMap["docbook-xsl"].appending("docbook-xsl").path)"
     )
 
-    try env.launch("rake", env.parallelJobs.map { "-j\($0)" } )
-    try env.launch("rake", "install")
+    try context.launch("rake", context.parallelJobs.map { "-j\($0)" } )
+    try context.launch("rake", "install")
   }
 
 }

@@ -29,11 +29,11 @@ public struct Harfbuzz: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.meson(
-        "--default-library=\(env.libraryType.mesonFlag)",
-        env.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.meson(
+        "--default-library=\(context.libraryType.mesonFlag)",
+        context.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
         mesonFeatureFlag(false, "cairo"),
         mesonFeatureFlag(true, "coretext"),
         mesonFeatureFlag(true, "freetype"),
@@ -45,8 +45,8 @@ public struct Harfbuzz: Package {
         ".."
       )
 
-      try env.launch("ninja")
-      try env.launch("ninja", "install")
+      try context.launch("ninja")
+      try context.launch("ninja", "install")
     }
   }
 }

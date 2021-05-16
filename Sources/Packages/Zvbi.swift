@@ -37,21 +37,21 @@ public struct Zvbi: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.autoreconf()
+    try context.autoreconf()
 
-    try env.fixAutotoolsForDarwin()
+    try context.fixAutotoolsForDarwin()
 
-    try env.configure(
+    try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
-      env.libraryType.staticConfigureFlag,
-      env.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      context.libraryType.sharedConfigureFlag,
       configureWithFlag(false, "libintl-prefix"),
       configureWithFlag(false, "x")
     )
 
-    if !env.canRunTests {
+    if !context.canRunTests {
       // test cannot build on mobile system
       try """
         all:
@@ -61,11 +61,11 @@ public struct Zvbi: Package {
         """.write(to: URL(fileURLWithPath: "test/Makefile"), atomically: true, encoding: .utf8)
     }
 
-    try env.make()
-    if env.canRunTests {
-      try env.make("check")
+    try context.make()
+    if context.canRunTests {
+      try context.make("check")
     }
-    try env.make("install")
+    try context.make("install")
   }
 
 }

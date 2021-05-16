@@ -28,16 +28,16 @@ public struct Iperf3: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.launch(path: "bootstrap.sh")
-    try env.configure(
-      env.libraryType.sharedConfigureFlag,
-      env.libraryType.staticConfigureFlag,
-      "--with-openssl=\(env.dependencyMap[Openssl.self])"
+  public func build(with context: BuildContext) throws {
+    try context.launch(path: "bootstrap.sh")
+    try context.configure(
+      context.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      "--with-openssl=\(context.dependencyMap[Openssl.self])"
     )
 
-    try env.make("clean")
-    try env.make("install")
+    try context.make("clean")
+    try context.make("install")
   }
 
 }

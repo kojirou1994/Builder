@@ -22,15 +22,15 @@ public struct P7Zip: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
-    try env.removeItem(at: URL(fileURLWithPath: "makefile.machine"))
-    try env.copyItem(at: URL(fileURLWithPath: "makefile.macosx_llvm_64bits"), to: URL(fileURLWithPath: "makefile.machine"))
-    try env.make("all3")
-    try env.launch("make", "DEST_HOME=\(env.prefix.root.path)", "install")
+    try context.removeItem(at: URL(fileURLWithPath: "makefile.machine"))
+    try context.copyItem(at: URL(fileURLWithPath: "makefile.macosx_llvm_64bits"), to: URL(fileURLWithPath: "makefile.machine"))
+    try context.make("all3")
+    try context.launch("make", "DEST_HOME=\(context.prefix.root.path)", "install")
 //    system "make", "all3",
-//    "CC=#{ENV.cc} $(ALLFLAGS)",
-//    "CXX=#{ENV.cxx} $(ALLFLAGS)"
+//    "CC=#{context.cc} $(ALLFLAGS)",
+//    "CXX=#{context.cxx} $(ALLFLAGS)"
 //    system "make", "DEST_HOME=#{prefix}",
 //    "DEST_MAN=#{man}",
 //    "install"
@@ -38,11 +38,11 @@ public struct P7Zip: Package {
      cmake no install target
      https://github.com/jinfeihan57/p7zip/issues/116
      */
-//    try env.changingDirectory("CPP/7zip/CMAKE/build") { _ in
-//      try env.cmake(toolType: .ninja, "..")
+//    try context.changingDirectory("CPP/7zip/CMAKE/build") { _ in
+//      try context.cmake(toolType: .ninja, "..")
 //
-//      try env.make(toolType: .ninja)
-//      try env.make(toolType: .ninja, "install")
+//      try context.make(toolType: .ninja)
+//      try context.make(toolType: .ninja, "install")
 //    })
 
   }

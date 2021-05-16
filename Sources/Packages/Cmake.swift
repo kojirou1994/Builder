@@ -20,13 +20,13 @@ public struct Cmake: Package {
     return .init(source: source, supportedLibraryType: nil)
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.changingDirectory(env.randomFilename) { _ in
-      try env.launch(
+  public func build(with context: BuildContext) throws {
+    try context.changingDirectory(context.randomFilename) { _ in
+      try context.launch(
         path: "../bootstrap",
-        "--prefix=\(env.prefix.root.path)",
+        "--prefix=\(context.prefix.root.path)",
 //        --no-system-libs
-        "--parallel=\(env.parallelJobs ?? 8)",
+        "--parallel=\(context.parallelJobs ?? 8)",
 //        --datadir=/share/cmake
 //        --docdir=/share/doc/cmake
 //        --mandir=/share/man
@@ -41,12 +41,12 @@ public struct Cmake: Package {
         "--system-curl"
 //        cmakeOnFlag(true, "SPHINX_HTML"),
 //        cmakeOnFlag(true, "SPHINX_MAN"),
-//        cmakeDefineFlag(env.dependencyMap["sphinx-doc"].bin.appendingPathComponent("sphinx-build").path, "SPHINX_EXECUTABLE")
+//        cmakeDefineFlag(context.dependencyMap["sphinx-doc"].bin.appendingPathComponent("sphinx-build").path, "SPHINX_EXECUTABLE")
       )
 
-      try env.make()
+      try context.make()
 
-      try env.make("install")
+      try context.make("install")
     }
   }
 

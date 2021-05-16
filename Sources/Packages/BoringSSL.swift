@@ -23,32 +23,32 @@ public struct BoringSSL: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
+  public func build(with context: BuildContext) throws {
 
     func build(shared: Bool) throws {
-      try env.changingDirectory(env.randomFilename) { _ in
+      try context.changingDirectory(context.randomFilename) { _ in
 
-        try env.cmake(
+        try context.cmake(
           toolType: .ninja,
           "..",
           cmakeOnFlag(shared, "BUILD_SHARED_LIBS", defaultEnabled: false)
         )
 
-        try env.make(toolType: .ninja)
-        //      try env.make(toolType: .ninja, "install")
+        try context.make(toolType: .ninja)
+        //      try context.make(toolType: .ninja, "install")
 
-        try env.mkdir(env.prefix.lib)
-        try env.copyItem(at: URL(fileURLWithPath: "crypto/libcrypto.\(env.order.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
-        try env.copyItem(at: URL(fileURLWithPath: "ssl/libssl.\(env.order.target.system.libraryExtension(shared: shared))"), toDirectory: env.prefix.lib)
+        try context.mkdir(context.prefix.lib)
+        try context.copyItem(at: URL(fileURLWithPath: "crypto/libcrypto.\(context.order.target.system.libraryExtension(shared: shared))"), toDirectory: context.prefix.lib)
+        try context.copyItem(at: URL(fileURLWithPath: "ssl/libssl.\(context.order.target.system.libraryExtension(shared: shared))"), toDirectory: context.prefix.lib)
       }
     }
 
-    try build(shared: env.libraryType.buildShared)
-    if env.libraryType == .all {
+    try build(shared: context.libraryType.buildShared)
+    if context.libraryType == .all {
       try build(shared: false)
     }
 
-    try env.copyItem(at: URL(fileURLWithPath: "include"), toDirectory: env.prefix.root)
+    try context.copyItem(at: URL(fileURLWithPath: "include"), toDirectory: context.prefix.root)
 
   }
 }

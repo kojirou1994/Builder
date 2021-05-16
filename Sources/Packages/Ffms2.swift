@@ -28,11 +28,11 @@ public struct Ffms2: Package {
     )
   }
 
-  public func build(with env: BuildEnvironment) throws {
-    try env.autogen()
-    try env.configure()
+  public func build(with context: BuildContext) throws {
+    try context.autogen()
+    try context.configure()
 
-    try env.make("install")
+    try context.make("install")
   }
 
 }
