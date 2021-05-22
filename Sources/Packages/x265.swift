@@ -51,11 +51,19 @@ public struct x265: Package {
 
   public func build(with context: BuildContext) throws {
 
+    // MARK: fix version string
+    try replace(contentIn: "source/common/version.cpp", matching: "#define ONOS    \"[Mac OS X]\"", with: "#define ONOS    \"[macOS]\"")
+    try replace(contentIn: "source/common/version.cpp", matching: """
+      #if X86_64
+      #define BITS
+      """, with: """
+                 #if X86_64 || defined(__aarch64__)
+                 #define BITS
+                 """)
+
+
     let srcDir = "../source"
     let toolType: MakeToolType = .ninja
-
-    let asm: String? = nil // context.order.target.arch.isARM ?  cmakeDefineFlag("/Users/kojirou/Executable/Shared/gas-preprocessor.pl ", "CMAKE_ASM_COMPILER") : nil
-    let asmFlag: String? = nil // context.order.target.arch.isARM ? cmakeDefineFlag("-arch arm64 -as-type apple-clang -- \(context.cc)", "CMAKE_ASM_FLAGS") : nil
 
     if enable12bit {
       try context.changingDirectory("12bit") { cwd in
@@ -66,8 +74,7 @@ public struct x265: Package {
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
           "-DENABLE_CLI=OFF",
-          "-DMAIN12=ON",
-          asm, asmFlag
+          "-DMAIN12=ON"
         )
 
         try context.make(toolType: toolType)
@@ -83,8 +90,7 @@ public struct x265: Package {
           "-DENABLE_HDR10_PLUS=ON",
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
-          "-DENABLE_CLI=OFF",
-          asm, asmFlag
+          "-DENABLE_CLI=OFF"
         )
 
         try context.make(toolType: toolType)
@@ -114,8 +120,7 @@ public struct x265: Package {
         cmakeOnFlag(enable12bit, "LINKED_12BIT"),
         context.libraryType.sharedCmakeFlag,
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        cmakeOnFlag(true, "ENABLE_CLI"),
-        asm, asmFlag
+        cmakeOnFlag(true, "ENABLE_CLI")
       )
 
       try context.make(toolType: toolType)
