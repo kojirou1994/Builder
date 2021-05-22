@@ -13,7 +13,7 @@ public struct GasPreprocessor: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://github.com/libav/gas-preprocessor.git")
+      source = .repository(url: "https://github.com/FFmpeg/gas-preprocessor.git")
     case .stable:
       throw PackageRecipeError.unsupportedVersion
     }
