@@ -56,7 +56,7 @@ public struct Mkvtoolnix: Package {
 
     try context.autogen()
 
-    context.environment.append("-lconv", for: .ldflags)
+    context.environment.append("-liconv", for: .ldflags)
 
     try context.configure(
       configureEnableFlag(false, "qt"),
