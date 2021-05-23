@@ -5,7 +5,7 @@ public struct Mkvtoolnix: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "56.1.0"
+    "57"
   }
 
   /*

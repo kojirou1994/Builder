@@ -5,7 +5,7 @@ public struct Xml2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.9.10"
+    "2.9.12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

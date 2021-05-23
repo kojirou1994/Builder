@@ -1,6 +1,6 @@
 import BuildSystem
 
-fileprivate let lastArmInvalidVersion: PackageVersion = "0.8.6"
+fileprivate let lastArmInvalidVersion: PackageVersion = "0.8.7"
 
 fileprivate let repoSource = PackageSource.repository(url: "https://gitlab.com/AOMediaCodec/SVT-AV1.git")
 
@@ -12,7 +12,7 @@ public struct SvtAv1: Package {
   var apps: Bool = true
 
   public var defaultVersion: PackageVersion {
-    "0.8.6"
+    lastArmInvalidVersion
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -5,7 +5,7 @@ public struct Zstd: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.4.9"
+    "1.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

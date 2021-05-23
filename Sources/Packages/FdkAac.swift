@@ -5,7 +5,7 @@ public struct FdkAac: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.0.1"
+    "2.0.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
