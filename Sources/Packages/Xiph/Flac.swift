@@ -50,14 +50,14 @@ public struct Flac: Package {
         .bin("flac"),
         .bin("metaflac"),
         .library(name: "FLAC", headers: ["FLAC"]),
-        .library(name: "FLAC++", headers: ["FLAC++"]),
+        cpplibs ? .library(name: "FLAC++", headers: ["FLAC++"]) : nil,
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
 
-    let useASM = context.order.target.arch == .x86_64
+    let useASM = context.order.target.arch == .x86_64 || context.isBuildingNative
     try context.autogen()
 
     try context.fixAutotoolsForDarwin()
