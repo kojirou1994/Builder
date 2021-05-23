@@ -59,6 +59,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<GnuTar>.self,
       PackageBuildAllCommand<Go>.self,
       PackageBuildAllCommand<Googletest>.self,
+      PackageBuildAllCommand<Gpac>.self,
       PackageBuildAllCommand<GpgError>.self,
       PackageBuildAllCommand<Handbrake>.self,
       PackageBuildAllCommand<Harfbuzz>.self,

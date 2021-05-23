@@ -59,6 +59,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<GnuTar>.self,
       PackageCheckUpdateCommand<Go>.self,
       PackageCheckUpdateCommand<Googletest>.self,
+      PackageCheckUpdateCommand<Gpac>.self,
       PackageCheckUpdateCommand<GpgError>.self,
       PackageCheckUpdateCommand<Handbrake>.self,
       PackageCheckUpdateCommand<Harfbuzz>.self,
