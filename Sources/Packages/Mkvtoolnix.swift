@@ -47,7 +47,8 @@ public struct Mkvtoolnix: Package {
         .runTime(Zlib.self),
         .runTime(Dvdread.self),
 //        .brew(["docbook-xsl"], requireLinked: false),
-      ]
+      ],
+      supportedLibraryType: nil
     )
   }
   
@@ -55,7 +56,7 @@ public struct Mkvtoolnix: Package {
 
     try context.autogen()
 
-    context.environment["PKG_CONFIG"] = "pkg-config --static"
+    context.environment.append("-lconv", for: .ldflags)
 
     try context.configure(
       configureEnableFlag(false, "qt"),
