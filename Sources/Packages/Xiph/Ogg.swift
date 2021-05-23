@@ -28,7 +28,7 @@ public struct Ogg: Package {
         .buildTool(Libtool.self),
       ],
       products: [
-        .library(name: "libogg", headers: ["ogg"]),
+        .library(name: "libogg", headers: ["ogg/ogg.h", "ogg/os_types.h"]),
       ]
     )
   }
@@ -49,6 +49,8 @@ public struct Ogg: Package {
       try context.make("check")
     }
     try context.make(parallelJobs: 1, "install")
+
+    try replace(contentIn: context.prefix.appending("include/ogg/ogg.h"), matching: "#include <ogg/os_types.h>", with: "#include \"os_types.h\"")
   }
 
 }
