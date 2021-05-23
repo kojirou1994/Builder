@@ -12,6 +12,7 @@ import ExecutableLauncher
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
+import Foundation
 
 let buildSummaryFilename = ".build_summary"
 
@@ -233,11 +234,17 @@ struct Builder {
     // Apply patches
     try source.patches.forEach { patch in
       logger.info("Applying patch \(patch)")
+      var gitApply = AnyExecutable(executableName: "git", arguments: ["apply"])
+      gitApply.currentDirectoryURL = srcDirURL
       switch patch {
-      case .raw(_): break
+      case .raw(let rawPatch):
+        let pipe = Pipe()
+        let patcher = try ContiguousPipeline(gitApply, standardInput: .pipe(pipe))
+        try patcher.run()
+        try pipe.fileHandleForWriting.kwiftWrite(contentsOf: Array(rawPatch.utf8))
+        try pipe.fileHandleForWriting.close()
+        try patcher.waitUntilExit()
       case let .remote(url: url, sha256: _):
-        var gitApply = AnyExecutable(executableName: "git", arguments: ["apply"])
-        gitApply.currentDirectoryURL = srcDirURL
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
           .append(gitApply)
         print(patcher)
