@@ -41,7 +41,6 @@ public struct Mkvtoolnix: Package {
         .runTime(Fmt.self),
         .runTime(Flac.self),
         .runTime(Jpcre2.self),
-        .runTime(Gettext.self),
         .runTime(Boost.self),
         .runTime(NlohmannJson.self),
         .runTime(Zlib.self),
@@ -55,8 +54,6 @@ public struct Mkvtoolnix: Package {
   public func build(with context: BuildContext) throws {
 
     try context.autogen()
-
-    context.environment.append("-liconv", for: .ldflags)
 
     try context.configure(
       configureEnableFlag(false, "qt"),
