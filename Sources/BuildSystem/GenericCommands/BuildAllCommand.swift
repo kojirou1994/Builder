@@ -197,7 +197,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
 
       try products.forEach { product in
         switch product {
-        case let .library(name: libraryName, headers: headers):
+        case let .library(name: libraryName, headers: headers, exported: exported):
           try packXCFramework(libraryName: libraryName, headers: headers)
         default:
           break
