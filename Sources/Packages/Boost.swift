@@ -14,7 +14,7 @@ public struct Boost: Package {
     case .head:
       source = .repository(url: "https://github.com/boostorg/boost.git", requirement: .branch("master"))
     case .stable(let version):
-      source = .tarball(url: "https://dl.bintray.com/boostorg/release/\(version.toString())/source/boost_\(version.toString(versionSeparator: "_")).tar.bz2")
+      source = .tarball(url: "https://boostorg.jfrog.io/artifactory/main/release/\(version.toString())/source/boost_\(version.toString(versionSeparator: "_")).tar.gz")
     }
 
     return .init(
