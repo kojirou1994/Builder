@@ -81,6 +81,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Libarchive>.self,
       PackageBuildAllCommand<Libb2>.self,
       PackageBuildAllCommand<Libevent>.self,
+      PackageBuildAllCommand<Libiconv>.self,
       PackageBuildAllCommand<Libtool>.self,
       PackageBuildAllCommand<Lsmash>.self,
       PackageBuildAllCommand<LsmashWorks>.self,

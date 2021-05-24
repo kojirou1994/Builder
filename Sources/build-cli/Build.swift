@@ -81,6 +81,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Libarchive>.self,
       PackageBuildCommand<Libb2>.self,
       PackageBuildCommand<Libevent>.self,
+      PackageBuildCommand<Libiconv>.self,
       PackageBuildCommand<Libtool>.self,
       PackageBuildCommand<Lsmash>.self,
       PackageBuildCommand<LsmashWorks>.self,

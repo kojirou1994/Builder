@@ -81,6 +81,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Libarchive>.self,
       PackageCheckUpdateCommand<Libb2>.self,
       PackageCheckUpdateCommand<Libevent>.self,
+      PackageCheckUpdateCommand<Libiconv>.self,
       PackageCheckUpdateCommand<Libtool>.self,
       PackageCheckUpdateCommand<Lsmash>.self,
       PackageCheckUpdateCommand<LsmashWorks>.self,
