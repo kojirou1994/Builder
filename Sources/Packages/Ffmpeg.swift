@@ -18,7 +18,7 @@ public struct Ffmpeg: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-    let source: PackageSource
+    var source: PackageSource
     switch order.version {
     case .head:
       source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2")
@@ -26,9 +26,12 @@ public struct Ffmpeg: Package {
       source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
+    source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0001-disable-file-cache.patch", sha256: nil))
+
     var deps: [PackageDependency] = [
       .buildTool(Nasm.self),
       .buildTool(PkgConfig.self),
+      .buildTool(GasPreprocessor.self),
     ]
 
     dependencyOptions.forEach { dependency in
@@ -117,9 +120,13 @@ public struct Ffmpeg: Package {
       "--prefix=\(context.prefix)",
     ])
     var licenses = Set<FFmpegLicense>()
-//    if context.isBuildingCross {
-//      r.insert(configureEnableFlag(true, "cross-compile"))
-//    }
+    if context.isBuildingCross {
+      r.insert(configureEnableFlag(true, "cross-compile"))
+      context.sdkPath.map { _ = r.insert("--sysroot=\($0)") }
+      r.insert("--arch=\(context.order.target.arch.gnuTripleString)")
+//      r.insert("--target-os=darwin")
+      r.insert("--as=gas-preprocessor.pl -arch \(context.order.target.arch.gnuTripleString) -- \(context.cc)")
+    }
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
 //    r.insert(configureEnableFlag(true, "pthreads"))
