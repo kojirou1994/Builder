@@ -2,7 +2,18 @@ import BuildSystem
 
 public struct Opusfile: Package {
 
+  @Flag(inversion: .prefixedEnableDisable)
+  var http = true
+
   public init() {}
+
+  public var tag: String {
+    [
+      http ? "": "NO_HTTP"
+    ]
+    .filter { !$0.isEmpty }
+    .joined(separator: "_")
+  }
 
   public var defaultVersion: PackageVersion {
     "0.12"
@@ -17,12 +28,6 @@ public struct Opusfile: Package {
       source = .tarball(url: "https://ftp.osuosl.org/pub/xiph/releases/opus/opusfile-\(version.toString(includeZeroPatch: false)).tar.gz")
     }
 
-    var libraryType: PackageLibraryBuildType = .all
-
-    if order.target.system == .macCatalyst {
-      libraryType = .static // auto tools don't support catalyst shared lib
-    }
-
     return .init(
       source: source,
       dependencies: [
@@ -32,24 +37,26 @@ public struct Opusfile: Package {
         .buildTool(PkgConfig.self),
         .runTime(Ogg.self),
         .runTime(Opus.self),
-        .runTime(Openssl.self),
+        http ? .runTime(Openssl.self) : nil,
       ],
       products: [
-        .library(name: "opusfile", headers: ["opus"]),
-        .library(name: "opusurl", headers: ["opus"]),
-      ],
-      supportedLibraryType: libraryType
+        .library(name: "opusfile", libname: "opusfile", headerRoot: "opus", headers: ["opusfile.h"], shimedHeaders: []),
+        .library(name: "opusurl", libname: "opusurl", headerRoot: "", headers: nil, shimedHeaders: [])
+      ]
     )
   }
 
   public func build(with context: BuildContext) throws {
     try context.autoreconf()
 
+    try context.fixAutotoolsForDarwin()
+
     try context.configure(
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       configureEnableFlag(true, "doc"),
+      configureEnableFlag(http, "http"),
       configureEnableFlag(false, "examples")
     )
 

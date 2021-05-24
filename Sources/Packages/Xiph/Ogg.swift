@@ -37,7 +37,7 @@ public struct Ogg: Package {
         .buildTool(Libtool.self),
       ],
       products: [
-        .library(name: "libogg", headers: ["ogg/ogg.h", "ogg/os_types.h"]),
+        .library(name: "ogg", libname: "ogg", headerRoot: "ogg", headers: ["ogg.h", "os_types.h"], shimedHeaders: [])
       ]
     )
   }

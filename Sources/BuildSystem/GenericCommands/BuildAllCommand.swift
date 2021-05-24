@@ -65,67 +65,70 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
 
     let fm = URLFileManager.default
 
-    func packXCFramework(libraryName: String, headers: [String]?, isStatic: Bool) throws {
+    func packXCFramework(frameworkName: String, libraryName: String, headerRoot: String, headers: [String]?, shimedHeaders: [String], isStatic: Bool) throws {
       print("Packing xcframework from \(libraryName)...")
 
       let ext = isStatic ? "a" : "dylib"
-      let libraryFilename = libraryName + "." + ext
-      let output = "\(libraryName)_\(isStatic ? "static" : "dynamic").xcframework"
+      let libraryFilename = "lib" + libraryName + "." + ext
+      let output = "\(frameworkName)_\(isStatic ? "static" : "dynamic").xcframework"
 
       if case let outputURL = URL(fileURLWithPath: output),
          fm.fileExistance(at: outputURL).exists {
-        print("Remove old xcframework.")
+        print("Remove existed xcframework.")
         try retry(body: fm.removeItem(at: outputURL))
       }
       let xcTempDirectory = URL(fileURLWithPath: "PACK_XC-\(UUID().uuidString)")
       try retry(body: fm.createDirectory(at: xcTempDirectory))
       defer {
-        //        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
+//        try? retry(body: fm.removeItem(at: lipoWorkingDirectory))
       }
 
       var createXCFramework = XcodeCreateXCFramework(output: output)
 
-      try builtPackages.forEach { (system, systemPackages) in
+      try builtPackages.forEach { (system, systemBuiltPackages) in
 
-        precondition(!systemPackages.isEmpty)
+        precondition(!systemBuiltPackages.isEmpty)
         let libraryFileURL: URL
-        let tmpDirectory = xcTempDirectory.appendingPathComponent("\(system)-\(systemPackages.map(\.arch.rawValue).joined(separator: "_"))")
-        if systemPackages.count == 1 {
-          libraryFileURL = systemPackages[0].result.prefix.lib.appendingPathComponent(libraryFilename)
+        let tmpDirectory = xcTempDirectory.appendingPathComponent("\(system)-\(systemBuiltPackages.map(\.arch.rawValue).joined(separator: "_"))")
+        if systemBuiltPackages.count == 1 {
+          libraryFileURL = systemBuiltPackages[0].result.prefix.lib.appendingPathComponent(libraryFilename)
             .resolvingSymlinksInPath()
         } else {
           try retry(body: fm.createDirectory(at: tmpDirectory))
-          let fatOutput = tmpDirectory.appendingPathComponent(libraryFilename)
+          let fatOutput = tmpDirectory.appendingPathComponent(frameworkName)
           let lipoArguments = ["-create", "-output", fatOutput.path]
-            + systemPackages.map { $0.result.prefix.lib.appendingPathComponent(libraryFilename).path }
+            + systemBuiltPackages.map { $0.result.prefix.lib.appendingPathComponent(libraryFilename).path }
           let lipo = AnyExecutable(executableName: "lipo",
                                    arguments: lipoArguments)
           try lipo.launch(use: TSCExecutableLauncher(outputRedirection: .none))
           libraryFileURL = fatOutput
         }
 
-        let headerIncludeDir: URL
-        if let specificHeaders = headers {
-          headerIncludeDir = tmpDirectory.appendingPathComponent("include")
-          try fm.createDirectory(at: headerIncludeDir)
-          try specificHeaders.forEach { headerFilename in
-            let headerDstURL = headerIncludeDir.appendingPathComponent(headerFilename)
-            let headerSuperDirectory = headerDstURL.deletingLastPathComponent()
-            try fm.createDirectory(at: headerSuperDirectory)
-            try fm.copyItem(at: systemPackages[0].result.prefix.include.appendingPathComponent(headerFilename),
-                            to: headerDstURL)
-          }
-        } else {
-          headerIncludeDir = systemPackages[0].result.prefix.include
+        let headerIncludeDir = tmpDirectory.appendingPathComponent("include")
+        try fm.createDirectory(at: headerIncludeDir)
+
+        // copy specified headers
+        try headers?.forEach { headerPath in
+
+          let headerDstURL = headerIncludeDir.appendingPathComponent(headerPath)
+          let headerSuperDirectory = headerDstURL.deletingLastPathComponent()
+          try fm.createDirectory(at: headerSuperDirectory)
+          try fm.copyItem(at: systemBuiltPackages[0].result.prefix.include.appendingPathComponent(headerRoot).appendingPathComponent(headerPath), to: headerDstURL)
+
         }
-        if autoModulemap {
+
+        if autoModulemap, let copiedHeaders = headers {
           // create tmp framework
-          let frameworkName = libraryName + ".framework"
-          let tmpFrameworkDirectory = tmpDirectory.appendingPathComponent(frameworkName)
+          let frameworkFilename = frameworkName + ".framework"
+          let tmpFrameworkDirectory = tmpDirectory.appendingPathComponent(frameworkFilename)
           try fm.createDirectory(at: tmpFrameworkDirectory)
           let frameworkHeadersDirectory = tmpFrameworkDirectory.appendingPathComponent("Headers")
 
-          try fm.copyItem(at: headerIncludeDir, to: frameworkHeadersDirectory)
+          if copiedHeaders.isEmpty {
+            try fm.copyItem(at: systemBuiltPackages[0].result.prefix.include.appendingPathComponent(headerRoot), to: frameworkHeadersDirectory)
+          } else {
+            try fm.copyItem(at: headerIncludeDir, to: frameworkHeadersDirectory)
+          }
 
           let frameworkModulesDirectory = tmpFrameworkDirectory.appendingPathComponent("Modules")
 
@@ -142,14 +145,14 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
             }
           }
 
-          let shimFilename = "\(libraryName)_shim.h"
+          let shimFilename = "\(frameworkName)_shim.h"
           let shimURL = frameworkHeadersDirectory.appendingPathComponent(shimFilename)
           let shimContent = headerFiles.map { "#include \"\($0)\"" }.joined(separator: "\n")
           try shimContent
             .write(to: shimURL, atomically: true, encoding: .utf8)
 
           let modulemap = """
-          framework module \(libraryName) {
+          framework module \(frameworkName) {
           \(headerFiles.map { "//  header \"\($0)\"" }.joined(separator: "\n"))
             umbrella header "\(shimFilename)"
             export *
@@ -159,7 +162,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
           """
           try modulemap.write(to: frameworkModulesDirectory.appendingPathComponent("module.modulemap"), atomically: true, encoding: .utf8)
 
-          try fm.copyItem(at: libraryFileURL, to: tmpFrameworkDirectory.appendingPathComponent(libraryName))
+          try fm.copyItem(at: libraryFileURL, to: tmpFrameworkDirectory.appendingPathComponent(frameworkName))
 
           createXCFramework.components.append(.framework(tmpFrameworkDirectory.path))
         } else {
@@ -181,28 +184,24 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         .launch(use: TSCExecutableLauncher(outputRedirection: .none))
     }
 
-    func packXCFramework(libraryName: String, headers: [String]?) throws {
-      try packXCFramework(libraryName: libraryName, headers: headers, isStatic: builderOptions.library.buildStatic)
-      if builderOptions.library == .all {
-        try packXCFramework(libraryName: libraryName, headers: headers, isStatic: false)
-      }
-    }
+    let products = builtPackages.values.first!.first!.result.products
 
-    if let libraryName = packXc {
-      try packXCFramework(libraryName: libraryName, headers: nil)
-    }
-
-    if autoPackXC {
-      let products = builtPackages.values.first!.first!.result.products
-
-      try products.forEach { product in
-        switch product {
-        case let .library(name: libraryName, headers: headers, exported: exported):
-          try packXCFramework(libraryName: libraryName, headers: headers)
-        default:
-          break
+    try products.forEach { product in
+      switch product {
+      case let .library(name: frameworkName, libname: libraryName, headerRoot: headerRoot, headers: headers, shimedHeaders: shimedHeaders):
+        if autoPackXC || libraryName == packXc || frameworkName == packXc {
+          func pack(isStatic: Bool) throws {
+            try packXCFramework(frameworkName: frameworkName, libraryName: libraryName, headerRoot: headerRoot, headers: headers, shimedHeaders: shimedHeaders, isStatic: isStatic)
+          }
+          try pack(isStatic: builderOptions.library.buildStatic)
+          if builderOptions.library == .all {
+            try pack(isStatic: false)
+          }
         }
+      default:
+        break
       }
     }
+
   }
 }
