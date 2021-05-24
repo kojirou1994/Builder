@@ -49,8 +49,8 @@ public struct Flac: Package {
       products: [
         .bin("flac"),
         .bin("metaflac"),
-        .library(name: "FLAC", headers: ["FLAC"]),
-        cpplibs ? .library(name: "FLAC++", headers: ["FLAC++"]) : nil,
+        .library(name: "libFLAC", headers: ["FLAC"]),
+        cpplibs ? .library(name: "libFLAC++", headers: ["FLAC++"]) : nil,
       ]
     )
   }
