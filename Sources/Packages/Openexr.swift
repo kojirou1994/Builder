@@ -6,11 +6,11 @@ public struct Openexr: Package {
 
   public var defaultVersion: PackageVersion {
     Self.legacyVersion
-//    "3.0.3"
+//    "3.1"
   }
 
   public static var legacyVersion: PackageVersion {
-    "2.5.6"
+    "2.5.7"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "493a4b53c552478b3726f3b59ebfeffff9fba0ce",
-          "version": "0.4.6"
+          "revision": "225a8ed3001014b1c521ea32dbf0072079a8ff0b",
+          "version": "0.4.7"
         }
       },
       {
@@ -30,7 +30,7 @@
       },
       {
         "package": "swift-argument-parser",
-        "repositoryURL": "https://github.com/apple/swift-argument-parser",
+        "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
         "state": {
           "branch": null,
           "revision": "986d191f94cec88f6350056da59c2e59e83d1229",

@@ -5,7 +5,7 @@ public struct Pcre2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "10.36"
+    "10.37"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
