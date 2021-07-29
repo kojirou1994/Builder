@@ -117,57 +117,61 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
 
         }
 
-        if autoModulemap, let copiedHeaders = headers {
-          // create tmp framework
-          let frameworkFilename = frameworkName + ".framework"
-          let tmpFrameworkDirectory = tmpDirectory.appendingPathComponent(frameworkFilename)
-          try fm.createDirectory(at: tmpFrameworkDirectory)
-          let frameworkHeadersDirectory = tmpFrameworkDirectory.appendingPathComponent("Headers")
+        // create tmp framework
+        let frameworkFilename = frameworkName + ".framework"
+        let tmpFrameworkDirectory = tmpDirectory.appendingPathComponent(frameworkFilename)
+        try fm.createDirectory(at: tmpFrameworkDirectory)
+        let frameworkHeadersDirectory = tmpFrameworkDirectory.appendingPathComponent("Headers")
 
+        if let copiedHeaders = headers {
           if copiedHeaders.isEmpty {
+            // copy all headers
             try fm.copyItem(at: systemBuiltPackages[0].result.prefix.include.appendingPathComponent(headerRoot), to: frameworkHeadersDirectory)
           } else {
             try fm.copyItem(at: headerIncludeDir, to: frameworkHeadersDirectory)
           }
 
-          let frameworkModulesDirectory = tmpFrameworkDirectory.appendingPathComponent("Modules")
+          if autoModulemap {
+            let frameworkModulesDirectory = tmpFrameworkDirectory.appendingPathComponent("Modules")
 
-          try fm.createDirectory(at: frameworkModulesDirectory)
+            try fm.createDirectory(at: frameworkModulesDirectory)
 
-          var headerFiles = [String]()
-          _ = fm.forEachContent(in: frameworkHeadersDirectory) { file in
-            if file.pathExtension == "h" {
-              var relativePath = file.path.dropFirst(frameworkHeadersDirectory.path.count)
-              if relativePath.hasPrefix("/") {
-                relativePath.removeFirst()
+            var headerFiles = [String]()
+            _ = fm.forEachContent(in: frameworkHeadersDirectory) { file in
+              if file.pathExtension == "h" {
+                var relativePath = file.path.dropFirst(frameworkHeadersDirectory.path.count)
+                if relativePath.hasPrefix("/") {
+                  relativePath.removeFirst()
+                }
+                headerFiles.append(String(relativePath))
               }
-              headerFiles.append(String(relativePath))
             }
+            let shimFilename = "\(frameworkName)_shim.h"
+            let shimURL = frameworkHeadersDirectory.appendingPathComponent(shimFilename)
+            let shimContent = (shimedHeaders.isEmpty ? headerFiles : shimedHeaders).map { "#include \"\($0)\"" }.joined(separator: "\n")
+            try shimContent
+              .write(to: shimURL, atomically: true, encoding: .utf8)
+
+            let modulemap = """
+            framework module \(frameworkName) {
+            \(headerFiles.map { "//  header \"\($0)\"" }.joined(separator: "\n"))
+              umbrella header "\(shimFilename)"
+              export *
+              module * { export * }
+              //requires objc
+            }
+            """
+            try modulemap.write(to: frameworkModulesDirectory.appendingPathComponent("module.modulemap"), atomically: true, encoding: .utf8)
+
           }
-
-          let shimFilename = "\(frameworkName)_shim.h"
-          let shimURL = frameworkHeadersDirectory.appendingPathComponent(shimFilename)
-          let shimContent = headerFiles.map { "#include \"\($0)\"" }.joined(separator: "\n")
-          try shimContent
-            .write(to: shimURL, atomically: true, encoding: .utf8)
-
-          let modulemap = """
-          framework module \(frameworkName) {
-          \(headerFiles.map { "//  header \"\($0)\"" }.joined(separator: "\n"))
-            umbrella header "\(shimFilename)"
-            export *
-            module * { export * }
-            //requires objc
-          }
-          """
-          try modulemap.write(to: frameworkModulesDirectory.appendingPathComponent("module.modulemap"), atomically: true, encoding: .utf8)
-
-          try fm.copyItem(at: libraryFileURL, to: tmpFrameworkDirectory.appendingPathComponent(frameworkName))
-
-          createXCFramework.components.append(.framework(tmpFrameworkDirectory.path))
         } else {
-          createXCFramework.components.append(.library(libraryFileURL.path, header: headerIncludeDir.path))
+          // no header
         }
+
+        try fm.copyItem(at: libraryFileURL, to: tmpFrameworkDirectory.appendingPathComponent(frameworkName))
+
+        createXCFramework.components.append(.framework(tmpFrameworkDirectory.path))
+
       }
 
       /*

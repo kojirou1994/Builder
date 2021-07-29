@@ -172,7 +172,7 @@ private final class _NewPackageCommand: Command {
         )
       }
 
-      public func build(with env: BuildEnvironment) throws {
+      public func build(with context: BuildContext) throws {
     \(toolchain.buildCode)
       }
     }

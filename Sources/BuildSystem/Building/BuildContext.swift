@@ -181,12 +181,17 @@ extension BuildContext {
     try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
   }
 
+  private func launchResult<T>(_ executable: T) throws -> LaunchResult where T : Executable {
+    try BuilderLauncher(environment: environment, outputRedirection: .collect)
+      .launch(executable: executable, options: .init(checkNonZeroExitCode: true))
+  }
+
   public func launchResult(_ executableName: String, _ arguments: [String?]) throws -> LaunchResult {
-    fatalError()
+    try launchResult(AnyExecutable(executableName: executableName, arguments: arguments.compactMap {$0}))
   }
 
   public func launchResult(path: String, _ arguments: [String?]) throws -> LaunchResult {
-    fatalError()
+    try launchResult(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
   }
 }
 
