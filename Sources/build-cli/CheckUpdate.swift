@@ -19,6 +19,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Bwdif>.self,
       PackageCheckUpdateCommand<Bzip2>.self,
       PackageCheckUpdateCommand<CAres>.self,
+      PackageCheckUpdateCommand<CargoUpdate>.self,
       PackageCheckUpdateCommand<Cas>.self,
       PackageCheckUpdateCommand<Choco>.self,
       PackageCheckUpdateCommand<Cmake>.self,
@@ -31,6 +32,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<DeblockPP7>.self,
       PackageCheckUpdateCommand<Delogo>.self,
       PackageCheckUpdateCommand<Dfttest>.self,
+      PackageCheckUpdateCommand<DlbMp4base>.self,
       PackageCheckUpdateCommand<DocbookXsl>.self,
       PackageCheckUpdateCommand<Dupd>.self,
       PackageCheckUpdateCommand<Dvdcss>.self,
@@ -81,7 +83,9 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Libarchive>.self,
       PackageCheckUpdateCommand<Libb2>.self,
       PackageCheckUpdateCommand<Libevent>.self,
+      PackageCheckUpdateCommand<Libgit2>.self,
       PackageCheckUpdateCommand<Libiconv>.self,
+      PackageCheckUpdateCommand<Libssh2>.self,
       PackageCheckUpdateCommand<Libtool>.self,
       PackageCheckUpdateCommand<Lsmash>.self,
       PackageCheckUpdateCommand<LsmashWorks>.self,
@@ -151,6 +155,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Zvbi>.self,
       PackageCheckUpdateCommand<x264>.self,
       PackageCheckUpdateCommand<x265>.self,
+      PackageCheckUpdateCommand<yyjson>.self,
     ])
   } // end of configuration
 } // end of CheckUpdate

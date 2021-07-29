@@ -19,6 +19,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Bwdif>.self,
       PackageBuildAllCommand<Bzip2>.self,
       PackageBuildAllCommand<CAres>.self,
+      PackageBuildAllCommand<CargoUpdate>.self,
       PackageBuildAllCommand<Cas>.self,
       PackageBuildAllCommand<Choco>.self,
       PackageBuildAllCommand<Cmake>.self,
@@ -31,6 +32,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<DeblockPP7>.self,
       PackageBuildAllCommand<Delogo>.self,
       PackageBuildAllCommand<Dfttest>.self,
+      PackageBuildAllCommand<DlbMp4base>.self,
       PackageBuildAllCommand<DocbookXsl>.self,
       PackageBuildAllCommand<Dupd>.self,
       PackageBuildAllCommand<Dvdcss>.self,
@@ -81,7 +83,9 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Libarchive>.self,
       PackageBuildAllCommand<Libb2>.self,
       PackageBuildAllCommand<Libevent>.self,
+      PackageBuildAllCommand<Libgit2>.self,
       PackageBuildAllCommand<Libiconv>.self,
+      PackageBuildAllCommand<Libssh2>.self,
       PackageBuildAllCommand<Libtool>.self,
       PackageBuildAllCommand<Lsmash>.self,
       PackageBuildAllCommand<LsmashWorks>.self,
@@ -151,6 +155,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Zvbi>.self,
       PackageBuildAllCommand<x264>.self,
       PackageBuildAllCommand<x265>.self,
+      PackageBuildAllCommand<yyjson>.self,
     ])
   } // end of configuration
 } // end of BuildAll
