@@ -23,6 +23,7 @@ public struct Ffms2: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .buildTool(PkgConfig.self),
         .runTime(Ffmpeg.minimalDecoder),
       ]
     )

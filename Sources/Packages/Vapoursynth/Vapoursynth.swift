@@ -11,7 +11,7 @@ public struct Vapoursynth: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "53"
+    "54"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

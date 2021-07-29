@@ -8,7 +8,7 @@ public struct Ogg: Package {
    https://gitlab.xiph.org/xiph/ogg/-/issues/2298
    */
   public var defaultVersion: PackageVersion {
-    "1.3.4"
+    "1.3.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

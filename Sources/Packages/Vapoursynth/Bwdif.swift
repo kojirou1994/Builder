@@ -5,7 +5,7 @@ public struct Bwdif: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2"
+    "3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
