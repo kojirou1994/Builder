@@ -55,6 +55,11 @@ let package = Package(
         .product(name: "ConsoleKit", package: "console-kit")
       ]),
     .executableTarget(
+      name: "spm",
+      dependencies: [
+        .target(name: "BuildSystem"),
+      ]),
+    .executableTarget(
       name: "generate-code",
       dependencies: [
         .product(name: "URLFileManager", package: "URLFileManager"),
