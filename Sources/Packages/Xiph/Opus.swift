@@ -42,7 +42,7 @@ public struct Opus: Package {
       source: source,
       dependencies: dependencies,
       products: [
-        .library(name: "libopus", headers: ["opus"]),
+        .library(name: "opus", libname: "opus", headerRoot: "opus", headers: [], shimedHeaders: []),
       ]
     )
   }
