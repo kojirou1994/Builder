@@ -79,9 +79,30 @@ public struct Ffmpeg: Package {
       }
     }
 
+    /*
+     libavcodec
+     libavdevice
+     libavfilter
+     libavformat
+     libavutil
+     libpostproc
+     libswresample
+     libswscale
+     */
     return .init(
       source: source,
-      dependencies: deps
+      dependencies: deps,
+      products: [
+        .bin("ffmpeg"),
+        .library(name: "libavcodec", libname: "avcodec", headerRoot: "libavcodec", headers: [], shimedHeaders: []),
+        .library(name: "libavdevice", libname: "avdevice", headerRoot: "libavdevice", headers: [], shimedHeaders: []),
+        .library(name: "libavfilter", libname: "avfilter", headerRoot: "libavfilter", headers: [], shimedHeaders: []),
+        .library(name: "libavformat", libname: "avformat", headerRoot: "libavformat", headers: [], shimedHeaders: []),
+        .library(name: "libavutil", libname: "avutil", headerRoot: "libavutil", headers: [], shimedHeaders: []),
+        .library(name: "libpostproc", libname: "postproc", headerRoot: "libpostproc", headers: [], shimedHeaders: []),
+        .library(name: "libswresample", libname: "swresample", headerRoot: "libswresample", headers: [], shimedHeaders: []),
+        .library(name: "libswscale", libname: "swscale", headerRoot: "libswscale", headers: [], shimedHeaders: []),
+      ]
     )
   }
 

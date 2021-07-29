@@ -38,8 +38,8 @@ public struct Choco: Package {
       .trimmingCharacters(in: .whitespacesAndNewlines)
       .split(separator: " ")
 
-    var arguments = ["build", "-c", "release"] as [String?]
-    if context.libraryType == .static {
+    var arguments = ["build", "-c", "release", "--arch", context.order.target.arch.clangTripleString] as [String?]
+//    if context.libraryType == .static {
       flags.forEach { flag in
         if flag.hasPrefix("-R") {
           print("invalid libs: \(flag)")
@@ -47,10 +47,11 @@ public struct Choco: Package {
           arguments.append(contentsOf: ["-Xlinker", String(flag)])
         }
       }
-    }
+//    }
     try context.launch("swift", arguments)
     try context.mkdir(context.prefix.bin)
     try context.copyItem(at: URL(fileURLWithPath: ".build/release/choco-cli"), toDirectory: context.prefix.bin)
+    try context.copyItem(at: URL(fileURLWithPath: ".build/release/chapter-tool"), toDirectory: context.prefix.bin)
   }
 
 }

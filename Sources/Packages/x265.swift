@@ -45,6 +45,10 @@ public struct x265: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .buildTool(Nasm.self),
+      ],
+      products: [
+        .bin("x265"),
+        .library(name: "CX265", libname: "x265", headerRoot: "", headers: ["x265.h", "x265_config.h"], shimedHeaders: ["x265.h"]),
       ]
     )
   }
