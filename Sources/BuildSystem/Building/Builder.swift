@@ -243,7 +243,7 @@ struct Builder {
         try patcher.run()
         try pipe.fileHandleForWriting.kwiftWrite(contentsOf: Array(rawPatch.utf8))
         try pipe.fileHandleForWriting.close()
-        try patcher.waitUntilExit()
+        patcher.waitUntilExit()
       case let .remote(url: url, sha256: _):
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
           .append(gitApply)

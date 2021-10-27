@@ -5,7 +5,7 @@ public struct Webp: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.2.0"
+    "1.2.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

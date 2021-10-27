@@ -1,6 +1,6 @@
 import BuildSystem
 
-public struct Delogo: Package {
+public struct DeLogo: Package {
 
   public init() {}
 

@@ -8,7 +8,7 @@ public struct Aom: Package {
   var examples: Bool = false
 
   public var defaultVersion: PackageVersion {
-    "3.1.0"
+    "3.2.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -46,7 +46,7 @@ public struct Aom: Package {
         cmakeOnFlag(false, "ENABLE_TESTS"),
         cmakeOnFlag(false, "ENABLE_TOOLS"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        (context.order.target.arch == .x86_64 || context.isBuildingNative) ? nil : cmakeDefineFlag(0, "CONFIG_RUNTIME_CPU_DETECT"),
+        (context.order.target.arch.isX86 || context.isBuildingNative) ? nil : cmakeDefineFlag(0, "CONFIG_RUNTIME_CPU_DETECT"),
         context.order.target.system == .watchOS ? cmakeDefineFlag("generic", "AOM_TARGET_CPU") : nil
       )
 

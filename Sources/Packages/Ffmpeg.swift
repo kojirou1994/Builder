@@ -14,7 +14,7 @@ public struct Ffmpeg: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    .stable("4.4")
+    "4.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -75,6 +75,8 @@ public struct Ffmpeg: Package {
         deps.append(.runTime(Lame.self))
       case .libaom:
         deps.append(.runTime(Aom.self))
+      case .libdav1d:
+        deps.append(.runTime(Dav1d.self))
       case .apple: break
       }
     }
@@ -188,7 +190,7 @@ public struct Ffmpeg: Package {
       switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
-           .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom:
+           .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
       case .libsdl2:
         r.formUnion(configureEnableFlag(true, "sdl"))
@@ -266,16 +268,11 @@ extension Ffmpeg {
     case outdevs
     case devices
     case filters
-
+    case avdevice, avcodec, avformat, swresample, swscale, postproc, avfilter
+    case programs, ffmpeg, ffplay, ffprobe
+    case doc, htmlpages, manpages, podpages, txtpages
     /*
      Component options:
-     --disable-avdevice       disable libavdevice build
-     --disable-avcodec        disable libavcodec build
-     --disable-avformat       disable libavformat build
-     --disable-swresample     disable libswresample build
-     --disable-swscale        disable libswscale build
-     --disable-postproc       disable libpostproc build
-     --disable-avfilter       disable libavfilter build
      --enable-avresample      enable libavresample build (deprecated) [no]
      --disable-pthreads       disable pthreads [autodetect]
      --disable-w32threads     disable Win32 threads [autodetect]
@@ -293,9 +290,6 @@ extension Ffmpeg {
      --disable-pixelutils     disable pixel utils in libavutil
      */
     case network
-
-    case programs
-    case doc
 
     var description: String { rawValue }
 
@@ -341,6 +335,7 @@ extension Ffmpeg {
     case libsdl2
     case libmp3lame
     case libaom
+    case libdav1d
 
     case apple
 
