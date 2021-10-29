@@ -5,7 +5,11 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.27.0"
+    "3"
+  }
+
+  private func isLegacyVer(_ ver: PackageVersion) -> Bool {
+    ver < "3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -31,15 +35,22 @@ public struct Mbedtls: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+        isLegacyVer(order.version) ? .runTime(Zlib.self) : nil,
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
 
+    let isLegacy = isLegacyVer(context.order.version)
+
+    let configFilename = isLegacy ?  "config" : "mbedtls_config"
+
+    let configPath = "include/mbedtls/\(configFilename).h"
+
     // enable pthread
-    try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")
-    try replace(contentIn: "include/mbedtls/config.h", matching: "//#define MBEDTLS_THREADING_C", with: "#define MBEDTLS_THREADING_C")
+    try replace(contentIn: configPath, matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")
+    try replace(contentIn: configPath, matching: "//#define MBEDTLS_THREADING_C", with: "#define MBEDTLS_THREADING_C")
 
     try context.inRandomDirectory { _ in
       try context.cmake(
@@ -51,7 +62,7 @@ public struct Mbedtls: Package {
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
         cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
-        cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT"),
+        isLegacy ? cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT") : nil,
         cmakeOnFlag(true, "ENABLE_PROGRAMS")
       )
       /*
