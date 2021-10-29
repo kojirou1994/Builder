@@ -5,7 +5,7 @@ public struct Libssh2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.9.0"
+    "1.10"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -22,32 +22,40 @@ public struct Libssh2: Package {
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Autoconf.self),
-        .buildTool(Automake.self),
+        .buildTool(Cmake.self),
+        .buildTool(Ninja.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
         .runTime(Openssl.self),
         .runTime(Zlib.self),
-      ]
+      ],
+      canBuildAllLibraryTogether: false
     )
   }
 
   public func build(with context: BuildContext) throws {
 
-    try context.launch(path: "buildconf")
+    try context.inRandomDirectory { _ in
 
-    try context.configure(
-      configureEnableFlag(false, CommonOptions.dependencyTracking),
-      context.libraryType.staticConfigureFlag,
-      context.libraryType.sharedConfigureFlag,
-      configureEnableFlag(false, "examples-build")
-//      configureWithFlag(context.dependencyMap[Openssl.self], "libssl-prefix")
-    )
+      try context.cmake(
+        toolType: .ninja,
+        "..",
+        cmakeOnFlag(false, "BUILD_EXAMPLES"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
+//        cmakeOnFlag(true, "CLEAR_MEMORY"),
+        cmakeOnFlag(true, "ENABLE_CRYPT_NONE"),
+        cmakeOnFlag(true, "ENABLE_ZLIB_COMPRESSION")
+      )
 
-    try context.make()
-    if context.canRunTests {
-      try context.make("check")
+      try context.make(toolType: .ninja)
+
+      if context.canRunTests {
+        try context.make(toolType: .ninja, "test")
+      }
+
+      try context.make(toolType: .ninja, "install")
     }
-    try context.make("install")
   }
 }
