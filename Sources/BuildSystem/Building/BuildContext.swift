@@ -225,8 +225,8 @@ extension BuildContext {
     default:
       break
     }
+    cmakeArguments.append(cmakeDefineFlag(order.target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
     if isBuildingCross {
-      cmakeArguments.append(cmakeDefineFlag(order.target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
       cmakeArguments.append(cmakeDefineFlag(order.target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
       if order.target.system.isApple {
         cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
