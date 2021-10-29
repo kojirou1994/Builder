@@ -5,7 +5,7 @@ public struct Curl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7.78"
+    "7.79.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -30,6 +30,7 @@ public struct Curl: Package {
         .runTime(CAres.self),
         .runTime(Openssl.self),
         .runTime(Zlib.self),
+        .runTime(Libssh2.self),
       ],
       canBuildAllLibraryTogether: false
     )

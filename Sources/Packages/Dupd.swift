@@ -5,7 +5,7 @@ public struct Dupd: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.7.0"
+    "1.7.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
