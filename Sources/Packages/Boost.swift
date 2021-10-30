@@ -5,7 +5,7 @@ public struct Boost: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.76.0"
+    "1.76"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -21,26 +21,45 @@ public struct Boost: Package {
       source: source,
       dependencies: [
         .runTime(Icu4c.self),
+//        .runTime(Libiconv.self),
+        .runTime(Bzip2.self),
+        .runTime(Zlib.self),
+        .runTime(Zstd.self),
+        .runTime(Xz.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
-    try context.launch(path: "bootstrap.sh",
-                   "--prefix=\(context.prefix.root.path)",
-                   "--libdir=\(context.prefix.lib.path)",
-                   "--without-libraries=\(["python", "mpi"].joined(separator: ","))",
-                   "--with-icu=\(context.dependencyMap[Icu4c.self].root.path)"
+
+    try context.launch(
+      path: "bootstrap.sh",
+      "--prefix=\(context.prefix.root.path)",
+      "--without-libraries=python",
+      "--without-libraries=mpi",
+      "--with-icu=\(context.dependencyMap[Icu4c.self].root.path)"
     )
-    try context.launch(path: "b2", "headers")
-    try context.launch(path: "b2",
-                   "--prefix=\(context.prefix.root.path)",
-                   "--libdir=\(context.prefix.lib.path)",
-                   "-d2",
-                   "-j\(context.parallelJobs ?? 8)",
-                   "install",
-//                   "threading=multi,single",
-                   "link=\(context.libraryType.link)"
+
+    try context.launch(
+      path: "b2",
+      "--prefix=\(context.prefix.root.path)",
+      "--libdir=\(context.prefix.lib.path)",
+      "-d2",
+//      "--build-type=complete", /* useless */
+      "--layout=tagged",
+      "-j\(context.parallelJobs ?? 8)",
+      "install",
+      "threading=multi,single",
+      "link=\(context.libraryType.link)",
+      "-sICU_PATH=\(context.dependencyMap[Icu4c.self].root.path)",
+      "-sZLIB_INCLUDE=\(context.dependencyMap[Zlib.self].include.path)",
+      "-sZLIB_LIBPATH=\(context.dependencyMap[Zlib.self].lib.path)",
+      "-sBZIP2_INCLUDE=\(context.dependencyMap[Bzip2.self].include.path)",
+      "-sBZIP2_LIBPATH=\(context.dependencyMap[Bzip2.self].lib.path)",
+      "-sZSTD_INCLUDE=\(context.dependencyMap[Zstd.self].include.path)",
+      "-sZSTD_LIBPATH=\(context.dependencyMap[Zstd.self].lib.path)",
+      "-sLZMA_INCLUDE=\(context.dependencyMap[Xz.self].include.path)",
+      "-sLZMA_LIBPATH=\(context.dependencyMap[Xz.self].lib.path)"
     )
   }
 }
