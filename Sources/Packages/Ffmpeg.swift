@@ -65,12 +65,12 @@ public struct Ffmpeg: Package {
           deps.append(.runTime(Rav1e.self))
         default: break // maybe need xargo
         }
-      case .libsdl2:
-        switch order.target.system {
-        case .macOS, .linuxGNU:
-          deps.append(.runTime(Sdl2.self))
-        default: break
-        }
+//      case .libsdl2:
+//        switch order.target.system {
+//        case .macOS, .linuxGNU:
+//          deps.append(.runTime(Sdl2.self))
+//        default: break
+//        }
       case .libmp3lame:
         deps.append(.runTime(Lame.self))
       case .libaom:
@@ -179,7 +179,9 @@ public struct Ffmpeg: Package {
         licenses.insert(.gpl)
       }
       switch dependency {
-      case .libsdl2, .librav1e:
+      case
+//          .libsdl2,
+          .librav1e:
         switch context.order.target.system {
         case .macOS, .linuxGNU:
           break
@@ -192,14 +194,14 @@ public struct Ffmpeg: Package {
            .libx264, .libx265, .libwebp, .libaribb24,
            .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
-      case .libsdl2:
-        r.formUnion(configureEnableFlag(true, "sdl"))
+//      case .libsdl2:
+//        r.formUnion(configureEnableFlag(true, "sdl"))
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
         if context.order.target.system.isApple {
           r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
-                                          "appkit", "avfoundation", "coreimage"))
+                                          "appkit", "avfoundation", "coreimage", "securetransport"))
         }
       }
     }
@@ -277,7 +279,6 @@ extension Ffmpeg {
      --disable-pthreads       disable pthreads [autodetect]
      --disable-w32threads     disable Win32 threads [autodetect]
      --disable-os2threads     disable OS/2 threads [autodetect]
-     --disable-network        disable network support [no]
      --disable-dct            disable DCT code
      --disable-dwt            disable DWT code
      --disable-error-resilience disable error resilience code
@@ -320,6 +321,12 @@ extension Ffmpeg {
     }
   }
 
+  enum FFmpegTLS: String, CaseIterable, CustomStringConvertible, Encodable {
+    case openssl, gnutls, gmp
+
+    var description: String { rawValue }
+  }
+
   enum FFmpegDependeny: String, EnumerableFlag, CustomStringConvertible, Encodable {
     case libopus
     case libfdkaac = "libfdk-aac"
@@ -332,7 +339,7 @@ extension Ffmpeg {
     case libass
     case libsvtav1
     case librav1e
-    case libsdl2
+//    case libsdl2
     case libmp3lame
     case libaom
     case libdav1d
