@@ -34,6 +34,17 @@ public struct Ffmpeg: Package {
       .buildTool(GasPreprocessor.self),
     ]
 
+    switch tls {
+    case .openssl:
+      deps.append(.runTime(Openssl.self))
+    case .none:
+      break
+    case .mbedtls:
+      deps.append(.runTime(Mbedtls.self))
+    case .system:
+      break
+    }
+
     dependencyOptions.forEach { dependency in
       guard dependency.supportsFFmpegVersion(order.version) else {
         return
@@ -78,6 +89,16 @@ public struct Ffmpeg: Package {
       case .libdav1d:
         deps.append(.runTime(Dav1d.self))
       case .apple: break
+      case .lzma:
+        deps.append(.runTime(Xz.self))
+      case .bzlib:
+        deps.append(.runTime(Bzip2.self))
+//      case .iconv:
+//        deps.append(.runTime(Libiconv.self))
+      case .zlib:
+        deps.append(.runTime(Zlib.self))
+      case .libvpx:
+        deps.append(.runTime(Vpx.self))
       }
     }
 
@@ -127,6 +148,9 @@ public struct Ffmpeg: Package {
   @Option
   private var preset: Preset?
 
+  @Option
+  private var tls: FFmpegTLS?
+
   @Flag
   var dependencyOptions: [FFmpegDependeny] = []
 
@@ -164,6 +188,24 @@ public struct Ffmpeg: Package {
                  context.libraryType.sharedConfigureFlag])
 
     // MARK: External library
+
+    switch tls {
+    case .openssl:
+      r.formUnion(configureEnableFlag(true, "openssl"))
+    case .none:
+      break
+    case .mbedtls:
+      licenses.insert(.version3)
+      licenses.insert(.gpl)
+      r.formUnion(configureEnableFlag(true, "mbedtls"))
+    case .system:
+      if context.order.target.system.isApple {
+        r.formUnion(configureEnableFlag(true, "securetransport"))
+      } else {
+        print("no system tls!")
+      }
+    }
+
     Set(dependencyOptions).forEach { dependency in
       guard dependency.supportsFFmpegVersion(context.order.version) else {
         return
@@ -192,7 +234,10 @@ public struct Ffmpeg: Package {
       switch dependency {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
-           .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d:
+           .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d,
+           .lzma, .bzlib, .libvpx,
+//           .iconv,
+           .zlib:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
 //      case .libsdl2:
 //        r.formUnion(configureEnableFlag(true, "sdl"))
@@ -201,7 +246,7 @@ public struct Ffmpeg: Package {
       case .apple:
         if context.order.target.system.isApple {
           r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
-                                          "appkit", "avfoundation", "coreimage", "securetransport"))
+                                          "appkit", "avfoundation", "coreimage"))
         }
       }
     }
@@ -321,8 +366,13 @@ extension Ffmpeg {
     }
   }
 
-  enum FFmpegTLS: String, CaseIterable, CustomStringConvertible, Encodable {
-    case openssl, gnutls, gmp
+  enum FFmpegTLS: String, CaseIterable, CustomStringConvertible, Encodable, ExpressibleByArgument {
+    case openssl
+    case mbedtls
+    case system
+//    case gnutls
+//    case gmp
+//    case libtls
 
     var description: String { rawValue }
   }
@@ -343,6 +393,11 @@ extension Ffmpeg {
     case libmp3lame
     case libaom
     case libdav1d
+    case lzma
+    case bzlib
+//    case iconv
+    case zlib
+    case libvpx
 
     case apple
 
@@ -377,8 +432,6 @@ extension Ffmpeg {
      libdavs2
      librubberband
      libvidstab
-     libx264
-     libx265
      libxavs
      libxavs2
      libxvid
@@ -399,7 +452,6 @@ extension Ffmpeg {
      liblensfun
      libvmaf
      libvo_amrwbenc
-     mbedtls
      rkmpp
      '
      */
@@ -429,22 +481,14 @@ extension Ffmpeg {
 /*
  EXTERNAL_AUTODETECT_LIBRARY_LIST='
  alsa
- appkit
- avfoundation
- bzlib
- coreimage
- iconv
  libxcb
  libxcb_shm
  libxcb_shape
  libxcb_xfixes
- lzma
  mediafoundation
  schannel
- securetransport
  sndio
  xlib
- zlib
  '
  EXTERNAL_LIBRARY_GPLV3_LIST='
  libsmbclient
@@ -457,38 +501,24 @@ extension Ffmpeg {
  libdavs2
  librubberband
  libvidstab
- libx264
- libx265
  libxavs
  libxavs2
  libxvid
-
-
  decklink
- libfdk_aac
  openssl
  libtls
-
-
  gmp
- libaribb24
  liblensfun
- libopencore_amrnb
- libopencore_amrwb
  libvmaf
  libvo_amrwbenc
  mbedtls
  rkmpp
-
-
  libsmbclient
-
  chromaprint
  gcrypt
  gnutls
  jni
  ladspa
- 
  libass
  libbluray
  libbs2b
@@ -517,7 +547,6 @@ extension Ffmpeg {
  libopenh264
  libopenjpeg
  libopenmpt
- libopus
  libpulse
  librabbitmq
  librav1e
@@ -535,10 +564,7 @@ extension Ffmpeg {
  libtheora
  libtwolame
  libv4l2
- libvorbis
- libvpx
  libwavpack
- libwebp
  libxml2
  libzimg
  libzmq
