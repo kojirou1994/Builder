@@ -58,6 +58,8 @@ public struct Mkvtoolnix: Package {
 
     try context.fixAutotoolsForDarwin()
 
+    context.environment.append("-std=c++17", for: .cxxflags)
+
     try context.configure(
       configureEnableFlag(false, "qt"),
       "--with-docbook-xsl-root=/opt/local/share/xsl/docbook-xsl-nons"
