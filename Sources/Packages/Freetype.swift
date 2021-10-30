@@ -52,7 +52,7 @@ public struct Freetype: Package {
         cmakeOnFlag(false, "FT_WITH_HARFBUZZ"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(context.prefix.lib, "CMAKE_INSTALL_NAME_DIR")
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
       try context.make(toolType: .ninja)
