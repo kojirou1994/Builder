@@ -2,12 +2,21 @@
   "object": {
     "pins": [
       {
+        "package": "async-http-client",
+        "repositoryURL": "https://github.com/swift-server/async-http-client.git",
+        "state": {
+          "branch": null,
+          "revision": "1081b0b0541f535ca088acdb56f5ca5598bc6247",
+          "version": "1.6.3"
+        }
+      },
+      {
         "package": "console-kit",
         "repositoryURL": "https://github.com/vapor/console-kit.git",
         "state": {
           "branch": null,
-          "revision": "cfe8bcd58f74ffecb4f536d8237de146b634ecd3",
-          "version": "4.2.6"
+          "revision": "75ea3b627d88221440b878e5dfccc73fd06842ed",
+          "version": "4.2.7"
         }
       },
       {
@@ -15,8 +24,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "225a8ed3001014b1c521ea32dbf0072079a8ff0b",
-          "version": "0.4.7"
+          "revision": "0665fc9e82a1f988a3d945da84accfcee2b561e1",
+          "version": "0.4.8"
         }
       },
       {
@@ -24,8 +33,17 @@
         "repositoryURL": "https://github.com/kojirou1994/Kwift.git",
         "state": {
           "branch": null,
-          "revision": "96def044db6d0793825c47161ba0b7925974ef9f",
-          "version": "0.8.7"
+          "revision": "9a60adf4e4767014cc9850f80c2d71afe708dd41",
+          "version": "0.9.0"
+        }
+      },
+      {
+        "package": "ProxyInfo",
+        "repositoryURL": "https://github.com/kojirou1994/ProxyInfo.git",
+        "state": {
+          "branch": null,
+          "revision": "49b4ee97c33ba750e176bb3b837b4cfa5b430526",
+          "version": "0.0.1"
         }
       },
       {
@@ -33,8 +51,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
         "state": {
           "branch": null,
-          "revision": "986d191f94cec88f6350056da59c2e59e83d1229",
-          "version": "0.4.3"
+          "revision": "6b2aa2748a7881eebb9f84fb10c01293e15b52ca",
+          "version": "0.5.0"
         }
       },
       {
@@ -56,12 +74,57 @@
         }
       },
       {
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio.git",
+        "state": {
+          "branch": null,
+          "revision": "6aa9347d9bc5bbfe6a84983aec955c17ffea96ef",
+          "version": "2.33.0"
+        }
+      },
+      {
+        "package": "swift-nio-extras",
+        "repositoryURL": "https://github.com/apple/swift-nio-extras.git",
+        "state": {
+          "branch": null,
+          "revision": "f73ca5ee9c6806800243f1ac415fcf82de9a4c91",
+          "version": "1.10.2"
+        }
+      },
+      {
+        "package": "swift-nio-http2",
+        "repositoryURL": "https://github.com/apple/swift-nio-http2.git",
+        "state": {
+          "branch": null,
+          "revision": "326f7f9a8c8c8402e3691adac04911cac9f9d87f",
+          "version": "1.18.4"
+        }
+      },
+      {
+        "package": "swift-nio-ssl",
+        "repositoryURL": "https://github.com/apple/swift-nio-ssl.git",
+        "state": {
+          "branch": null,
+          "revision": "5e68c1ded15619bb281b273fa8c2d8fd7f7b2b7d",
+          "version": "2.16.1"
+        }
+      },
+      {
+        "package": "swift-nio-transport-services",
+        "repositoryURL": "https://github.com/apple/swift-nio-transport-services.git",
+        "state": {
+          "branch": null,
+          "revision": "e7f5278a26442dc46783ba7e063643d524e414a0",
+          "version": "1.11.3"
+        }
+      },
+      {
         "package": "swift-tools-support-core",
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "ab6339b6a33b69886b3cf2254d3326eddfe58eb0",
-          "version": "0.2.2"
+          "revision": "f9bbd6b80d67408021576adf6247e17c2e957d92",
+          "version": "0.2.4"
         }
       },
       {

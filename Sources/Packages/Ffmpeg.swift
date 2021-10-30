@@ -99,6 +99,14 @@ public struct Ffmpeg: Package {
         deps.append(.runTime(Zlib.self))
       case .libvpx:
         deps.append(.runTime(Vpx.self))
+      case .libxvid:
+        deps.append(.runTime(Xvid.self))
+      case .libxml2:
+        deps.append(.runTime(Xml2.self))
+      case .gcrypt:
+        deps.append(.runTime(Gcrypt.self))
+      case .libkvazaar:
+        deps.append(.runTime(Kvazaar.self))
       }
     }
 
@@ -191,6 +199,7 @@ public struct Ffmpeg: Package {
 
     switch tls {
     case .openssl:
+      licenses.insert(.nonfree)
       r.formUnion(configureEnableFlag(true, "openssl"))
     case .none:
       break
@@ -235,7 +244,7 @@ public struct Ffmpeg: Package {
       case .libopus, .libfdkaac, .libvorbis,
            .libx264, .libx265, .libwebp, .libaribb24,
            .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d,
-           .lzma, .bzlib, .libvpx,
+           .lzma, .bzlib, .libvpx, .libxvid, .gcrypt, .libxml2, .libkvazaar,
 //           .iconv,
            .zlib:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
@@ -398,11 +407,20 @@ extension Ffmpeg {
 //    case iconv
     case zlib
     case libvpx
+    case libxvid
+    case libxml2
+    case gcrypt
+    case libkvazaar
 
     case apple
 
     var description: String { rawValue }
 
+    /*
+     decklink
+     openssl
+     libtls
+     */
     var isNonFree: Bool {
       switch self {
       case .libfdkaac:
@@ -415,13 +433,10 @@ extension Ffmpeg {
     func supportsFFmpegVersion(_ version: PackageVersion) -> Bool {
       switch self {
       case .libsvtav1:
-        if case .stable(let stableVersion) = version {
-          return stableVersion >= "4.4"
-        }
+        return version >= "4.4"
       default:
-        break
+        return true
       }
-      return true
     }
 
     /*
@@ -434,12 +449,11 @@ extension Ffmpeg {
      libvidstab
      libxavs
      libxavs2
-     libxvid
      '
      */
     var isGPL: Bool {
       switch self {
-      case .libx265, .libx264, .libaribb24, .libopencore:
+      case .libx265, .libx264, .libaribb24, .libopencore, .libxvid:
         return true
       default:
         return false
@@ -503,7 +517,6 @@ extension Ffmpeg {
  libvidstab
  libxavs
  libxavs2
- libxvid
  decklink
  openssl
  libtls
@@ -515,7 +528,7 @@ extension Ffmpeg {
  rkmpp
  libsmbclient
  chromaprint
- gcrypt
+
  gnutls
  jni
  ladspa
@@ -525,7 +538,6 @@ extension Ffmpeg {
  libcaca
  libcelt
  libcodec2
- libdav1d
  libdc1394
  libdrm
  libflite
@@ -539,7 +551,6 @@ extension Ffmpeg {
  libilbc
  libjack
  libklvanc
- libkvazaar
  libmodplug
  libmp3lame
  libmysofa
@@ -565,7 +576,7 @@ extension Ffmpeg {
  libtwolame
  libv4l2
  libwavpack
- libxml2
+
  libzimg
  libzmq
  libzvbi
@@ -575,12 +586,6 @@ extension Ffmpeg {
  opengl
  pocketsphinx
  vapoursynth
- '
- EXTERNAL_LIBRARY_NONFREE_LIST='
- decklink
- libfdk_aac
- openssl
- libtls
  '
  EXTRALIBS_LIST='
  cpu_init

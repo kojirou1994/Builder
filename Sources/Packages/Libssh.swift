@@ -1,11 +1,11 @@
 import BuildSystem
 
-public struct Libssh2: Package {
+public struct Libssh: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.10"
+    "0.9.6"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -13,10 +13,10 @@ public struct Libssh2: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://git.libssh.org/projects/libssh.git")
     case .stable(let version):
       let versionString = version.toString()
-      source = .tarball(url: "https://libssh2.org/download/libssh2-\(versionString).tar.gz")
+      source = .tarball(url: "https://www.libssh.org/files/0.9/libssh-\(versionString).tar.xz")
     }
 
     return .init(
@@ -27,6 +27,9 @@ public struct Libssh2: Package {
         .buildTool(PkgConfig.self),
         .runTime(Openssl.self),
         .runTime(Zlib.self),
+      ],
+      products: [
+        .library(name: "ssh", headers: ["libssh"]),
       ],
       canBuildAllLibraryTogether: false
     )
@@ -39,19 +42,14 @@ public struct Libssh2: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(false, "BUILD_EXAMPLES"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
-//        cmakeOnFlag(true, "CLEAR_MEMORY"),
-        cmakeOnFlag(true, "ENABLE_CRYPT_NONE"),
-        cmakeOnFlag(true, "ENABLE_ZLIB_COMPRESSION")
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
       try context.make(toolType: .ninja)
 
       if context.canRunTests {
-        try context.make(toolType: .ninja, "test")
+//        try context.make(toolType: .ninja, "test")
       }
 
       try context.make(toolType: .ninja, "install")

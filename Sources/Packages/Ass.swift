@@ -23,6 +23,7 @@ public struct Ass: Package {
         .runTime(Freetype.self),
         .runTime(Harfbuzz.self),
         .runTime(Fribidi.self),
+        .runTime(Libiconv.self),
         .buildTool(Nasm.self),
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),

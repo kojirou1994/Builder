@@ -1,19 +1,24 @@
 import BuildSystem
 
-public struct Zimg: Package {
+public struct Kvazaar: Package {
+
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.0.3"
+    "2.1"
+  }
+
+  private func asmEnabled(_ order: PackageOrder) -> Bool {
+    order.target.arch.isX86
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://github.com/sekrit-twc/zimg.git")
+      source = .repository(url: "https://github.com/ultravideo/kvazaar.git")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/sekrit-twc/zimg/archive/refs/tags/release-\(version.toString(includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/ultravideo/kvazaar/archive/refs/tags/v\(version.toString()).tar.gz")
     }
 
     return .init(
@@ -22,31 +27,26 @@ public struct Zimg: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        asmEnabled(order) ? .runTime(Yasm.self) : nil,
       ],
       products: [
-        .library(name: "zimg", headers: ["zimg.h"])
+        .bin("kvazaar"),
+        .library(name: "kvazaar", headers: ["kvazaar.h"])
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
     try context.autogen()
-
     try context.fixAutotoolsForDarwin()
 
     try context.configure(
-      context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
-      configureEnableFlag(context.strictMode, "testapp"),
-      configureEnableFlag(context.strictMode, "example")
+      context.libraryType.staticConfigureFlag,
+      configureEnableFlag(asmEnabled(context.order), "asm")
     )
-
-    try context.make()
-
-    if context.canRunTests {
-      try context.make("check")
-    }
 
     try context.make("install")
   }
+
 }
