@@ -146,6 +146,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<Webp>.self,
       PackageBuildAllCommand<Xml2>.self,
       PackageBuildAllCommand<Xslt>.self,
+      PackageBuildAllCommand<Xvid>.self,
       PackageBuildAllCommand<Xz>.self,
       PackageBuildAllCommand<Yadifmod>.self,
       PackageBuildAllCommand<Yasm>.self,

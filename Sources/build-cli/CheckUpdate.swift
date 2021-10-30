@@ -146,6 +146,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Webp>.self,
       PackageCheckUpdateCommand<Xml2>.self,
       PackageCheckUpdateCommand<Xslt>.self,
+      PackageCheckUpdateCommand<Xvid>.self,
       PackageCheckUpdateCommand<Xz>.self,
       PackageCheckUpdateCommand<Yadifmod>.self,
       PackageCheckUpdateCommand<Yasm>.self,
