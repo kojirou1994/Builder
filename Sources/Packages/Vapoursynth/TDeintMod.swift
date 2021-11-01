@@ -21,7 +21,7 @@ public struct TDeintMod: Package {
       source: source,
       dependencies: [
         .buildTool(Ninja.self),
-        .pip(["meson"])
+        .buildTool(Meson.self),
       ]
     )
   }

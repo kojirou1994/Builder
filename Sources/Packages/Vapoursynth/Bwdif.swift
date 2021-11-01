@@ -5,7 +5,7 @@ public struct Bwdif: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3"
+    "4.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -20,7 +20,7 @@ public struct Bwdif: Package {
     return .init(
       source: source,
       dependencies: [
-        .pip(["meson"]),
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Vapoursynth.self),

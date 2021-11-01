@@ -13,7 +13,7 @@ public struct Isl: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "http://isl.gforge.inria.fr/isl-\(version.toString(includeZeroPatch: false)).tar.xz")
+      source = .tarball(url: "https://libisl.sourceforge.io/isl-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
     return .init(

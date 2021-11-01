@@ -20,7 +20,7 @@ public struct Dav1d: Package {
     return .init(
       source: source,
       dependencies: [
-        .pip(["meson"]),
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
         order.target.arch.isX86 ? .buildTool(Nasm.self) : nil,
       ],

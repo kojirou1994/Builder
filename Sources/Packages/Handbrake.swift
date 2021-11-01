@@ -27,7 +27,7 @@ public struct Handbrake: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .buildTool(Nasm.self),
-        .pip(["meson"]),
+        .buildTool(Meson.self),
         // TODO: should require python version > 3
       ],
       supportedLibraryType: nil

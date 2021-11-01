@@ -20,8 +20,8 @@ public struct TCanny: Package {
     return .init(
       source: source,
       dependencies: [
+        .buildTool(Meson.self),
         .buildTool(Cmake.self),
-        .pip(["meson"]),
       ]
     )
   }

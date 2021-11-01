@@ -24,6 +24,7 @@ public struct Xml2: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
+        .runTime(Libiconv.self),
         .runTime(Zlib.self),
         .runTime(Xz.self),
       ],

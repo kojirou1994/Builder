@@ -19,8 +19,8 @@ public struct Nnedi3cl: Package {
     return .init(
       source: source,
       dependencies:[
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
-        .pip(["meson"])
       ]
     )
   }

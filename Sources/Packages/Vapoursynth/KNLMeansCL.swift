@@ -18,7 +18,7 @@ public struct KNLMeansCL: Package {
     var deps: [PackageDependency]
     if order.version > lastAutoToolsVersion {
       deps = [
-        .pip(["meson"]),
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .runTime(Boost.self),
       ]

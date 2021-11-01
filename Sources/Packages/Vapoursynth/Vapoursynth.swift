@@ -32,36 +32,34 @@ public struct Vapoursynth: Package {
         .buildTool(PkgConfig.self),
         .buildTool(Nasm.self),
         .runTime(Zimg.self),
-        .pip(["cython"]),
+        .runTime(Python.self),
       ],
-      supportedLibraryType: .shared
+      supportedLibraryType: .all
     )
   }
 
   public func build(with context: BuildContext) throws {
     // uninstall if installed
-    try context.launch("pip", "uninstall", "vapoursynth", "-y")
+    try context.launch("pip3", "uninstall", "vapoursynth", "-y")
+
+    try context.launch("pip3", "install", "cython")
 
     try context.autogen()
 
     try context.configure(
       context.libraryType.staticConfigureFlag,
-      context.libraryType.sharedConfigureFlag
+      context.libraryType.sharedConfigureFlag,
+      configureEnableFlag(false, "python-module")
     )
 
     try context.make()
     try context.make("install")
 
-    // or manually install to site-packages:
-    do {
-      let sitePackagesDirectory = try context.external.pythonSitePackagesDirectoryURL()!
-      let pythonStr = sitePackagesDirectory.pathComponents.dropLast().last!
-      let soFilename = "vapoursynth.so"
-      let src = context.prefix.appending("lib", pythonStr, "site-packages", soFilename)
-      let dst = sitePackagesDirectory.appendingPathComponent(soFilename)
-      try? context.removeItem(at: dst)
+    context.environment.append("-I\(context.prefix.include.path)", for: .cxxflags, .cflags)
+    context.environment.append("-L\(context.prefix.lib.path)", for: .ldflags)
 
-      try context.createSymbolicLink(at: dst, withDestinationURL: src)
-    }
+    try context.launch("pip3", "install", ".")
+
+    return
   }
 }

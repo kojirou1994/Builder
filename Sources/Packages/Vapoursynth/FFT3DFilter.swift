@@ -17,7 +17,7 @@ public struct FFT3DFilter: Package {
     return .init(
       source: source,
       dependencies: [
-        .pip(["meson"]),
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Vapoursynth.self),
