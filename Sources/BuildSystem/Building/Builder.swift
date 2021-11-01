@@ -88,30 +88,6 @@ struct Builder {
       }
     }
 
-    // MARK: pyenv
-    do {
-      let pyenvPrefix = try AnyExecutable(executableName: "pyenv", arguments: ["prefix"])
-        .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
-        .utf8Output()
-        .trimmingCharacters(in: .whitespacesAndNewlines)
-      let pythonVersion = try AnyExecutable(executableName: "pyenv", arguments: ["version-name"])
-        .launch(use: TSCExecutableLauncher(outputRedirection: .collect))
-        .utf8Output()
-        .trimmingCharacters(in: .whitespacesAndNewlines)
-      logger.info("using python root: \(pyenvPrefix), version: \(pythonVersion)")
-      if pythonVersion == "system" {
-        logger.warning("You are using system python for pyenv!")
-      }
-      let pythonPath = PackagePath(URL(fileURLWithPath: pyenvPrefix))
-
-      // TODO: add env if package requires python
-      envValues.append("\(pythonPath.bin.path)", for: .path)
-      envValues.append("\(pythonPath.pkgConfig.path)", for: .pkgConfigPath)
-      external.python = .init(path: pythonPath, version: pythonVersion)
-    } catch {
-      logger.warning("Can't find pyenv root, you may install pyenv first.")
-    }
-
     envValues.append("/usr/bin", for: .path)
     envValues.append("/bin", for: .path)
     envValues.append("/usr/sbin", for: .path)
@@ -642,9 +618,6 @@ extension Builder {
           case .brew:
             dependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
             runTimeDependencyMap.mergeBrewDependency(try parseBrewDeps(names, requireLinked: requireLinked))
-          case .pip:
-            try AnyExecutable(executableURL: external.pipExecutableURL.unwrap("No pip in pyenv!"), arguments: ["install"] + names)
-              .launch(use: TSCExecutableLauncher(outputRedirection: .none))
           default:
             logger.warning("Unimplemented other package manager \(manager)'s, required packages: \(names), continue in 4 seconds")
             sleep(4)

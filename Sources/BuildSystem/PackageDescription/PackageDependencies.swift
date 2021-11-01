@@ -40,10 +40,6 @@ public struct PackageDependency: CustomStringConvertible {
     .init(dependency: .other(manager: .brew, names: names, requireLinked: requireLinked))
   }
 
-  public static func pip(_ names: [String]) -> Self {
-    .init(dependency: .other(manager: .pip, names: names, requireLinked: false))
-  }
-
   public static func cargo(_ names: [String]) -> Self {
     .init(dependency: .other(manager: .cargo, names: names, requireLinked: false))
   }
@@ -51,7 +47,6 @@ public struct PackageDependency: CustomStringConvertible {
   enum OtherPackageManager: String {
     case cargo
     case brew
-    case pip
   }
 
   public var description: String {
