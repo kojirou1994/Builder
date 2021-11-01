@@ -179,6 +179,7 @@ struct Builder {
     let srcDirURL: URL
 
     switch source.requirement {
+    case .empty: return fm.currentDirectory
     case .repository(let requirement):
       switch requirement {
       case .branch(let branch), .tag(let branch):

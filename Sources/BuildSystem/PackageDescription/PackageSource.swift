@@ -17,6 +17,7 @@ public struct PackageSource: CustomStringConvertible {
 
     // url is download link
     case tarball(sha256: String?)
+    case empty
 
     var isGitRepo: Bool {
       switch self {
@@ -45,6 +46,10 @@ public struct PackageSource: CustomStringConvertible {
                              patches: [PackagePatch] = [],
                              mirrors: [String] = []) -> Self {
     .init(url: url, requirement: .tarball(sha256: sha256), patches: patches, mirrors: mirrors)
+  }
+
+  public static var empty: Self {
+    .init(url: "", requirement: .empty, patches: [], mirrors: [])
   }
 
   public var description: String {

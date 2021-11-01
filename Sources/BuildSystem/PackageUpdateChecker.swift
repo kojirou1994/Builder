@@ -41,6 +41,8 @@ public struct PackageUpdateChecker {
            let source = try? defaultPackage.recipe(for: .init(version: .stable(version), target: .native)).source {
           logger.info("Testing version \(version)")
           switch source.requirement {
+          case .empty:
+            break
           case .repository:
             break
           case .tarball(sha256: _):
