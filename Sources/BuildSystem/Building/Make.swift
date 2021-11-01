@@ -21,8 +21,7 @@ public struct MakeTool: Executable {
       args.append(f)
     }
     parallelJobs.map { j in
-      args.append("-j")
-      args.append(j.description)
+      args.append("-j\(j)")
     }
     args.append(contentsOf: targets)
     return args

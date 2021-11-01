@@ -237,6 +237,10 @@ extension BuildContext {
     }
     cmakeArguments.append(cmakeDefineFlag(dependencyMap.allPrefixes.map(\.root.path).joined(separator: ";"), "CMAKE_PREFIX_PATH"))
 
+//    if order.target.system == .macOS {
+//      cmakeArguments.append(cmakeDefineFlag(order.target.arch.isX86 ? "x86_64": "arm64", "CMAKE_APPLE_SILICON_PROCESSOR"))
+//    }
+
     arguments.forEach { argument in
       argument.map { cmakeArguments.append($0) }
     }
@@ -293,6 +297,10 @@ extension BuildContext {
 
   public func autoreconf() throws {
     try launch("autoreconf", "-ivf")
+  }
+
+  public func autoconf() throws {
+    try launch("autoconf")
   }
 
   public func autogen() throws {
