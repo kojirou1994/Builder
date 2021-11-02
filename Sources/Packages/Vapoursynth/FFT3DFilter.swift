@@ -4,16 +4,19 @@ public struct FFT3DFilter: Package {
 
   public init() {}
 
+  public var defaultVersion: PackageVersion {
+    "2"
+  }
+
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
+      source = .tarball(url: "https://github.com/myrsloik/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/kojirou1994/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/myrsloik/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
-    #warning("fftw")
     return .init(
       source: source,
       dependencies: [
@@ -21,6 +24,7 @@ public struct FFT3DFilter: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Vapoursynth.self),
+        .runTime(Fftw.self),
       ],
       supportedLibraryType: .shared
     )
@@ -31,7 +35,7 @@ public struct FFT3DFilter: Package {
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson("..")
 
       try context.launch("ninja")

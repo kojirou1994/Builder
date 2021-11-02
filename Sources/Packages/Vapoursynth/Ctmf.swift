@@ -17,7 +17,6 @@ public struct Ctmf: Package {
       source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-CTMF/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
-    #warning("fftw")
     return .init(
       source: source,
       dependencies: [
@@ -25,6 +24,7 @@ public struct Ctmf: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Vapoursynth.self),
+        .runTime(Fftw.self),
       ],
       supportedLibraryType: .shared
     )
@@ -35,7 +35,7 @@ public struct Ctmf: Package {
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson("..")
 
       try context.launch("ninja")
