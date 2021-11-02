@@ -45,6 +45,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<FdkAac>.self,
       PackageCheckUpdateCommand<Ffmpeg>.self,
       PackageCheckUpdateCommand<Ffms2>.self,
+      PackageCheckUpdateCommand<Fftw>.self,
       PackageCheckUpdateCommand<File>.self,
       PackageCheckUpdateCommand<Fish>.self,
       PackageCheckUpdateCommand<Flac>.self,

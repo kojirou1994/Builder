@@ -45,6 +45,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<FdkAac>.self,
       PackageBuildCommand<Ffmpeg>.self,
       PackageBuildCommand<Ffms2>.self,
+      PackageBuildCommand<Fftw>.self,
       PackageBuildCommand<File>.self,
       PackageBuildCommand<Fish>.self,
       PackageBuildCommand<Flac>.self,
