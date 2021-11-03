@@ -5,7 +5,7 @@ public struct JpegXL: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.3.7"
+    "0.6.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -32,6 +32,7 @@ public struct JpegXL: Package {
         .runTime(Webp.self),
         .runTime(Giflib.self),
         .runTime(Highway.self),
+        .runTime(Png.self),
       ]
     )
   }
@@ -47,12 +48,17 @@ public struct JpegXL: Package {
         "..",
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "SJPEG_BUILD_EXAMPLES"),
+        cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
+        cmakeOnFlag(context.order.target.arch.isARM, "JPEGXL_FORCE_NEON"),
         cmakeOnFlag(false, "BUILD_TESTING")
       )
+
+      // fix darwin ld
+      try replace(contentIn: "build.ninja", matching: "-Wl,--exclude-libs=ALL", with: "")
 
       try context.make(toolType: .ninja)
       try context.make(toolType: .ninja, "install")
