@@ -17,11 +17,11 @@ final class BuildCliPackageTests: XCTestCase {
 
       let defaultVersion = defaultPackage.defaultVersion
 
-      let firstValidTarget = allTargets.first(where: { (try? defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: $0))) != nil })
+      let firstValidTarget = allTargets.first(where: { (try? defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: $0, libraryType: .all))) != nil })
       XCTAssertNotNil(firstValidTarget,
                       "Package \(package.name) has no default recipe for any target!")
 
-      let recipe = try! defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: firstValidTarget!))
+      let recipe = try! defaultPackage.recipe(for: PackageOrder(version: defaultVersion, target: firstValidTarget!, libraryType: .all))
 
       XCTAssertNotNil(URL(string: recipe.source.url),
                       "Invalid default source's url for package \(package.name), url: \(recipe.source.url)")

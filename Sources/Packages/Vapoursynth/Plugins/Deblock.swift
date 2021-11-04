@@ -30,15 +30,12 @@ public struct Deblock: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try replace(contentIn: "meson.build",
-                matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
-                with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson("..")
 
-      try context.launch("ninja")
-      try context.launch("ninja", "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

@@ -1,20 +1,16 @@
 import BuildSystem
 
-public struct DCTFilter: Package {
-  
-  public init() {}
+public struct Mvtools: Package {
 
-  public var defaultVersion: PackageVersion {
-    "2.1"
-  }
+  public init() {}
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-DCTFilter/archive/refs/heads/master.zip")
+      source = .repository(url: "https://github.com/kojirou1994/vapoursynth-mvtools.git")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-DCTFilter/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/kojirou1994/vapoursynth-mvtools/archive/refs/tags/v\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
@@ -23,6 +19,7 @@ public struct DCTFilter: Package {
         .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
+        order.target.arch.isX86 ? .buildTool(Nasm.self) : nil,
         .runTime(Vapoursynth.self),
         .runTime(Fftw.self),
       ],
@@ -32,11 +29,18 @@ public struct DCTFilter: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if context.order.target.arch.isARM {
+      let old = "nasm_flags += ['-DPREFIX', '-f', 'macho@0@'.format(host_x86_bits)]"
+      try replace(contentIn: "meson.build", matching: old, with: "")
+    }
+
     try context.inRandomDirectory { _ in
       try context.meson("..")
 
       try context.make(toolType: .ninja)
       try context.make(toolType: .ninja, "install")
+
+      try Vapoursynth.install(plugin: context.prefix.appending("lib", "libmvtools"), context: context)
     }
   }
 }

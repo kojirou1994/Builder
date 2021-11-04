@@ -32,6 +32,8 @@ public struct Boost: Package {
 
   public func build(with context: BuildContext) throws {
 
+    try replace(contentIn: "boostcpp.jam", matching: "<base> <threading> <runtime> <arch-and-model>", with: "<base> <threading> <runtime>")
+
     try context.launch(
       path: "bootstrap.sh",
       "--prefix=\(context.prefix.root.path)",
@@ -61,6 +63,8 @@ public struct Boost: Package {
       "-sLZMA_INCLUDE=\(context.dependencyMap[Xz.self].include.path)",
       "-sLZMA_LIBPATH=\(context.dependencyMap[Xz.self].lib.path)"
     )
+
+    try context.fixDylibsID()
   }
 }
 

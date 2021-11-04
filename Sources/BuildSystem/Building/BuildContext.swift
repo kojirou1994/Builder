@@ -366,3 +366,14 @@ extension BuildContext {
     }
   }
 }
+
+extension BuildContext {
+  public func pythonSitePackagesPath() throws -> URL {
+    URL(fileURLWithPath:
+          // TODO: maybe other version
+        try launchResult("python3", ["-c", "import site; print(site.getsitepackages()[0])"])
+        .utf8Output()
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    )
+  }
+}

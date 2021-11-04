@@ -20,7 +20,7 @@ public struct Harfbuzz: Package {
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Cmake.self),
+        .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Freetype.self),
@@ -30,12 +30,12 @@ public struct Harfbuzz: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson(
         "--default-library=\(context.libraryType.mesonFlag)",
         context.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
         mesonFeatureFlag(false, "cairo"),
-        mesonFeatureFlag(true, "coretext"),
+        mesonFeatureFlag(context.order.target.system.isApple, "coretext"),
         mesonFeatureFlag(true, "freetype"),
         mesonFeatureFlag(false, "glib"),
         mesonFeatureFlag(false, "gobject"),

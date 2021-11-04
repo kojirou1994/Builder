@@ -5,7 +5,7 @@ public struct Fribidi: Package {
   public init() {}
 
   public func build(with context: BuildContext) throws {
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson(
         "..",
         "--default-library=\(context.libraryType.mesonFlag)"
@@ -31,7 +31,10 @@ public struct Fribidi: Package {
 
     return .init(
       source: source,
-      dependencies: [.buildTool(Ninja.self)]
+      dependencies: [
+        .buildTool(Meson.self),
+        .buildTool(Ninja.self),
+      ]
     )
   }
 

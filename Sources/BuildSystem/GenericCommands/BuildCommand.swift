@@ -45,7 +45,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
       let builder = try Builder(options: builderOptions, target: target,
                                 addLibInfoInPrefix: prefixLibInfo, deployTarget: deployTarget)
 
-      let buildResult = try builder.startBuild(package: package, version: builderOptions.packageVersion)
+      let buildResult = try builder.startBuild(package: package, version: builderOptions.packageVersion, libraryType: builderOptions.library)
       builder.logger.info("Package is installed at: \(buildResult.prefix.root.path)")
 
       if let installContent = installOptions.installContent {

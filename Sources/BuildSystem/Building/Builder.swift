@@ -34,7 +34,6 @@ struct Builder {
   init(workDirectoryURL: URL,
        packagesDirectoryURL: URL,
        cc: String, cxx: String,
-       libraryType: PackageLibraryBuildType,
        target: TargetTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
@@ -95,7 +94,6 @@ struct Builder {
 
     logger.info("Using PATH: \(envValues[.path])")
 
-    self.defaultLibraryType = libraryType
     self.mainTarget = target
     self.packageRootPath = .init(productsDirectoryURL)
     self.cc = cc
@@ -107,13 +105,13 @@ struct Builder {
     self.deployTarget = deployTarget
     self.external = external
     self.env = .init(
-      order: .init(version: .head, target: target), source: .repository(url: "", requirement: .branch("main")),
+      order: .init(version: .head, target: target, libraryType: .all), source: .repository(url: "", requirement: .branch("main")),
       prefix: .init(productsDirectoryURL),
       dependencyMap: .init(),
       strictMode: strictMode,
       cc: cc, cxx: cxx,
       environment: envValues,
-      libraryType: libraryType, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
+      libraryType: .all, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
 
   }
 
@@ -122,7 +120,6 @@ struct Builder {
   /// base environment
   @available(*, deprecated, message: "move default values to builder root")
   let env: BuildContext
-  let defaultLibraryType: PackageLibraryBuildType
   let packageRootPath: PackagePath
   let mainTarget: TargetTriple
   let strictMode: Bool
@@ -162,8 +159,13 @@ struct Builder {
         try env.launch("git", "clone", "-b", branch, "--depth", "1", "--recursive", source.url, safeDirName)
       case .none:
         try env.launch("git", "clone", "--depth", "1", "--recursive", source.url, safeDirName)
-      case .revision(_):
-        fatalError("Useless api")
+      case .revision(let revision):
+        try env.launch("git", "clone", source.url, safeDirName)
+        try env.changingDirectory(safeDirName) { _ in
+          try env.launch("git", "checkout", revision)
+          try env.launch("git", "submodule", "init")
+          try env.launch("git", "submodule", "update", "--recursive")
+        }
       }
       srcDirURL = URL(fileURLWithPath: safeDirName)
     case .tarball(sha256: _):
@@ -282,12 +284,12 @@ extension Builder {
     return .init(result)
   }
 
-  private func shouldBuildLibraryTypeFor(packageSupported: PackageLibraryBuildType?) -> PackageLibraryBuildType? {
-    switch (defaultLibraryType, packageSupported) {
+  private func shouldBuildLibraryTypeFor(order: PackageOrder, packageSupported: PackageLibraryBuildType?) -> PackageLibraryBuildType? {
+    switch (order.libraryType, packageSupported) {
     case (.shared, .shared),
          (.static, .static),
          (_, .all):
-      return defaultLibraryType
+      return order.libraryType
     case (.shared, .static), (.all, .static),
          (.static, .shared), (.all, .shared):
       return packageSupported
@@ -319,8 +321,8 @@ extension Builder {
     let startTime = Date()
 
     let recipe = try package.recipe(for: order)
-    let usedLibraryType = shouldBuildLibraryTypeFor(packageSupported: recipe.supportedLibraryType)
-    logger.info("Default library type: \(defaultLibraryType), package supported: \(recipe.supportedLibraryType?.description ?? "none"), finally used: \(usedLibraryType?.description ?? "none")")
+    let usedLibraryType = shouldBuildLibraryTypeFor(order: order, packageSupported: recipe.supportedLibraryType)
+    logger.info("Ordered library type: \(order.libraryType), package supported: \(recipe.supportedLibraryType?.description ?? "none"), finally used: \(usedLibraryType?.description ?? "none")")
 
     let usedPrefix: PackagePath
     var result: InternalBuildResult {
@@ -534,7 +536,7 @@ public struct PackageBuildResult {
 }
 
 extension Builder {
-  public func startBuild(package: Package, version: PackageVersion?) throws -> PackageBuildResult {
+  public func startBuild(package: Package, version: PackageVersion?, libraryType: PackageLibraryBuildType) throws -> PackageBuildResult {
     if cleanAll {
       print("Cleaning products directory...")
       try? fm.removeItem(at: productsDirectoryURL)
@@ -545,11 +547,11 @@ extension Builder {
     try fm.createDirectory(at: downloadCacheDirectory)
 
     let dependencyPrefix: PackagePath?
-    let order = PackageOrder(version: version ?? package.defaultVersion, target: mainTarget)
+    let order = PackageOrder(version: version ?? package.defaultVersion, target: mainTarget, libraryType: libraryType)
     let recipe = try package.recipe(for: order)
 
     if joinDependency {
-      dependencyPrefix = formPrefix(package: package, order: order, recipe: recipe, libraryType: defaultLibraryType, isJoinedDependency: true)
+      dependencyPrefix = formPrefix(package: package, order: order, recipe: recipe, libraryType: order.libraryType, isJoinedDependency: true)
       if fm.fileExistance(at: dependencyPrefix!.root).exists {
         print("Removing dependency directory")
         try fm.removeItem(at: dependencyPrefix!.root)
@@ -584,6 +586,7 @@ extension Builder {
     let dependencies = try package.recipe(for: order).dependencies
 
     var dependencyMap: PackageDependencyMap = .init()
+      /// include runtime deps tree
     var runTimeDependencyMap: PackageDependencyMap = .init()
 
     if !dependencies.isEmpty {
@@ -599,7 +602,7 @@ extension Builder {
           let dependencySummary = try buildPackageAndDependencies(
             package: dependencyPackage,
             // TODO: Optional specific dependency's version
-            order: .init(version: dependencyPackage.defaultVersion, target: options.target ?? order.target),
+            order: .init(version: dependencyPackage.defaultVersion, target: options.target ?? order.target, libraryType: options.libraryType ?? order.libraryType),
             reason: .dependency(package: package.name, time: options.requiredTime),
             prefix: prefix, parentLevel: currentLevel)
           switch options.requiredTime {

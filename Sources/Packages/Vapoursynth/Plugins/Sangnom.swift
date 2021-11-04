@@ -1,20 +1,20 @@
 import BuildSystem
 
-public struct Dfttest: Package {
+public struct Sangnom: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7"
+    "42"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-DFTTest/archive/refs/heads/master.zip")
+      source = .tarball(url: "https://github.com/dubhater/vapoursynth-sangnom/archive/refs/heads/master.zip")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-DFTTest/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/dubhater/vapoursynth-sangnom/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
@@ -24,7 +24,6 @@ public struct Dfttest: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Vapoursynth.self),
-        .runTime(Fftw.self),
       ],
       supportedLibraryType: .shared
     )
@@ -35,8 +34,10 @@ public struct Dfttest: Package {
     try context.inRandomDirectory { _ in
       try context.meson("..")
 
-      try context.launch("ninja")
-      try context.launch("ninja", "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
+
+    try Vapoursynth.install(plugin: context.prefix.appending("lib", "libsangnom"), context: context)
   }
 }

@@ -20,31 +20,33 @@ public struct Fftw: Package {
     return .init(
       source: source,
       dependencies: [
-        //        .buildTool(Autoconf.self),
-        //        .buildTool(Automake.self),
-        //        .buildTool(Libtool.self),
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
       ]
     )
   }
 
-  public func build(with context: BuildContext) throws {
+  private enum NumFormat: CaseIterable {
+    case float
+    case longDouble
+    case double
 
-    enum NumFormat: CaseIterable {
-      case float
-      case longDouble
-      case normal
-
-      var name: String? {
-        switch self {
-        case .float:
-          return "float"
-        case .longDouble:
-          return "long-double"
-        case .normal:
-          return nil
-        }
+    var name: String? {
+      switch self {
+      case .float:
+        return "float"
+      case .longDouble:
+        return "long-double"
+      case .double:
+        return nil
       }
     }
+  }
+
+  public func build(with context: BuildContext) throws {
+
+    try context.autoreconf()
 
     func buildAlone(_ format: NumFormat) throws {
       var arguments: [String?] = [
@@ -53,8 +55,9 @@ public struct Fftw: Package {
         configureEnableFlag(false, "fortran"),
         configureEnableFlag(true, "threads"),
       ]
+      arguments.append(configureEnableFlag(format == .float && context.order.target.arch.isX86, "sse"))
       if format != .longDouble {
-        arguments.append(contentsOf: configureEnableFlag(context.order.target.arch.isX86, "sse", "sse2", "avx", "avx2", "avx512"))
+        arguments.append(contentsOf: configureEnableFlag(context.order.target.arch.isX86, "sse2", "avx", "avx2", "avx512"))
         arguments.append(configureEnableFlag(context.order.target.arch.isARM, "neon"))
       }
       format.name.map { arguments.append(configureEnableFlag(true, $0)) }

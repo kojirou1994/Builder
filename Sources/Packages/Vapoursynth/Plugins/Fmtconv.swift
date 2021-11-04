@@ -5,7 +5,7 @@ public struct Fmtconv: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "23"
+    "27"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,7 +14,7 @@ public struct Fmtconv: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://github.com/EleonoreMizo/fmtconv/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz", patches: [.remote(url: "https://github.com/EleonoreMizo/fmtconv/commit/5e0340d35e4dfd58209fd85c51c6e348840014c3.patch", sha256: "")])
+      source = .tarball(url: "https://github.com/EleonoreMizo/fmtconv/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
@@ -23,6 +23,7 @@ public struct Fmtconv: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .runTime(Vapoursynth.self),
       ],
       supportedLibraryType: .shared
     )
@@ -32,12 +33,15 @@ public struct Fmtconv: Package {
     try context.changingDirectory("build/unix") { _ in
       try context.autogen()
 
+      #warning("check clang")
       try context.configure(
-        
+        configureEnableFlag(true, "clang")
       )
 
       try context.make()
       try context.make("install")
+
+      try Vapoursynth.install(plugin: context.prefix.appending("lib", "libfmtconv"), context: context)
     }
   }
 }

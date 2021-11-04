@@ -36,3 +36,5 @@ public enum PackageLibraryBuildType: String, ExpressibleByArgument, CaseIterable
     cmakeOnFlag(buildShared, "ENABLE_SHARED")
   }
 }
+
+extension PackageLibraryBuildType: Codable {}

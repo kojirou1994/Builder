@@ -63,3 +63,26 @@ public struct Vapoursynth: Package {
     return
   }
 }
+
+extension Vapoursynth {
+  static func install(script: String, context: BuildContext) throws {
+    let sitePackageURL = try context.pythonSitePackagesPath()
+    let dst = sitePackageURL.appendingPathComponent(script)
+    try? context.removeItem(at: dst)
+    try context.copyItem(at: URL(fileURLWithPath: script), to: dst)
+  }
+
+  static func install(plugin: URL, context: BuildContext) throws {
+    let dstDir = context.dependencyMap[Vapoursynth.self].appending("lib", "vapoursynth")
+    let plugin = plugin.appendingPathExtension(context.order.target.system.sharedLibraryExtension)
+    let dst = dstDir.appendingPathComponent(plugin.lastPathComponent)
+    try? context.removeItem(at: dst)
+    try context.createSymbolicLink(at: dst, withDestinationURL: plugin)
+  }
+
+  static func fixMeson() throws {
+    try replace(contentIn: "meson.build",
+                matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
+                with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
+  }
+}

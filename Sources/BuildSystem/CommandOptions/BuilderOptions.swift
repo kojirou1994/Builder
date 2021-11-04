@@ -73,7 +73,7 @@ extension Builder {
       workDirectoryURL: URL(fileURLWithPath: options.workPath),
       packagesDirectoryURL: URL(fileURLWithPath: options.packagePath),
       cc: cc, cxx: cxx,
-      libraryType: options.library, target: target,
+      target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
       cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,

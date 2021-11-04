@@ -46,11 +46,11 @@ public struct KNLMeansCL: Package {
           cxx.find_library('boost_filesystem'),
         ]
         """)
-      try context.changingDirectory(context.randomFilename) { _ in
+      try context.inRandomDirectory { _ in
         try context.meson("..")
 
-        try context.launch("ninja")
-        try context.launch("ninja", "install")
+        try context.make(toolType: .ninja)
+        try context.make(toolType: .ninja, "install")
       }
     } else {
       try replace(contentIn: "GNUmakefile", matching: "$(STRIP) $(LIBNAME)", with: "")
@@ -64,5 +64,6 @@ public struct KNLMeansCL: Package {
       try context.make("install")
     }
 
+    try Vapoursynth.install(plugin: context.prefix.appending("lib", "vapoursynth", "libknlmeanscl"), context: context)
   }
 }

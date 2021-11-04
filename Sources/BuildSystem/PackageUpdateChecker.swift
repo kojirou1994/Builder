@@ -38,7 +38,7 @@ public struct PackageUpdateChecker {
       Set(versions).compactMap { version in
         if !failedVersions.contains(version),
            !updateVersions.contains(version),
-           let source = try? defaultPackage.recipe(for: .init(version: .stable(version), target: .native)).source {
+           let source = try? defaultPackage.recipe(for: .init(version: .stable(version), target: .native, libraryType: .shared)).source {
           logger.info("Testing version \(version)")
           switch source.requirement {
           case .empty:

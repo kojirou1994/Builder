@@ -107,6 +107,8 @@ public struct Ffmpeg: Package {
         deps.append(.runTime(Gcrypt.self))
       case .libkvazaar:
         deps.append(.runTime(Kvazaar.self))
+      case .vapoursynth:
+        deps.append(.runTime(Vapoursynth.self))
       }
     }
 
@@ -154,7 +156,7 @@ public struct Ffmpeg: Package {
   private var extraVersion: String?
 
   @Option
-  private var preset: Preset?
+  var preset: Preset?
 
   @Option
   private var tls: FFmpegTLS?
@@ -245,6 +247,7 @@ public struct Ffmpeg: Package {
            .libx264, .libx265, .libwebp, .libaribb24,
            .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d,
            .lzma, .bzlib, .libvpx, .libxvid, .gcrypt, .libxml2, .libkvazaar,
+           .vapoursynth,
 //           .iconv,
            .zlib:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
@@ -411,6 +414,7 @@ extension Ffmpeg {
     case libxml2
     case gcrypt
     case libkvazaar
+    case vapoursynth
 
     case apple
 

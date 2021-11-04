@@ -53,7 +53,6 @@ public struct JpegXL: Package {
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
-        cmakeOnFlag(context.order.target.arch.isARM, "JPEGXL_FORCE_NEON"),
         cmakeOnFlag(false, "BUILD_TESTING")
       )
 

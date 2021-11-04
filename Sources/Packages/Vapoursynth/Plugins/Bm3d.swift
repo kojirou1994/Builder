@@ -1,20 +1,21 @@
 import BuildSystem
+import Combine
 
-public struct FFT3DFilter: Package {
+public struct Bm3d: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2"
+    "8"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/myrsloik/VapourSynth-FFT3DFilter/archive/refs/heads/master.zip")
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-BM3D/archive/refs/heads/master.zip")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/myrsloik/VapourSynth-FFT3DFilter/archive/refs/tags/R\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/HomeOfVapourSynthEvolution/VapourSynth-BM3D/archive/refs/tags/r\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
@@ -31,15 +32,12 @@ public struct FFT3DFilter: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try replace(contentIn: "meson.build",
-                matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
-                with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
     try context.inRandomDirectory { _ in
       try context.meson("..")
 
-      try context.launch("ninja")
-      try context.launch("ninja", "install")
+      try context.make(toolType: .ninja)
+      try context.make(toolType: .ninja, "install")
     }
   }
 }

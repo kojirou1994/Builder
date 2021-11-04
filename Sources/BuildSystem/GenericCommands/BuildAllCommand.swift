@@ -46,7 +46,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
         print("Building \(target)")
         let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)
 
-        let result = try builder.startBuild(package: package, version: builderOptions.packageVersion)
+        let result = try builder.startBuild(package: package, version: builderOptions.packageVersion, libraryType: builderOptions.library)
 
         builtPackages[target.system, default: []].append((target.arch, result))
       } catch {
