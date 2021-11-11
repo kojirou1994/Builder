@@ -225,7 +225,8 @@ struct Builder {
         patcher.waitUntilExit()
       case let .remote(url: url, sha256: _):
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
-          .append(gitApply)
+          .append(gitApply, isLast: true)
+        
         print(patcher)
         try patcher.run()
         patcher.waitUntilExit()
