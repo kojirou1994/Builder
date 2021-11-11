@@ -76,12 +76,12 @@ public struct Ffmpeg: Package {
           deps.append(.runTime(Rav1e.self))
         default: break // maybe need xargo
         }
-//      case .libsdl2:
-//        switch order.target.system {
-//        case .macOS, .linuxGNU:
-//          deps.append(.runTime(Sdl2.self))
-//        default: break
-//        }
+      case .libsdl2:
+        switch order.target.system {
+        case .macOS, .linuxGNU:
+          deps.append(.runTime(Sdl2.self))
+        default: break
+        }
       case .libmp3lame:
         deps.append(.runTime(Lame.self))
       case .libaom:
@@ -251,8 +251,8 @@ public struct Ffmpeg: Package {
 //           .iconv,
            .zlib:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
-//      case .libsdl2:
-//        r.formUnion(configureEnableFlag(true, "sdl"))
+      case .libsdl2:
+        r.formUnion(configureEnableFlag(true, "sdl"))
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
@@ -401,7 +401,7 @@ extension Ffmpeg {
     case libass
     case libsvtav1
     case librav1e
-//    case libsdl2
+    case libsdl2
     case libmp3lame
     case libaom
     case libdav1d

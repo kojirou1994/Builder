@@ -28,66 +28,27 @@ public struct Sdl2: Package {
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Cmake.self),
-        .buildTool(Ninja.self),
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .runTime(Zlib.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
+    try context.autogen()
 
-    try replace(contentIn: "CMakeLists.txt", matching: "DARWIN OR MACOSX", with: "DARWIN AND MACOSX")
-    let systemName: String
-    switch context.order.target.system {
-    case .iphoneOS, .iphoneSimulator:
-      systemName = "IOS"
-    case .tvOS, .tvSimulator:
-      systemName = "TVOS"
-    case .macOS:
-      systemName = "MACOSX"
-    case .watchOS, .watchSimulator,
-         .linuxGNU, .macCatalyst:
-      systemName = "__ANY_SYSTEM"
-    }
-    try replace(contentIn: "CMakeLists.txt", matching: "# TODO: iOS?", with: "set(\(systemName) TRUE)")
-    try replace(contentIn: "CMakeLists.txt", matching: "message_error(\"SDL_FILE must be enabled to build on MacOS X\")", with: "")
-    if context.order.target.system != .macOS {
-      let replaceContent: String
-      switch context.order.target.system {
-      case .macOS:
-        replaceContent = ""
-      case .iphoneOS, .iphoneSimulator:
-        replaceContent = "file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/ios/*.m)"
-      default:
-        replaceContent = ""
-      }
+    try context.configure(
+      context.libraryType.sharedConfigureFlag,
+      context.libraryType.staticConfigureFlag,
+      configureEnableFlag(true, "arm-simd"),
+      configureEnableFlag(true, "arm-neon"),
+      configureWithFlag(false, "x")
+    )
 
-      try replace(contentIn: "CMakeLists.txt", matching: "file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/macosx/*.m)", with: replaceContent)
-    }
-
-    try context.inRandomDirectory { _ in
-      try context.cmake(
-        toolType: .ninja,
-        "..",
-        cmakeOnFlag(context.libraryType.buildShared, "SDL_SHARED"),
-        cmakeOnFlag(context.libraryType.buildStatic, "SDL_STATIC"),
-        cmakeOnFlag(context.libraryType.buildStatic, "SDL_STATIC_PIC"),
-        // SDL_TEST
-        cmakeOnFlag(context.order.target.system == .macOS, "VIDEO_OPENGLES"),
-        cmakeOnFlag(context.order.target.system == .macOS, "VIDEO_OPENGL"),
-        cmakeOnFlag(context.order.target.system == .macOS, "VIDEO_COCOA"),
-        cmakeOnFlag(context.order.target.system == .macOS, "SDL_FILESYSTEM"),
-        cmakeOnFlag(context.order.target.system == .macOS, "SDL_FILE"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        nil
-      )
-
-      try context.make(toolType: .ninja)
-      if context.canRunTests {
-        //          try context.make(toolType: .ninja, "test")
-      }
-      try context.make(toolType: .ninja, "install")
-    }
+    try context.make()
+    try context.make("install")
   }
 
 }
