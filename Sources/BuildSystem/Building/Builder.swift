@@ -226,7 +226,7 @@ struct Builder {
       case let .remote(url: url, sha256: _):
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
           .append(gitApply, isLast: true)
-        
+
         print(patcher)
         try patcher.run()
         patcher.waitUntilExit()
@@ -543,7 +543,7 @@ extension Builder {
       try? fm.removeItem(at: productsDirectoryURL)
     }
     print("Cleaning working directory...")
-    try? fm.removeItem(at: workingDirectoryURL)
+    try? retry(body: fm.removeItem(at: workingDirectoryURL))
 
     try fm.createDirectory(at: downloadCacheDirectory)
 
@@ -606,14 +606,20 @@ extension Builder {
             order: .init(version: dependencyPackage.defaultVersion, target: options.target ?? order.target, libraryType: options.libraryType ?? order.libraryType),
             reason: .dependency(package: package.name, time: options.requiredTime),
             prefix: prefix, parentLevel: currentLevel)
+
           switch options.requiredTime {
           case .buildTime: break
           case .runTime:
             runTimeDependencyMap.add(package: dependencyPackage, prefix: dependencySummary.packageSelfResult!.prefix)
-            runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
+            if !options.excludeDependencyTree {
+              runTimeDependencyMap.merge(dependencySummary.runTimeDependencyMap)
+            }
           }
           dependencyMap.add(package: dependencyPackage, prefix: dependencySummary.packageSelfResult!.prefix)
-          dependencyMap.merge(dependencySummary.runTimeDependencyMap)
+          // don't include buildTime deps tree
+          if !options.excludeDependencyTree {
+            dependencyMap.merge(dependencySummary.runTimeDependencyMap)
+          }
         case let .other(manager: manager, names: names, requireLinked: requireLinked):
           if names.isEmpty {
             return
