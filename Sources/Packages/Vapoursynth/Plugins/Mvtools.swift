@@ -6,11 +6,12 @@ public struct Mvtools: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
+    let owner = order.target.arch.isX86 ? "dubhater" : "kojirou1994"
     switch order.version {
     case .head:
-      source = .repository(url: "https://github.com/kojirou1994/vapoursynth-mvtools.git")
+      source = .repository(url: "https://github.com/\(owner)/vapoursynth-mvtools.git")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/kojirou1994/vapoursynth-mvtools/archive/refs/tags/v\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
+      source = .tarball(url: "https://github.com/\(owner)/vapoursynth-mvtools/archive/refs/tags/v\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(

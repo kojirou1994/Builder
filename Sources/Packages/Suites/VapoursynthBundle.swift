@@ -17,12 +17,13 @@ public struct VapoursynthBundle: Package {
         .runTime(Bestaudiosource.self),
         .runTime(Imwri.self),
         .runTime(Havsfunc.self),
+        .runTime(Ffms2.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
-
+    try Vapoursynth.install(plugin: context.dependencyMap[Ffms2.self].appending("lib", "libffms2"), context: context)
   }
 
 }

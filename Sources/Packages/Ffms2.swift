@@ -8,9 +8,6 @@ public struct Ffms2: Package {
     "2.40"
   }
 
-  @Flag(help: "Need all static linked")
-  private var pack: Bool = false
-
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
@@ -27,9 +24,7 @@ public struct Ffms2: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
-        pack ?
-          .custom(package: Ffmpeg.minimalDecoder, requiredTime: .buildTime, libraryType: .static)
-        : .runTime(Ffmpeg.minimalDecoder),
+        .runTime(Ffmpeg.self),
       ]
     )
   }

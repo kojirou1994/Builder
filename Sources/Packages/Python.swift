@@ -20,6 +20,7 @@ public struct Python: Package {
     return .init(
       source: source,
       dependencies: [
+        .optional(.custom(Python.self, requiredTime: .buildTime, excludeDependencyTree: true, target: .native), when: order.target != .native),
         .buildTool(PkgConfig.self),
         .runTime(Openssl.self),
         .runTime(Xz.self),
@@ -31,9 +32,28 @@ public struct Python: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if context.isBuildingCross, context.order.target.system.isApple {
+//      context.environment.append("yes", for: "ac_cv_file__dev_ptmx")
+      try replace(contentIn: "configure", matching: """
+  \t*-*-vxworks*)
+  \t    ac_sys_system=VxWorks
+  """, with: """
+  \t*-*-darwin*)
+  \t\tac_sys_system=Darwin
+  """)
+
+      try replace(contentIn: "configure", matching: """
+  *-*-vxworks*)
+  """, with: """
+  *-*-darwin*)
+  """)
+
+      try replace(contentIn: "configure", matching: "as_fn_error $? \"readelf for the host is required for cross builds\" \"$LINENO\" 5", with: "")
+    }
+
     try context.configure(
       context.libraryType.sharedConfigureFlag,
-      configureEnableFlag(true, "optimizations"),
+      configureEnableFlag(context.isBuildingNative, "optimizations"),
 //      configureWithFlag(true, "lto"),
       configureEnableFlag(true, "ipv6"),
 //      configureEnableFlag(true, "loadable-sqlite-extensions")

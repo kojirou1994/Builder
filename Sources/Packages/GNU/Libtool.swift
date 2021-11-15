@@ -4,9 +4,6 @@ public struct Libtool: Package {
 
   public init() {}
 
-  @Flag
-  var ltdl: Bool = false
-
   public var defaultVersion: PackageVersion {
     "2.4.6"
   }
@@ -23,16 +20,14 @@ public struct Libtool: Package {
     return .init(
       source: source,
       dependencies: [.buildTool(M4.self)],
-      supportedLibraryType: ltdl ? .all : nil
+      supportedLibraryType: nil
     )
   }
 
   public func build(with context: BuildContext) throws {
 
     try context.configure(
-      configureEnableFlag(ltdl && context.libraryType.buildStatic, "static"),
-      configureEnableFlag(ltdl && context.libraryType.buildShared, "shared"),
-      configureEnableFlag(ltdl, "ltdl-install")
+      configureEnableFlag(false, "ltdl-install")
     )
 
     try context.make()
@@ -45,6 +40,5 @@ public struct Libtool: Package {
     }
     return nil
   }
-
 
 }

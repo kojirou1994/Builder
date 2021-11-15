@@ -11,7 +11,13 @@ public struct Havsfunc: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://github.com/HomeOfVapourSynthEvolution/havsfunc.git")
+      let url = "https://github.com/HomeOfVapourSynthEvolution/havsfunc.git"
+      if order.target.arch.isX86 {
+        source = .repository(url: url)
+      } else {
+        // focus2 is required
+        source = .repository(url: url, requirement: .revision("a35174db8208a0642eeff6482bc19032552e55c6"))
+      }
     case .stable:
       throw PackageRecipeError.unsupportedVersion
     }
@@ -20,6 +26,7 @@ public struct Havsfunc: Package {
       source: source,
       dependencies: [
         .runTime(Vapoursynth.self),
+        order.target.arch.isX86 ? .runTime(Temporalsoften2.self) : nil,
         .runTime(Mvsfunc.self),
         .runTime(Adjust.self),
         .runTime(Nnedi3.self),

@@ -23,7 +23,7 @@ public struct Bestaudiosource: Package {
         .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
-        .runTime(Ffmpeg.minimalDecoder),
+        .runTime(Ffmpeg.self),
         .runTime(Vapoursynth.self),
       ],
       supportedLibraryType: .shared

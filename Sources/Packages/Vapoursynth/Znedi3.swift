@@ -31,6 +31,7 @@ public struct Znedi3: Package {
 
     let pluginURL = context.prefix.lib.appendingPathComponent("vsznedi3.\(context.order.target.system.sharedLibraryExtension)")
     try context.copyItem(at: URL(fileURLWithPath: "vsznedi3.so"), to: pluginURL)
+    try context.copyItem(at: URL(fileURLWithPath: "nnedi3_weights.bin"), toDirectory: context.prefix.lib)
 
     try Vapoursynth.install(plugin: context.prefix.lib.appendingPathComponent("vsznedi3"), context: context)
 
