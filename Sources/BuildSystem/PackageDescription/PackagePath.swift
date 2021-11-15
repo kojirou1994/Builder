@@ -27,6 +27,10 @@ public struct PackagePath: Hashable, CustomStringConvertible {
     root.appendingPathComponent("lib")
   }
 
+  public var share: URL {
+    root.appendingPathComponent("share")
+  }
+
   public var pkgConfig: URL {
     appending("lib", "pkgconfig")
   }

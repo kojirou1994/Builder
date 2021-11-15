@@ -19,10 +19,10 @@ public struct PackageRecipe {
     self.canBuildAllLibraryTogether = canBuildAllLibraryTogether
   }
 
-  public let source: PackageSource
-  public let dependencies: [PackageDependency]
-  public let supportsBitcode: Bool
-  public let products: [PackageProduct]
-  public let supportedLibraryType: PackageLibraryBuildType?
-  public let canBuildAllLibraryTogether: Bool
+  public var source: PackageSource
+  public var dependencies: [PackageDependency]
+  public var supportsBitcode: Bool
+  public var products: [PackageProduct]
+  public var supportedLibraryType: PackageLibraryBuildType?
+  public var canBuildAllLibraryTogether: Bool
 }

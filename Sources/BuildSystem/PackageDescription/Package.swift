@@ -6,6 +6,7 @@ import ArgumentParser
 
 public protocol Package: ParsableArguments, CustomStringConvertible, Encodable {
 
+  /// Package name
   static var name: String { get }
 
   var defaultVersion: PackageVersion { get }
