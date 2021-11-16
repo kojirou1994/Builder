@@ -36,6 +36,7 @@ public struct Rav1e: Package {
       dependencies: [
         .buildTool(Nasm.self),
         .cargo(["cargo-c"]),
+        .runTime(Libiconv.self),
       ]
     )
   }

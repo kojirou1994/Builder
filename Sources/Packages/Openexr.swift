@@ -60,12 +60,14 @@ public struct Openexr: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .runTime(Ilmbase.self),
+        .runTime(Zlib.self),
       ]
     } else {
       return [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .runTime(Imath.self),
+        .runTime(Zlib.self),
       ]
     }
   }

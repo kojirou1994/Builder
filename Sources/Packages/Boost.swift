@@ -21,7 +21,7 @@ public struct Boost: Package {
       source: source,
       dependencies: [
         .runTime(Icu4c.self),
-//        .runTime(Libiconv.self),
+        .runTime(Libiconv.self),
         .runTime(Bzip2.self),
         .runTime(Zlib.self),
         .runTime(Zstd.self),

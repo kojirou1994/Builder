@@ -31,6 +31,7 @@ public struct Sdl2: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .runTime(Libiconv.self),
         .runTime(Zlib.self),
       ]
     )
