@@ -6,6 +6,10 @@ public struct Ffmpeg: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if context.libraryType == .static {
+      try replace(contentIn: "configure", matching: "pkg_config_default=pkg-config", with: "pkg_config_default=\"pkg-config --static\"")
+    }
+
     try context.launch(path: "configure", configureOptions(context: context))
 
     try context.make()
@@ -188,11 +192,6 @@ public struct Ffmpeg: Package {
     r.insert(configureEnableFlag(autodetect, "autodetect"))
 //    r.insert(configureEnableFlag(true, "pthreads"))
     extraVersion.map { _ = r.insert("--extra-version=\($0)") }
-
-    // static/shared library
-    if context.libraryType == .static {
-      r.insert("--pkg-config-flags=--static")
-    }
 
     r.formUnion([context.libraryType.staticConfigureFlag,
                  context.libraryType.sharedConfigureFlag])
