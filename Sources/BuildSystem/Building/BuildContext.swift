@@ -269,9 +269,9 @@ extension BuildContext {
   }
 
   public func meson(_ arguments: [String?]) throws {
-    var mesonArguments = ["--prefix=\(prefix.root.path)",
-                     "--buildtype=release",
-                     //                "--wrap-mode=nofallback
+    var mesonArguments = [
+      "--prefix=\(prefix.root.path)",
+      "--buildtype=release",
     ]
     if isBuildingCross {
       let crossFile = randomFilename + ".txt"

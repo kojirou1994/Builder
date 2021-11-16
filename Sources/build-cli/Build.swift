@@ -98,7 +98,6 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Libevent>.self,
       PackageBuildCommand<Libgit2>.self,
       PackageBuildCommand<Libheif>.self,
-      PackageBuildCommand<Libiconv>.self,
       PackageBuildCommand<Libltdl>.self,
       PackageBuildCommand<Libssh>.self,
       PackageBuildCommand<Libssh2>.self,

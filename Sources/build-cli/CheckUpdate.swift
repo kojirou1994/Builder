@@ -98,7 +98,6 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Libevent>.self,
       PackageCheckUpdateCommand<Libgit2>.self,
       PackageCheckUpdateCommand<Libheif>.self,
-      PackageCheckUpdateCommand<Libiconv>.self,
       PackageCheckUpdateCommand<Libltdl>.self,
       PackageCheckUpdateCommand<Libssh>.self,
       PackageCheckUpdateCommand<Libssh2>.self,
