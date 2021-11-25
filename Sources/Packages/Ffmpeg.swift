@@ -30,7 +30,9 @@ public struct Ffmpeg: Package {
       source = .tarball(url: "https://ffmpeg.org/releases/ffmpeg-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
 
-    source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0001-disable-file-cache.patch", sha256: nil))
+    if noCache {
+      source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0001-disable-file-cache.patch", sha256: nil))
+    }
 
     var deps: [PackageDependency] = [
       .buildTool(Nasm.self),
@@ -173,6 +175,9 @@ public struct Ffmpeg: Package {
 
   @Flag(inversion: .prefixedEnableDisable)
   var autodetect: Bool = false
+
+  @Flag
+  var noCache: Bool = false
 
   private func configureOptions(context: BuildContext) throws -> [String] {
     var r = Set<String>([
