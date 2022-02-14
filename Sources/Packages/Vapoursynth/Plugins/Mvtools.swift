@@ -6,7 +6,7 @@ public struct Mvtools: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    let owner = order.target.arch.isX86 ? "dubhater" : "kojirou1994"
+    let owner = order.arch.isX86 ? "dubhater" : "kojirou1994"
     switch order.version {
     case .head:
       source = .repository(url: "https://github.com/\(owner)/vapoursynth-mvtools.git")
@@ -20,7 +20,7 @@ public struct Mvtools: Package {
         .buildTool(Meson.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
-        order.target.arch.isX86 ? .buildTool(Nasm.self) : nil,
+        order.arch.isX86 ? .buildTool(Nasm.self) : nil,
         .runTime(Vapoursynth.self),
         .runTime(Fftw.self),
       ],
@@ -30,7 +30,7 @@ public struct Mvtools: Package {
 
   public func build(with context: BuildContext) throws {
 
-    if context.order.target.arch.isARM {
+    if context.order.arch.isARM {
       let old = "nasm_flags += ['-DPREFIX', '-f', 'macho@0@'.format(host_x86_bits)]"
       try replace(contentIn: "meson.build", matching: old, with: "")
     }

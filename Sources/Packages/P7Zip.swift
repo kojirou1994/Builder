@@ -28,12 +28,6 @@ public struct P7Zip: Package {
     try context.copyItem(at: URL(fileURLWithPath: "makefile.macosx_llvm_64bits"), to: URL(fileURLWithPath: "makefile.machine"))
     try context.make("all3")
     try context.launch("make", "DEST_HOME=\(context.prefix.root.path)", "install")
-//    system "make", "all3",
-//    "CC=#{context.cc} $(ALLFLAGS)",
-//    "CXX=#{context.cxx} $(ALLFLAGS)"
-//    system "make", "DEST_HOME=#{prefix}",
-//    "DEST_MAN=#{man}",
-//    "install"
     /*
      cmake no install target
      https://github.com/jinfeihan57/p7zip/issues/116

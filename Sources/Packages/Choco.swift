@@ -38,7 +38,7 @@ public struct Choco: Package {
       .trimmingCharacters(in: .whitespacesAndNewlines)
       .split(separator: " ")
 
-    var arguments = ["build", "-c", "release", "--arch", context.order.target.arch.clangTripleString] as [String?]
+    var arguments = ["build", "-c", "release", "--arch", context.order.arch.clangTripleString] as [String?]
 //    if context.libraryType == .static {
       flags.forEach { flag in
         if flag.hasPrefix("-R") {

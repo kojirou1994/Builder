@@ -42,31 +42,31 @@ private enum Toolchain: String, CustomStringConvertible, CaseIterable {
       return ""
     case .autotools:
       return """
-          // try env.autoreconf()
-          // try env.autogen()
+          // try context.autoreconf()
+          // try context.autogen()
 
-          try env.configure(
+          try context.configure(
             configureEnableFlag(false, CommonOptions.dependencyTracking),
-            env.libraryType.staticConfigureFlag,
-            env.libraryType.sharedConfigureFlag
+            context.libraryType.staticConfigureFlag,
+            context.libraryType.sharedConfigureFlag
           )
 
-          try env.make()
-          if env.strictMode {
-            try env.make("check")
+          try context.make()
+          if context.strictMode {
+            try context.make("check")
           }
-          try env.make("install")
+          try context.make("install")
       """
     case .cmake:
       return """
-          try env.inRandomDirectory { _ in
-            try env.cmake(
+          try context.inRandomDirectory { _ in
+            try context.cmake(
               toolType: .ninja,
               ".."
             )
 
-            try env.make(toolType: .ninja)
-            try env.make(toolType: .ninja, "install")
+            try context.make(toolType: .ninja)
+            try context.make(toolType: .ninja, "install")
           }
       """
     }

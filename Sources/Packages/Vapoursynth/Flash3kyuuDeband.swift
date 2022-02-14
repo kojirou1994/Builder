@@ -28,7 +28,7 @@ public struct Flash3kyuuDeband: Package {
     try context.launch(path: "./waf", "configure", "--prefix=\(context.prefix.root.path)")
     try context.launch(path: "./waf", "build")
 //    try context.launch(path: "./waf", "install")
-    let filename = "build/libf3kdb.\(context.order.target.system.sharedLibraryExtension)"
+    let filename = "build/libf3kdb.\(context.order.system.sharedLibraryExtension)"
 
     let installDir = context.prefix.lib.appendingPathComponent("vapoursynth")
     try context.mkdir(installDir)

@@ -10,7 +10,7 @@ public struct Temporalsoften2: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    if order.target.arch.isARM {
+    if order.arch.isARM {
       throw PackageRecipeError.unsupportedTarget
     } else {
       switch order.version {

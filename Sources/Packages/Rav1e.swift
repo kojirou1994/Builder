@@ -5,7 +5,7 @@ public struct Rav1e: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.4.1"
+    "0.5.1"
   }
 
   /*
@@ -16,7 +16,7 @@ public struct Rav1e: Package {
    */
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .macOS, .linuxGNU:
       break
     default:
@@ -36,17 +36,12 @@ public struct Rav1e: Package {
       dependencies: [
         .buildTool(Nasm.self),
         .cargo(["cargo-c"]),
-        .runTime(Libiconv.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
     // TODO: add BUILD_TESTING
-    /*
-     system "cargo", "install", *std_cargo_args
-     system "cargo", "cinstall", "--prefix", prefix
-     */
     try context.launch("cargo", "install", "--root",
                    context.prefix.root.path,
                    "--target", context.order.target.rustTripleString,

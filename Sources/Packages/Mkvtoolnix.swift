@@ -8,6 +8,9 @@ public struct Mkvtoolnix: Package {
     "58"
   }
 
+  @Flag
+  private var noCache: Bool = false
+
   /*
    macOS app:
    https://mkvtoolnix.download/macos/MKVToolNix-56.1.0.dmg
@@ -23,8 +26,10 @@ public struct Mkvtoolnix: Package {
       source = .tarball(url: "https://mkvtoolnix.download/sources/mkvtoolnix-\(versionString).tar.xz")
     }
 
-    source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/mkvtoolnix/0001-disable-file-cache.patch", sha256: nil))
-    source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/mkvtoolnix/0002-add-fcntl-header.patch", sha256: nil))
+    if noCache {
+      source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/mkvtoolnix/0001-disable-file-cache.patch", sha256: nil))
+      source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/mkvtoolnix/0002-add-fcntl-header.patch", sha256: nil))
+    }
 
     return .init(
       source: source,
@@ -45,8 +50,7 @@ public struct Mkvtoolnix: Package {
         .runTime(NlohmannJson.self),
         .runTime(Zlib.self),
         .runTime(Dvdread.self),
-        .runTime(Libiconv.self),
-//        .brew(["docbook-xsl"], requireLinked: false),
+        //        .brew(["docbook-xsl"], requireLinked: false),
       ],
       supportedLibraryType: nil
     )
@@ -59,14 +63,14 @@ public struct Mkvtoolnix: Package {
     try context.fixAutotoolsForDarwin()
 
     context.environment.append("-std=c++17", for: .cxxflags)
-
+    
     try context.configure(
       configureEnableFlag(false, "qt"),
       "--with-docbook-xsl-root=/opt/local/share/xsl/docbook-xsl-nons"
     )
 
-    try context.launch("rake", context.parallelJobs.map { "-j\($0)" } )
-    try context.launch("rake", "install")
+    try context.make(toolType: .rake)
+    try context.make(toolType: .rake, "install")
   }
 
 }

@@ -4,7 +4,7 @@ public struct Vmaf: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7"
+    "9"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

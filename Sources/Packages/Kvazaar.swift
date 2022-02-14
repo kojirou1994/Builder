@@ -9,7 +9,7 @@ public struct Kvazaar: Package {
   }
 
   private func asmEnabled(_ order: PackageOrder) -> Bool {
-    order.target.arch.isX86
+    order.arch.isX86
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -12,12 +12,12 @@ public struct SvtAv1: Package {
   var apps: Bool = true
 
   public var defaultVersion: PackageVersion {
-    lastArmInvalidVersion
+    "0.9.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    if order.target.arch.isARM, order.version <= lastArmInvalidVersion {
+    if order.arch.isARM, order.version <= lastArmInvalidVersion {
       // only head can compile for arm...
       source = repoSource
     } else {
@@ -34,7 +34,7 @@ public struct SvtAv1: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        order.target.arch.isX86 ? .buildTool(Yasm.self) : nil,
+        order.arch.isX86 ? .buildTool(Yasm.self) : nil,
       ]
     )
   }
@@ -45,7 +45,7 @@ public struct SvtAv1: Package {
     if context.order.version > lastArmInvalidVersion {
       compileCOnly = nil
     } else {
-      compileCOnly = cmakeOnFlag(!context.order.target.arch.isX86, "COMPILE_C_ONLY")
+      compileCOnly = cmakeOnFlag(!context.order.arch.isX86, "COMPILE_C_ONLY")
     }
 
     func build(shared: Bool) throws {

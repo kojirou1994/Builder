@@ -30,8 +30,8 @@ public struct Icu4c: Package {
 
   public func build(with context: BuildContext) throws {
 
-    let buildTools = context.order.target.system == .linuxGNU
-    || context.order.target.system == .macOS
+    let buildTools = context.order.system == .linuxGNU
+    || context.order.system == .macOS
 
     var crossBuild: String?
     if context.isBuildingCross {

@@ -32,16 +32,16 @@ public struct Openssl: Package {
 
   public func build(with context: BuildContext) throws {
 
-    let os: String// = "\(context.order.target.system.openssl)-\(context.order.target.arch.clangTripleString)"
-    switch context.order.target.system {
+    let os: String// = "\(context.order.system.openssl)-\(context.order.arch.clangTripleString)"
+    switch context.order.system {
     case .macOS, .macCatalyst,
          .iphoneOS, .iphoneSimulator,
          .watchOS, .watchSimulator,
          .tvOS, .tvSimulator:
-      os = "darwin\(context.order.target.arch.is64Bits ? "64" : "")-\(context.order.target.arch.clangTripleString)-cc"
+      os = "darwin\(context.order.arch.is64Bits ? "64" : "")-\(context.order.arch.clangTripleString)-cc"
     case .linuxGNU:
       //"linux-x86_64-clang"
-      os = "linux-\(context.order.target.arch.gnuTripleString)"
+      os = "linux-\(context.order.arch.gnuTripleString)"
     }
     /*
      pick os/compiler from:
@@ -81,7 +81,7 @@ public struct Openssl: Package {
       context.libraryType.buildShared ? "shared" : "no-shared",
       context.canRunTests ? nil : "no-tests",
       os,
-      context.order.target.arch.is64Bits ? "enable-ec_nistp_64_gcc_128" : nil
+      context.order.arch.is64Bits ? "enable-ec_nistp_64_gcc_128" : nil
     )
 
     try context.make()

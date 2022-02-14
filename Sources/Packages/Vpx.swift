@@ -10,7 +10,7 @@ public struct Vpx: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.arch {
+    switch order.arch {
     case .arm64e, .x86_64h:
       throw PackageRecipeError.unsupportedTarget
     default:
@@ -71,7 +71,7 @@ public struct Vpx: Package {
   public func build(with context: BuildContext) throws {
     // TODO: Support Linux
     var vpxArch: String {
-      switch context.order.target.arch {
+      switch context.order.arch {
       case .arm64, .arm64e:
         return "arm64"
       case .x86_64, .x86_64h:
@@ -79,7 +79,7 @@ public struct Vpx: Package {
       case .armv7: return "armv7"
       case .armv7s: return "armv7s"
       default:
-        return context.order.target.arch.gnuTripleString
+        return context.order.arch.gnuTripleString
       }
     }
 

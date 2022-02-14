@@ -10,7 +10,7 @@ public struct Sdl2: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .watchOS, .watchSimulator,
          .macCatalyst:
       throw PackageRecipeError.unsupportedTarget
@@ -31,7 +31,6 @@ public struct Sdl2: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
-        .runTime(Libiconv.self),
         .runTime(Zlib.self),
       ]
     )

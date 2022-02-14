@@ -5,7 +5,7 @@ public struct Curl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7.79.1"
+    "7.81"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -89,36 +89,6 @@ public struct Curl: Package {
 
          // Path to the CA bundle has been set
          CURL_CA_PATH_SET:BOOL=TRUE
-
-         // to disable alt-svc support
-         CURL_DISABLE_ALTSVC:BOOL=OFF
-
-         // to disable cookies support
-         CURL_DISABLE_COOKIES:BOOL=OFF
-
-         // to disable cryptographic authentication
-         CURL_DISABLE_CRYPTO_AUTH:BOOL=OFF
-
-         // disables DICT
-         CURL_DISABLE_DICT:BOOL=OFF
-
-         // disables FILE
-         CURL_DISABLE_FILE:BOOL=OFF
-
-         // disables FTP
-         CURL_DISABLE_FTP:BOOL=OFF
-
-         // to disable Gopher
-         CURL_DISABLE_GOPHER:BOOL=OFF
-
-         // disables HTTP
-         CURL_DISABLE_HTTP:BOOL=OFF
-
-         // to disable IMAP
-         CURL_DISABLE_IMAP:BOOL=OFF
-
-         // disables LDAP
-         :BOOL=OFF
 
          // to disable LDAPS
          CURL_DISABLE_LDAPS:BOOL=OFF

@@ -10,8 +10,14 @@ struct BuilderOptions: ParsableArguments {
   @Flag(help: "Build from HEAD")
   var head: Bool = false
 
-  @Flag(help: "Clean all built packages")
-  var clean: Bool = false
+//  @Flag(help: "Clean all built packages")
+//  var clean: Bool = false
+
+  @Option(help: "Set binary prefix")
+  var binPrefix: String?
+
+  @Option(help: "Set binary suffix")
+  var binSuffix: String?
 
   @Flag(help: "Ignore package's tag.")
   var ignoreTag: Bool = false
@@ -63,7 +69,7 @@ struct BuilderOptions: ParsableArguments {
 }
 
 extension Builder {
-  init(options: BuilderOptions, target: TargetTriple, addLibInfoInPrefix: Bool, deployTarget: String?) throws {
+  init(options: BuilderOptions, target: TargetTriple, addLibInfoInPrefix: Bool) throws {
     // TODO: use argument parser to parse environment
     // see: https://github.com/apple/swift-argument-parser/issues/4
     let cc = ProcessInfo.processInfo.environment[EnvironmentKey.cc.string] ?? TargetSystem.native.cc
@@ -76,7 +82,7 @@ extension Builder {
       target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
-      cleanAll: options.clean, addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
-      enableBitcode: options.bitcode, deployTarget: deployTarget)
+      addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
+      enableBitcode: options.bitcode)
   }
 }

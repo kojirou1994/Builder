@@ -5,7 +5,7 @@ public struct TCanny: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "12"
+    "14"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

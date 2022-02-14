@@ -42,7 +42,7 @@ public struct Libb2: Package {
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
-      configureEnableFlag(TargetArch.native.canLaunch(arch: context.order.target.arch) && context.order.target.system == .native, "native"),
+      configureEnableFlag(TargetArch.native.canLaunch(arch: context.order.arch) && context.order.system == .native, "native"),
       configureEnableFlag(false, "fat")
     )
 

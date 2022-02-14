@@ -10,7 +10,7 @@ public struct Zvbi: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-//    switch order.target.system {
+//    switch order.system {
 //    case .macOS, .linuxGNU:
 //      break
 //    default: throw PackageRecipeError.unsupportedTarget

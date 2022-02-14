@@ -10,7 +10,7 @@ public struct Gmp: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.arch {
+    switch order.arch {
     case .armv7, .armv7k, .armv7s, .arm64_32:
       throw PackageRecipeError.unsupportedTarget
     default:

@@ -19,7 +19,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
   var system: TargetSystem = .native
 
   @Option(help: "Set target system version.")
-  var deployTarget: String?
+  var deployTarget: Version?
 
   @OptionGroup
   var builderOptions: BuilderOptions
@@ -43,7 +43,7 @@ public struct PackageBuildCommand<T: Package>: ParsableCommand {
       print(package)
     } else {
       let builder = try Builder(options: builderOptions, target: target,
-                                addLibInfoInPrefix: prefixLibInfo, deployTarget: deployTarget)
+                                addLibInfoInPrefix: prefixLibInfo)
 
       let buildResult = try builder.startBuild(package: package, version: builderOptions.packageVersion, libraryType: builderOptions.library)
       builder.logger.info("Package is installed at: \(buildResult.prefix.root.path)")

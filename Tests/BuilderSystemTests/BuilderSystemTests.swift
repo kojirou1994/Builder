@@ -22,4 +22,10 @@ final class BuilderSystemTests: XCTestCase {
                                            options: .init()))
     }
   }
+
+  func testVersionConvertion() {
+    for system in TargetSystem.allCases where system.isApple {
+      print("system: \(system), default deploy version: \(system.defaultDeployVersion)")
+    }
+  }
 }

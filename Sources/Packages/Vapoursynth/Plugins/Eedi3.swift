@@ -10,7 +10,7 @@ public struct Eedi3: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
-    if order.target.arch.isARM {
+    if order.arch.isARM {
       source = .repository(url: "https://github.com/kojirou1994/VapourSynth-EEDI3.git")
     } else {
       switch order.version {

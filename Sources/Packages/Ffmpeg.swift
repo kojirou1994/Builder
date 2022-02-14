@@ -6,6 +6,10 @@ public struct Ffmpeg: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if dependencyOptions.contains(.iconv) {
+      context.environment.append("-liconv", for: .ldflags)
+    }
+
     if context.libraryType == .static {
       try replace(contentIn: "configure", matching: "pkg_config_default=pkg-config", with: "pkg_config_default=\"pkg-config --static\"")
     }
@@ -18,7 +22,7 @@ public struct Ffmpeg: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "4.4.1"
+    "5.0.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -77,13 +81,13 @@ public struct Ffmpeg: Package {
       case .libsvtav1:
         deps.append(.runTime(SvtAv1.self))
       case .librav1e:
-        switch order.target.system {
+        switch order.system {
         case .macOS, .linuxGNU:
           deps.append(.runTime(Rav1e.self))
         default: break // maybe need xargo
         }
       case .libsdl2:
-        switch order.target.system {
+        switch order.system {
         case .macOS, .linuxGNU:
           deps.append(.runTime(Sdl2.self))
         default: break
@@ -99,8 +103,7 @@ public struct Ffmpeg: Package {
         deps.append(.runTime(Xz.self))
       case .bzlib:
         deps.append(.runTime(Bzip2.self))
-//      case .iconv:
-//        deps.append(.runTime(Libiconv.self))
+      case .iconv: break
       case .zlib:
         deps.append(.runTime(Zlib.self))
       case .libvpx:
@@ -118,16 +121,6 @@ public struct Ffmpeg: Package {
       }
     }
 
-    /*
-     libavcodec
-     libavdevice
-     libavfilter
-     libavformat
-     libavutil
-     libpostproc
-     libswresample
-     libswscale
-     */
     return .init(
       source: source,
       dependencies: deps,
@@ -189,9 +182,9 @@ public struct Ffmpeg: Package {
     if context.isBuildingCross {
       r.insert(configureEnableFlag(true, "cross-compile"))
       context.sdkPath.map { _ = r.insert("--sysroot=\($0)") }
-      r.insert("--arch=\(context.order.target.arch.gnuTripleString)")
+      r.insert("--arch=\(context.order.arch.gnuTripleString)")
 //      r.insert("--target-os=darwin")
-      r.insert("--as=gas-preprocessor.pl -arch \(context.order.target.arch.gnuTripleString) -- \(context.cc)")
+      r.insert("--as=gas-preprocessor.pl -arch \(context.order.arch.gnuTripleString) -- \(context.cc)")
     }
 
     r.insert(configureEnableFlag(autodetect, "autodetect"))
@@ -214,7 +207,7 @@ public struct Ffmpeg: Package {
       licenses.insert(.gpl)
       r.formUnion(configureEnableFlag(true, "mbedtls"))
     case .system:
-      if context.order.target.system.isApple {
+      if context.order.system.isApple {
         r.formUnion(configureEnableFlag(true, "securetransport"))
       } else {
         print("no system tls!")
@@ -239,7 +232,7 @@ public struct Ffmpeg: Package {
       case
 //          .libsdl2,
           .librav1e:
-        switch context.order.target.system {
+        switch context.order.system {
         case .macOS, .linuxGNU:
           break
         default: return // maybe need xargo
@@ -252,7 +245,7 @@ public struct Ffmpeg: Package {
            .libass, .libsvtav1, .librav1e, .libmp3lame, .libaom, .libdav1d,
            .lzma, .bzlib, .libvpx, .libxvid, .gcrypt, .libxml2, .libkvazaar,
            .vapoursynth,
-//           .iconv,
+           .iconv,
            .zlib:
         r.formUnion(configureEnableFlag(true, dependency.rawValue))
       case .libsdl2:
@@ -260,8 +253,9 @@ public struct Ffmpeg: Package {
       case .libopencore:
         r.formUnion(configureEnableFlag(true, "libopencore_amrnb", "libopencore_amrwb"))
       case .apple:
-        if context.order.target.system.isApple {
+        if context.order.system.isApple {
           r.formUnion(configureEnableFlag(true, "audiotoolbox", "videotoolbox",
+                                          "metal",
                                           "appkit", "avfoundation", "coreimage"))
         }
       }
@@ -277,7 +271,7 @@ public struct Ffmpeg: Package {
       r.insert(configureEnableFlag(false, comp.rawValue))
     }
 
-    if context.order.target.system == .linuxGNU {
+    if context.order.system == .linuxGNU {
       r.insert("--extra-libs=-ldl -lpthread -lm -lz")
     }
 
@@ -411,7 +405,7 @@ extension Ffmpeg {
     case libdav1d
     case lzma
     case bzlib
-//    case iconv
+    case iconv
     case zlib
     case libvpx
     case libxvid

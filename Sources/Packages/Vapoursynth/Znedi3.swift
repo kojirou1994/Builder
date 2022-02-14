@@ -24,12 +24,12 @@ public struct Znedi3: Package {
   public func build(with context: BuildContext) throws {
 
     try context.make(
-      "x86=\(context.order.target.arch.isX86 ? 1: 0)"
+      "x86=\(context.order.arch.isX86 ? 1: 0)"
     )
 
     try context.mkdir(context.prefix.lib)
 
-    let pluginURL = context.prefix.lib.appendingPathComponent("vsznedi3.\(context.order.target.system.sharedLibraryExtension)")
+    let pluginURL = context.prefix.lib.appendingPathComponent("vsznedi3.\(context.order.system.sharedLibraryExtension)")
     try context.copyItem(at: URL(fileURLWithPath: "vsznedi3.so"), to: pluginURL)
     try context.copyItem(at: URL(fileURLWithPath: "nnedi3_weights.bin"), toDirectory: context.prefix.lib)
 

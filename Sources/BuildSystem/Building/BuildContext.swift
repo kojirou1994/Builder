@@ -5,7 +5,7 @@ import ExecutableDescription
 
 public class BuildContext {
 
-  internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, deployTarget: String?, external: ExternalPackageEnvironment) {
+  internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, external: ExternalPackageEnvironment) {
     self.order = order
     self.source = source
     self.prefix = prefix
@@ -19,7 +19,6 @@ public class BuildContext {
     self.logger = logger
     self.enableBitcode = enableBitcode
     self.sdkPath = sdkPath
-    self.deployTarget = deployTarget
     self.external = external
   }
 
@@ -39,9 +38,9 @@ public class BuildContext {
 
   public var canRunTests: Bool {
     strictMode
-      && order.target.arch.canLaunch(arch: .native)
-      && !order.target.system.isSimulator
-      && ( (order.target.system == .native) || (order.target.system == .macCatalyst && TargetSystem.native == .macOS) )
+      && order.arch.canLaunch(arch: .native)
+      && !order.system.isSimulator
+      && ( (order.system == .native) || (order.system == .macCatalyst && TargetSystem.native == .macOS) )
   }
 
   /// c compiler
@@ -52,7 +51,7 @@ public class BuildContext {
   /// the environment will be used to run processes
   public var environment: EnvironmentValues
 
-  public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount + 2
+  public let parallelJobs: Int? = ProcessInfo.processInfo.processorCount
 
   private var _libraryType: PackageLibraryBuildType?
   public internal(set) var libraryType: PackageLibraryBuildType {
@@ -71,7 +70,6 @@ public class BuildContext {
 
   public let enableBitcode: Bool
   public let sdkPath: String?
-  public let deployTarget: String?
 
   public var launcher: BuilderLauncher {
     .init(environment: environment, outputRedirection: .none)
@@ -130,7 +128,7 @@ extension BuildContext {
     switch libraryType {
     case .all: return
     case .shared: searchExtension = "a"
-    case .static: searchExtension = order.target.system.sharedLibraryExtension
+    case .static: searchExtension = order.system.sharedLibraryExtension
     }
     let dstFiles = try fm.contentsOfDirectory(at: prefix.lib)
       .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame }
@@ -225,10 +223,10 @@ extension BuildContext {
     default:
       break
     }
-    cmakeArguments.append(cmakeDefineFlag(order.target.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
+    cmakeArguments.append(cmakeDefineFlag(order.arch.clangTripleString, "CMAKE_OSX_ARCHITECTURES"))
     if isBuildingCross {
-      cmakeArguments.append(cmakeDefineFlag(order.target.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
-      if order.target.system.isApple {
+      cmakeArguments.append(cmakeDefineFlag(order.arch.gnuTripleString, "CMAKE_SYSTEM_PROCESSOR"))
+      if order.system.isApple {
         cmakeArguments.append(cmakeDefineFlag("Darwin", "CMAKE_SYSTEM_NAME"))
       }
     }
@@ -237,8 +235,8 @@ extension BuildContext {
     }
     cmakeArguments.append(cmakeDefineFlag(dependencyMap.allPrefixes.map(\.root.path).joined(separator: ";"), "CMAKE_PREFIX_PATH"))
 
-//    if order.target.system == .macOS {
-//      cmakeArguments.append(cmakeDefineFlag(order.target.arch.isX86 ? "x86_64": "arm64", "CMAKE_APPLE_SILICON_PROCESSOR"))
+//    if order.system == .macOS {
+//      cmakeArguments.append(cmakeDefineFlag(order.arch.isX86 ? "x86_64": "arm64", "CMAKE_APPLE_SILICON_PROCESSOR"))
 //    }
 
     arguments.forEach { argument in
@@ -261,9 +259,9 @@ extension BuildContext {
     pkgconfig = 'pkg-config'
 
     [host_machine]
-    system = '\(order.target.system.mesonSystemName)'
-    cpu_family = '\(order.target.arch.mesonCPUFamily)'
-    cpu = '\(order.target.arch.clangTripleString)'
+    system = '\(order.system.mesonSystemName)'
+    cpu_family = '\(order.arch.mesonCPUFamily)'
+    cpu = '\(order.arch.clangTripleString)'
     endian = 'little'
     """
   }
@@ -337,7 +335,7 @@ extension BuildContext {
     if isBuildingCross {
       try replace(contentIn: "configure", matching: "cross_compiling=no", with: "cross_compiling=yes")
     }
-    if order.target.system == .macCatalyst {
+    if order.system == .macCatalyst {
       try replace(contentIn: "configure", matching: """
       \\$CC -dynamiclib
       """, with: """
@@ -355,7 +353,7 @@ extension BuildContext {
 
 extension BuildContext {
   public func fixDylibsID() throws {
-    if order.target.system.isApple, libraryType.buildShared {
+    if order.system.isApple, libraryType.buildShared {
       try fm.contentsOfDirectory(at: prefix.lib)
         .filter { $0.pathExtension == TargetSystem.macOS.sharedLibraryExtension }
         .filter { try (fm.attributesOfItem(atURL: $0)[.type] as! FileAttributeType) == .typeRegular }

@@ -35,7 +35,7 @@ public struct Harfbuzz: Package {
         "--default-library=\(context.libraryType.mesonFlag)",
         context.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
         mesonFeatureFlag(false, "cairo"),
-        mesonFeatureFlag(context.order.target.system.isApple, "coretext"),
+        mesonFeatureFlag(context.order.system.isApple, "coretext"),
         mesonFeatureFlag(true, "freetype"),
         mesonFeatureFlag(false, "glib"),
         mesonFeatureFlag(false, "gobject"),

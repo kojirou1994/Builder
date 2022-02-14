@@ -5,7 +5,7 @@ public struct Imath: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.1.3"
+    "3.1.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

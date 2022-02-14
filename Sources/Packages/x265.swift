@@ -30,7 +30,7 @@ public struct x265: Package {
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
     }
 
-    if order.target.arch.isARM {
+    if order.arch.isARM {
       source.patches += [
         .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A00-darwin-Revert-Add-aarch64-support-Part-2.patch", sha256: nil),
         .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A01-darwin-neon-support-for-arm64.patch", sha256: nil),
@@ -131,7 +131,7 @@ public struct x265: Package {
 
       try context.moveItem(at: URL(fileURLWithPath: "libx265.a"), to: URL(fileURLWithPath: "libx265_main.a"))
 
-      switch context.order.target.system {
+      switch context.order.system {
       case .macOS, .macCatalyst:
         try context.launch(
           "libtool",

@@ -10,7 +10,7 @@ public struct Smartmontools: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .macOS, .macCatalyst, .linuxGNU:
       break
     default:

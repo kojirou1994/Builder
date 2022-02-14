@@ -6,7 +6,7 @@ public struct Openexr: Package {
 
   public var defaultVersion: PackageVersion {
     Self.legacyVersion
-//    "3.1"
+//    "3.1.4"
   }
 
   public static var legacyVersion: PackageVersion {

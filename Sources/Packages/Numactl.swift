@@ -10,7 +10,7 @@ public struct Numactl: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    guard case .linuxGNU = order.target.system else {
+    guard case .linuxGNU = order.system else {
       throw PackageRecipeError.unsupportedTarget
     }
 

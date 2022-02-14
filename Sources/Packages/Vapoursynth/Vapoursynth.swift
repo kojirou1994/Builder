@@ -74,7 +74,7 @@ extension Vapoursynth {
 
   static func install(plugin: URL, context: BuildContext) throws {
     let dstDir = context.dependencyMap[Vapoursynth.self].appending("lib", "vapoursynth")
-    let plugin = plugin.appendingPathExtension(context.order.target.system.sharedLibraryExtension)
+    let plugin = plugin.appendingPathExtension(context.order.system.sharedLibraryExtension)
     let dst = dstDir.appendingPathComponent(plugin.lastPathComponent)
     try? context.removeItem(at: dst)
     try context.createSymbolicLink(at: dst, withDestinationURL: plugin)

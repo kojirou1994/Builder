@@ -5,14 +5,14 @@ public struct Go: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.17.2"
+    "1.17.6"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let systemString: String
     let archString: String
 
-    switch order.target.system {
+    switch order.system {
     case .macOS:
       systemString = "darwin"
     case .linuxGNU:
@@ -21,7 +21,7 @@ public struct Go: Package {
       throw PackageRecipeError.unsupportedTarget
     }
 
-    switch order.target.arch {
+    switch order.arch {
     case .arm64:
       archString = "arm64"
     case .x86_64:

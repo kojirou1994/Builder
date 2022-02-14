@@ -20,7 +20,12 @@ func spmSetup(force: Bool) throws {
     throw ExitCode(1)
   }
 
-  let buildRootURL = try URL(fileURLWithPath: (ProcessInfo.processInfo.environment[SPM_BUILD_PATH].unwrap("No environment value or option for \(SPM_BUILD_PATH)")))
+  guard let v = ProcessInfo.processInfo.environment[SPM_BUILD_PATH],
+        !v.isEmpty else {
+    print("No environment value or option for \(SPM_BUILD_PATH), using default .build")
+    return
+  }
+  let buildRootURL = URL(fileURLWithPath: v)
 
   let buildURL = fm.currentDirectory.appendingPathComponent(".build")
 

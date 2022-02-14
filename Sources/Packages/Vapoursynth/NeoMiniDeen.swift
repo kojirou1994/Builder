@@ -5,7 +5,7 @@ public struct NeoMiniDeen: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "10"
+    "11"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

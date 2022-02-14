@@ -12,7 +12,7 @@ public struct Havsfunc: Package {
     switch order.version {
     case .head:
       let url = "https://github.com/HomeOfVapourSynthEvolution/havsfunc.git"
-      if order.target.arch.isX86 {
+      if order.arch.isX86 {
         source = .repository(url: url)
       } else {
         // focus2 is required
@@ -26,7 +26,7 @@ public struct Havsfunc: Package {
       source: source,
       dependencies: [
         .runTime(Vapoursynth.self),
-        order.target.arch.isX86 ? .runTime(Temporalsoften2.self) : nil,
+        order.arch.isX86 ? .runTime(Temporalsoften2.self) : nil,
         .runTime(Mvsfunc.self),
         .runTime(Adjust.self),
         .runTime(Nnedi3.self),

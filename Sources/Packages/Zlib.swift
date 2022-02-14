@@ -25,7 +25,7 @@ public struct Zlib: Package {
   public func build(with context: BuildContext) throws {
     try context.launch(path: "configure",
                    "--prefix=\(context.prefix.root.path)",
-                   context.order.target.arch.is64Bits ? "--64" : nil
+                   context.order.arch.is64Bits ? "--64" : nil
     )
     
     try context.make()

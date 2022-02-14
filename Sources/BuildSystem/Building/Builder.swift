@@ -36,16 +36,15 @@ struct Builder {
        cc: String, cxx: String,
        target: TargetTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
-       rebuildLevel: RebuildLevel?, joinDependency: Bool, cleanAll: Bool,
+       rebuildLevel: RebuildLevel?, joinDependency: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
        strictMode: Bool, preferSystemPackage: Bool,
-       enableBitcode: Bool, deployTarget: String?) throws {
+       enableBitcode: Bool) throws {
     self.builderDirectoryURL = workDirectoryURL
     self.workingDirectoryURL = workDirectoryURL.appendingPathComponent("working")
     self.downloadCacheDirectory = workDirectoryURL.appendingPathComponent("download")
     self.logger = Logger(label: "Builder")
     self.productsDirectoryURL = packagesDirectoryURL
-    self.cleanAll = cleanAll
     self.ignoreTag = ignoreTag
     self.joinDependency = joinDependency
     self.dependencyLevelLimit = dependencyLevelLimit ?? UInt.max
@@ -102,7 +101,7 @@ struct Builder {
     self.envValues = envValues
     self.enableBitcode = enableBitcode
     self.sdkPath = sdkPath
-    self.deployTarget = deployTarget
+
     self.external = external
     self.env = .init(
       order: .init(version: .head, target: target, libraryType: .all), source: .repository(url: "", requirement: .branch("main")),
@@ -111,7 +110,7 @@ struct Builder {
       strictMode: strictMode,
       cc: cc, cxx: cxx,
       environment: envValues,
-      libraryType: .all, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
+      libraryType: .all, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
 
   }
 
@@ -127,7 +126,7 @@ struct Builder {
   let envValues: EnvironmentValues
   let enableBitcode: Bool
   let sdkPath: String?
-  let deployTarget: String?
+
   let external: ExternalPackageEnvironment
 
   let logger: Logger
@@ -141,7 +140,6 @@ struct Builder {
 
   let ignoreTag: Bool
   let joinDependency: Bool
-  let cleanAll: Bool
   let prefixGenerator: PrefixGenerator? = nil
   let addLibInfoInPrefix: Bool
   let optimize: String?
@@ -156,15 +154,18 @@ struct Builder {
     case .repository(let requirement):
       switch requirement {
       case .branch(let branch), .tag(let branch):
-        try env.launch("git", "clone", "-b", branch, "--depth", "1", "--recursive", source.url, safeDirName)
+        try env.launch("git", "clone", "-b", branch,
+         "--depth", "1", "--recursive", "--shallow-submodules",
+         source.url, safeDirName)
       case .none:
-        try env.launch("git", "clone", "--depth", "1", "--recursive", source.url, safeDirName)
+        try env.launch("git", "clone",
+         "--depth", "1", "--recursive", "--shallow-submodules",
+         source.url, safeDirName)
       case .revision(let revision):
         try env.launch("git", "clone", source.url, safeDirName)
         try env.changingDirectory(safeDirName) { _ in
           try env.launch("git", "checkout", revision)
-          try env.launch("git", "submodule", "init")
-          try env.launch("git", "submodule", "update", "--recursive")
+          try env.launch("git", "submodule", "update", "--init", "--recursive", "--depth", "1", "--recommend-shallow")
         }
       }
       srcDirURL = URL(fileURLWithPath: safeDirName)
@@ -274,8 +275,8 @@ extension Builder {
         libraryType.map { libType in
           libInfos.append(libType.rawValue)
         }
-        libInfos.append(order.target.arch.rawValue)
-        libInfos.append(order.target.system.rawValue)
+        libInfos.append(order.arch.rawValue)
+        libInfos.append(order.system.rawValue)
         prefix.appendPathComponent(libInfos.joined(separator: "-"))
       }
 
@@ -427,7 +428,7 @@ extension Builder {
       environment[.ldflags] = ""
 
       if order.target != .native { // isBuildingCross
-        if order.target.system == .macCatalyst {
+        if order.system == .macCatalyst {
           /*
            Thanks:
            https://stackoverflow.com/questions/59903554/uikit-uikit-h-not-found-for-clang-building-mac-catalyst
@@ -436,12 +437,12 @@ extension Builder {
           environment.append(order.target.clangTripleString, for: .cflags, .cxxflags, .ldflags)
         }
         environment.append("-arch", for: .cflags, .cxxflags, .ldflags)
-        environment.append(order.target.arch.clangTripleString, for: .cflags, .cxxflags, .ldflags)
+        environment.append(order.arch.clangTripleString, for: .cflags, .cxxflags, .ldflags)
 
         if let sysroot = sdkPath {
           environment.append("-isysroot", for: .cflags, .cxxflags)
           environment.append(sysroot, for: .cflags, .cxxflags)
-          if order.target.system == .macCatalyst {
+          if order.system == .macCatalyst {
             environment.append("-iframework", for: .ldflags)
             environment.append(sysroot + "/System/iOSSupport/System/Library/Frameworks", for: .ldflags)
             environment.append("-L\(sysroot)/System/iOSSupport/usr/lib", for: .ldflags)
@@ -456,11 +457,11 @@ extension Builder {
         }
       }
       
-      if let deployTarget = deployTarget {
-        let flag = "\(order.target.system.minVersionClangFlag)=\(deployTarget)"
-        environment.append(flag, for: .cflags, .cxxflags)
-        environment.append(flag, for: .ldflags)
-      }
+//      if let deployTarget = deployTarget {
+//        let flag = "\(order.system.minVersionClangFlag)=\(deployTarget)"
+//        environment.append(flag, for: .cflags, .cxxflags)
+//        environment.append(flag, for: .ldflags)
+//      }
       allPrefixes.forEach { prefix in
         if fm.fileExistance(at: prefix.include) == .directory {
           environment.append(prefix.cflag, for: .cflags, .cxxflags)
@@ -538,10 +539,6 @@ public struct PackageBuildResult {
 
 extension Builder {
   public func startBuild(package: Package, version: PackageVersion?, libraryType: PackageLibraryBuildType) throws -> PackageBuildResult {
-    if cleanAll {
-      print("Cleaning products directory...")
-      try? fm.removeItem(at: productsDirectoryURL)
-    }
     print("Cleaning working directory...")
     try? retry(body: fm.removeItem(at: workingDirectoryURL))
 
@@ -656,6 +653,6 @@ extension Builder {
       prefix: prefix, dependencyMap: dependencyMap,
       strictMode: strictMode, cc: cc, cxx: cxx,
       environment: environment,
-      libraryType: libraryType, logger: env.logger, enableBitcode: enableBitcode, sdkPath: sdkPath, deployTarget: deployTarget, external: external)
+      libraryType: libraryType, logger: env.logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
   }
 }

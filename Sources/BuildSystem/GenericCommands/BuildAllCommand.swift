@@ -44,7 +44,7 @@ public struct PackageBuildAllCommand<T: Package>: ParsableCommand {
     for target in TargetTriple.allValid where Set(arch).contains(target.arch) && Set(system).contains(target.system) {
       do {
         print("Building \(target)")
-        let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true, deployTarget: nil)
+        let builder = try Builder(options: builderOptions, target: target, addLibInfoInPrefix: true)
 
         let result = try builder.startBuild(package: package, version: builderOptions.packageVersion, libraryType: builderOptions.library)
 

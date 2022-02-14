@@ -19,7 +19,7 @@ public struct OpusTools: Package {
 
     var libraryType: PackageLibraryBuildType? = .all
 
-    if order.target.system == .macCatalyst {
+    if order.system == .macCatalyst {
       libraryType = .static // auto tools don't support catalyst shared lib
     }
     

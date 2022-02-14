@@ -46,8 +46,8 @@ public struct Aom: Package {
         cmakeOnFlag(false, "ENABLE_TESTS"),
         cmakeOnFlag(false, "ENABLE_TOOLS"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        (context.order.target.arch.isX86 || context.isBuildingNative) ? nil : cmakeDefineFlag(0, "CONFIG_RUNTIME_CPU_DETECT"),
-        context.order.target.system == .watchOS ? cmakeDefineFlag("generic", "AOM_TARGET_CPU") : nil
+        (context.order.arch.isX86 || context.isBuildingNative) ? nil : cmakeDefineFlag(0, "CONFIG_RUNTIME_CPU_DETECT"),
+        context.order.system == .watchOS ? cmakeDefineFlag("generic", "AOM_TARGET_CPU") : nil
       )
 
       try context.make(toolType: .ninja)

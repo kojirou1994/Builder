@@ -4,7 +4,7 @@ public struct NeoFFT3D: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "10"
+    "11"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -31,7 +31,7 @@ public struct NeoFFT3D: Package {
       try context.cmake(toolType: .ninja, "..")
 
       try context.make(toolType: .ninja)
-      let filename = "libneo-fft3d.\(context.order.target.system.sharedLibraryExtension)"
+      let filename = "libneo-fft3d.\(context.order.system.sharedLibraryExtension)"
 
       let installDir = context.prefix.lib.appendingPathComponent("vapoursynth")
       try context.mkdir(installDir)

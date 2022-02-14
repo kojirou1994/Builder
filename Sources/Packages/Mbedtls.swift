@@ -5,7 +5,7 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3"
+    "3.1.0"
   }
 
   private func isLegacyVer(_ ver: PackageVersion) -> Bool {
@@ -14,7 +14,7 @@ public struct Mbedtls: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .tvOS, .tvSimulator, .watchOS, .watchSimulator:
       // fork() is not supported
       throw PackageRecipeError.unsupportedTarget

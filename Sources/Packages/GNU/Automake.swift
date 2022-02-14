@@ -36,7 +36,7 @@ public struct Automake: Package {
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
-    if order.target.system == .linuxGNU {
+    if order.system == .linuxGNU {
       return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
     }
     return nil

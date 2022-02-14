@@ -6,7 +6,7 @@ public struct Bm3d: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "8"
+    "9"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

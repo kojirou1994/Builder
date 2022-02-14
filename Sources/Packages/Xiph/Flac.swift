@@ -57,7 +57,7 @@ public struct Flac: Package {
 
   public func build(with context: BuildContext) throws {
 
-    let useASM = context.order.target.arch == .x86_64 || context.isBuildingNative
+    let useASM = context.order.arch == .x86_64 || context.isBuildingNative
     try context.autogen()
 
     try context.fixAutotoolsForDarwin()

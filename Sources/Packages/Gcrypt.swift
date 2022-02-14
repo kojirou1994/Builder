@@ -5,12 +5,12 @@ public struct Gcrypt: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.9.4"
+    "1.10.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .macOS:
       break
     default:

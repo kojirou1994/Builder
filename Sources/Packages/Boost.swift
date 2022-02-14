@@ -5,7 +5,7 @@ public struct Boost: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.76"
+    "1.78"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -21,7 +21,6 @@ public struct Boost: Package {
       source: source,
       dependencies: [
         .runTime(Icu4c.self),
-        .runTime(Libiconv.self),
         .runTime(Bzip2.self),
         .runTime(Zlib.self),
         .runTime(Zstd.self),

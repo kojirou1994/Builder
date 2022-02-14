@@ -31,7 +31,7 @@ public struct Fish: Package {
   
   public func build(with context: BuildContext) throws {
     context.environment.append("-lintl -liconv", for: .ldflags)
-    if context.order.target.system.isApple {
+    if context.order.system.isApple {
       context.environment.append("-Wl,-framework -Wl,CoreFoundation", for: .ldflags)
     }
     try context.changingDirectory(context.randomFilename) { _ in

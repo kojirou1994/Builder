@@ -34,10 +34,10 @@ public struct x264: Package {
 
   public func build(with context: BuildContext) throws {
 
-    let needGas = context.order.target.arch != .x86_64
+    let needGas = context.order.arch != .x86_64
 
     if needGas {
-      context.environment["AS"] = "tools/gas-preprocessor.pl -arch \(context.order.target.arch.gnuTripleString) -- \(context.cc)"
+      context.environment["AS"] = "tools/gas-preprocessor.pl -arch \(context.order.arch.gnuTripleString) -- \(context.cc)"
     }
 
     try context.configure(

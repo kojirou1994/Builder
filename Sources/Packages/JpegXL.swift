@@ -9,7 +9,7 @@ public struct JpegXL: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-    let repoUrl = "https://gitlab.com/wg1/jpeg-xl.git"
+    let repoUrl = "https://github.com/libjxl/libjxl.git"
 
     let source: PackageSource
     switch order.version {
@@ -33,6 +33,7 @@ public struct JpegXL: Package {
         .runTime(Giflib.self),
         .runTime(Highway.self),
         .runTime(Png.self),
+        order.version > "0.6.1" ? .runTime(Gflags.self) : nil,
       ]
     )
   }

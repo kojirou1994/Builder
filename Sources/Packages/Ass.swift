@@ -23,7 +23,6 @@ public struct Ass: Package {
         .runTime(Freetype.self),
         .runTime(Harfbuzz.self),
         .runTime(Fribidi.self),
-        .runTime(Libiconv.self),
         .buildTool(Nasm.self),
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
@@ -42,7 +41,7 @@ public struct Ass: Package {
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
       configureEnableFlag(false, "fontconfig"),
-      configureEnableFlag(context.order.target.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true),
+      configureEnableFlag(context.order.system != .linuxGNU, "require-system-font-provider", defaultEnabled: true),
       nil
       //      "HARFBUZZ_CFLAGS=-I\(context.dependencyMap[Harfbuzz.self].include.path)",
       //      "HARFBUZZ_LIBS=-L\(context.dependencyMap[Harfbuzz.self].lib.path) -lharfbuzz"

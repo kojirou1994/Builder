@@ -10,7 +10,7 @@ public struct Libarchive: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .watchOS, .watchSimulator,
          .tvOS, .tvSimulator:
       /*
@@ -50,7 +50,7 @@ public struct Libarchive: Package {
 
     /*
      still failed:
-    switch context.order.target.system {
+    switch context.order.system {
     case .watchOS, .watchSimulator,
          .tvOS, .tvSimulator:
       try [
@@ -68,7 +68,7 @@ public struct Libarchive: Package {
     try context.inRandomDirectory { _ in
 
       let enableShared = context.libraryType == .shared || ( context.libraryType == .all && !context.prefersStaticBin )
-      let enableTests = context.canRunTests && context.order.target.system != .macCatalyst /* tests require system() function */
+      let enableTests = context.canRunTests && context.order.system != .macCatalyst /* tests require system() function */
 
       try context.cmake(
         toolType: .ninja,

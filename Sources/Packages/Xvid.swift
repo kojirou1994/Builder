@@ -42,7 +42,7 @@ public struct Xvid: Package {
       try context.make()
 
       try context.make("install")
-      let sharedLibraryExtension = context.order.target.system.sharedLibraryExtension
+      let sharedLibraryExtension = context.order.system.sharedLibraryExtension
       try FileManager.default.createSymbolicLink(atPath: context.prefix.lib.appendingPathComponent("libxvidcore.\(sharedLibraryExtension)").path, withDestinationPath: "libxvidcore.4.\(sharedLibraryExtension)")
 
       try context.autoRemoveUnneedLibraryFiles()

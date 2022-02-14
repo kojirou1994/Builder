@@ -9,7 +9,7 @@ public struct M4: Package {
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-    switch order.target.system {
+    switch order.system {
     case .tvOS, .tvSimulator,
          .watchOS, .watchSimulator:
       throw PackageRecipeError.unsupportedTarget
@@ -23,7 +23,7 @@ public struct M4: Package {
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
       var patches = [PackagePatch]()
-      if order.target.system == .linuxGNU {
+      if order.system == .linuxGNU {
         patches.append(
           .remote(
             url: "https://raw.githubusercontent.com/archlinux/svntogit-packages/19e203625ecdf223400d523f3f8344f6ce96e0c2/trunk/m4-1.4.18-glibc-change-work-around.patch",
@@ -50,7 +50,7 @@ public struct M4: Package {
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
-    if order.target.system == .linuxGNU {
+    if order.system == .linuxGNU {
       return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
     }
     return nil

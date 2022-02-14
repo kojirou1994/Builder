@@ -1,22 +1,20 @@
 import BuildSystem
 
-public struct Libgit2: Package {
+public struct Assrender: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3"
+    "0.36.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
-
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/AmusementClub/assrender.git")
     case .stable(let version):
-      let versionString = version.toString()
-      source = .tarball(url: "https://github.com/libgit2/libgit2/archive/v\(versionString).tar.gz")
+      source = .tarball(url: "https://github.com/AmusementClub/assrender/archive/refs/tags/\(version.toString(includeZeroMinor: false, includeZeroPatch: false)).tar.gz")
     }
 
     return .init(
@@ -25,24 +23,22 @@ public struct Libgit2: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
-        .runTime(Libssh2.self),
+        .runTime(Ass.self),
+        .runTime(Vapoursynth.self),
       ],
-      canBuildAllLibraryTogether: false
+      supportedLibraryType: .shared
     )
   }
 
   public func build(with context: BuildContext) throws {
+
     try context.inRandomDirectory { _ in
-      try context.cmake(
-        toolType: .ninja,
-        "..",
-        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        cmakeOnFlag(false, "BUILD_CLAR")
-      )
+      try context.cmake(toolType: .ninja, "..")
 
       try context.make(toolType: .ninja)
       try context.make(toolType: .ninja, "install")
     }
+
+    try Vapoursynth.install(plugin: context.prefix.appending("lib", "vapoursynth", "libassrender"), context: context)
   }
 }

@@ -12,7 +12,7 @@ public struct DlbMp4base: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.target.system {
+    switch order.system {
     case .macOS, .linuxGNU, .macCatalyst:
       break
     default:

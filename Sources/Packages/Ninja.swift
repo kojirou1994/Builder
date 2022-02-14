@@ -12,7 +12,7 @@ public struct Ninja: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/heads/master.zip")
+      source = .repository(url: "https://github.com/ninja-build/ninja.git")
     case .stable(let version):
       source = .tarball(url: "https://github.com/ninja-build/ninja/archive/refs/tags/v\(version.toString()).tar.gz")
     }
@@ -25,7 +25,7 @@ public struct Ninja: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.cmake(
         toolType: .make, 
         ".."

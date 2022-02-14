@@ -14,7 +14,7 @@ public struct Opencore: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://deac-riga.dl.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-\(version).tar.gz")
+      source = .tarball(url: "https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-\(version).tar.gz")
     }
 
     return .init(

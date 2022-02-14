@@ -1,22 +1,23 @@
 import BuildSystem
 
-public struct Libgit2: Package {
+public struct Gflags: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3"
+    "2.2.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
+    let repoUrl = "https://github.com/gflags/gflags.git"
+
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: repoUrl)
     case .stable(let version):
-      let versionString = version.toString()
-      source = .tarball(url: "https://github.com/libgit2/libgit2/archive/v\(versionString).tar.gz")
+      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString(includeZeroPatch: version > "2.0"))"))
     }
 
     return .init(
@@ -24,10 +25,7 @@ public struct Libgit2: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
-        .buildTool(PkgConfig.self),
-        .runTime(Libssh2.self),
-      ],
-      canBuildAllLibraryTogether: false
+      ]
     )
   }
 
@@ -37,8 +35,8 @@ public struct Libgit2: Package {
         toolType: .ninja,
         "..",
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        cmakeOnFlag(false, "BUILD_CLAR")
+        cmakeOnFlag(context.libraryType.buildStatic, "BUILD_STATIC_LIBS"),
+        cmakeOnFlag(false, "BUILD_TESTING")
       )
 
       try context.make(toolType: .ninja)

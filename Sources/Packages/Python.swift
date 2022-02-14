@@ -5,7 +5,7 @@ public struct Python: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.9.7"
+    "3.9.10"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -32,7 +32,7 @@ public struct Python: Package {
 
   public func build(with context: BuildContext) throws {
 
-    if context.isBuildingCross, context.order.target.system.isApple {
+    if context.isBuildingCross, context.order.system.isApple {
 //      context.environment.append("yes", for: "ac_cv_file__dev_ptmx")
       try replace(contentIn: "configure", matching: """
   \t*-*-vxworks*)

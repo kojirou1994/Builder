@@ -24,7 +24,7 @@ public struct Nnedi3: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
-        order.target.arch.isX86 ? .buildTool(Yasm.self) : nil,
+        order.arch.isX86 ? .buildTool(Yasm.self) : nil,
         .runTime(Vapoursynth.self),
       ]
     )

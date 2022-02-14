@@ -5,7 +5,7 @@ public struct Fmt: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "8.0.1"
+    "8.1.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

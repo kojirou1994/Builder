@@ -5,7 +5,7 @@ public struct ReadMpls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "4"
+    "5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

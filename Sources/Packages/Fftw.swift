@@ -55,10 +55,10 @@ public struct Fftw: Package {
         configureEnableFlag(false, "fortran"),
         configureEnableFlag(true, "threads"),
       ]
-      arguments.append(configureEnableFlag(format == .float && context.order.target.arch.isX86, "sse"))
+      arguments.append(configureEnableFlag(format == .float && context.order.arch.isX86, "sse"))
       if format != .longDouble {
-        arguments.append(contentsOf: configureEnableFlag(context.order.target.arch.isX86, "sse2", "avx", "avx2", "avx512"))
-        arguments.append(configureEnableFlag(context.order.target.arch.isARM, "neon"))
+        arguments.append(contentsOf: configureEnableFlag(context.order.arch.isX86, "sse2", "avx", "avx2", "avx512"))
+        arguments.append(configureEnableFlag(context.order.arch.isARM, "neon"))
       }
       format.name.map { arguments.append(configureEnableFlag(true, $0)) }
 
