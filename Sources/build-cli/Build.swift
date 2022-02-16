@@ -94,6 +94,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<LGhost>.self,
       PackageBuildCommand<Lame>.self,
       PackageBuildCommand<Libarchive>.self,
+      PackageBuildCommand<Libavif>.self,
       PackageBuildCommand<Libb2>.self,
       PackageBuildCommand<Libde265>.self,
       PackageBuildCommand<Libev>.self,

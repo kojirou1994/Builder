@@ -94,6 +94,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<LGhost>.self,
       PackageCheckUpdateCommand<Lame>.self,
       PackageCheckUpdateCommand<Libarchive>.self,
+      PackageCheckUpdateCommand<Libavif>.self,
       PackageCheckUpdateCommand<Libb2>.self,
       PackageCheckUpdateCommand<Libde265>.self,
       PackageCheckUpdateCommand<Libev>.self,

@@ -48,6 +48,8 @@ public struct JpegXL: Package {
         toolType: .ninja,
         "..",
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+        context.order.version > "0.6.1" ? cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS") : nil,
+        context.order.version > "0.6.1" ? cmakeOnFlag(context.libraryType.buildStatic, "JPEGXL_STATIC") : nil,
         cmakeOnFlag(true, "SJPEG_BUILD_EXAMPLES"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
