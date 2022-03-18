@@ -31,23 +31,37 @@ extension TargetTriple {
 enum SwiftCommand {
   static let dumpPackage = AnyExecutable(executableName: "swift", arguments: ["package", "dump-package"])
   static let describe = AnyExecutable(executableName: "swift", arguments: ["package", "describe", "--type", "json"])
-  static let clean = AnyExecutable(executableName: "swift", arguments: ["package", "clean"])
 }
 
-struct SwiftBuild: Executable {
+struct SwiftPM: Executable {
   static let executableName = "swift"
 
+  enum Command {
+    case build(showBinPath: Bool)
+    case clean
+  }
+  var command: Command
   let configuration: String
-  let arch: TargetArch
+  let archs: [TargetArch]
   let buildPath: String
   let extraArguments: [String]
 
   var arguments: [String] {
-    var arg = ["build"]
+    var arg = [String]()
+    switch command {
+    case .build(let showBinPath):
+      arg.append("build")
+      if showBinPath {
+        arg.append("--show-bin-path")
+      }
+    case .clean:
+      arg.append("package")
+      arg.append("clean")
+    }
 
     arg.append(contentsOf: ["-c", configuration])
     arg.append(contentsOf: ["--build-path", buildPath])
-    arg.append(contentsOf: ["--arch", arch.clangTripleString])
+    archs.forEach { arg.append(contentsOf: ["--arch", $0.clangTripleString]) }
 
     #if !canImport(Darwin)
     arg.append("--enable-test-discovery")
@@ -71,6 +85,9 @@ struct Build: ParsableCommand {
 
   @Flag(name: .shortAndLong, help: "Debug mode")
   var debug: Bool = false
+
+  @Flag(help: "Build universal directly, fast for one-time, slow for incremental")
+  var directUniversal: Bool = false
 
   @Flag(name: .shortAndLong, help: "Install exported products only")
   var exported: Bool = false
@@ -141,19 +158,41 @@ struct Build: ParsableCommand {
     }
 
     let configuration = debug ? "debug" : "release"
-    var archBinPaths = [URL]()
 
-    for arch in Set(archs).sorted(by: \.rawValue) {
-      logger.info("Building arch \(arch) with configuration: \(configuration)")
-      let buildPath = try getBuildPath(logger: logger, archs: [arch], prefix: "build", rootPath: nil)
+    func build(archs: [TargetArch]) throws -> URL {
+      logger.info("Building arch \(archs.map(\.clangTripleString).joined(separator: "_")) with configuration: \(configuration)")
+      let buildPath = try getBuildPath(logger: logger, archs: archs, prefix: "build", rootPath: nil)
 
+      var command = SwiftPM(command: .clean, configuration: configuration, archs: archs, buildPath: buildPath.path, extraArguments: extraArguments)
+
+      if clean {
+        logger.info("Cleaning")
+        try command.launch(use: launcher)
+      }
+
+      command.command = .build(showBinPath: false)
       let startDate = Date()
-      try SwiftBuild(configuration: configuration, arch: arch, buildPath: buildPath.path, extraArguments: extraArguments)
-        .launch(use: launcher)
+      try command.launch(use: launcher)
       logger.info("Totally used: \(String(format: "%.3f", Date().timeIntervalSince(startDate))) seconds")
 
-      // TODO: use --show-bin-path
-      archBinPaths.append(buildPath.appendingPathComponent(configuration))
+      command.command = .build(showBinPath: true)
+      let binPath = try command.launch(use: TSCExecutableLauncher())
+        .utf8Output().trimmingCharacters(in: .whitespacesAndNewlines)
+      logger.info("bin path: \(binPath)")
+      return URL(fileURLWithPath: binPath)
+    }
+
+    var archBinPaths = [URL]()
+
+    let allArchs = Set(archs).sorted(by: \.rawValue)
+    if directUniversal {
+      let binPath = try build(archs: allArchs)
+      archBinPaths.append(binPath)
+    } else {
+      for arch in allArchs {
+        let binPath = try build(archs: [arch])
+        archBinPaths.append(binPath)
+      }
     }
 
     try binaryNames.forEach { name in
