@@ -10,14 +10,8 @@ public struct x265: Package {
   @Flag(name: [.customLong("12")], inversion: .prefixedNo)
   var enable12bit: Bool = true
 
-//  public func validate() throws {
-//    guard enable8bit || enable10bit || enable12bit else {
-//      throw ValidationError("No enabled bit settings!")
-//    }
-//  }
-
   public var defaultVersion: PackageVersion {
-    "3.5"
+    .head
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -25,18 +19,26 @@ public struct x265: Package {
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .branch("master"))
+      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("3415705dda5928197f90d58f14f06080eeed4e1d"))
     case .stable(let version):
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
     }
 
     if order.arch.isARM {
-      source.patches += [
-        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A00-darwin-Revert-Add-aarch64-support-Part-2.patch", sha256: nil),
-        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A01-darwin-neon-support-for-arm64.patch", sha256: nil),
-        .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A02-threads-priority.patch", sha256: nil)
-      ]
+      if order.version <= "3.5" {
+        source.patches += [
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A00-darwin-Revert-Add-aarch64-support-Part-2.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A01-darwin-neon-support-for-arm64.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A02-threads-priority.patch", sha256: nil),
+        ]
+      } else {
+        source.patches += [
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/eaeccfa9409aa21cd0b02fd27937e4b9c7cc90fd/contrib/x265/A01-build-fix.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/eaeccfa9409aa21cd0b02fd27937e4b9c7cc90fd/contrib/x265/A02-threads-priority.patch", sha256: nil),
+        ]
+      }
     }
+
 
     return .init(
       source: source,
@@ -54,16 +56,25 @@ public struct x265: Package {
   }
 
   public func build(with context: BuildContext) throws {
+    var specialName = ""
+    if context.order.system.isApple {
+      if context.order.arch.isARM {
+        specialName = "Apple Silicon"
+      } else {
+        specialName = "Intel"
+      }
+      specialName = "[\(specialName)]"
+    }
 
     // MARK: fix version string
-    try replace(contentIn: "source/common/version.cpp", matching: "#define ONOS    \"[Mac OS X]\"", with: "#define ONOS    \"[macOS]\"")
+    try replace(contentIn: "source/common/version.cpp", matching: "#define ONOS    \"[Mac OS X]\"", with: "#define ONOS    \"[macOS]\(specialName)\"")
     try replace(contentIn: "source/common/version.cpp", matching: """
       #if X86_64
       #define BITS
       """, with: """
-                 #if X86_64 || defined(__aarch64__)
-                 #define BITS
-                 """)
+      #if X86_64 || defined(__aarch64__)
+      #define BITS
+      """)
 
 
     let srcDir = "../source"
@@ -173,7 +184,6 @@ public struct x265: Package {
 
   public var tag: String {
     [
-//      enable8bit ? "" : "NO_8BIT",
       enable10bit ? "" : "NO_10BIT",
       enable12bit ? "" : "NO_12BIT",
     ]
