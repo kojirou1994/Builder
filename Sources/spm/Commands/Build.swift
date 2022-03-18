@@ -6,6 +6,8 @@ import URLFileManager
 import XcodeExecutable
 import BuildSystem
 import Precondition
+import Logging
+import JSON
 
 extension TargetSystem {
   var spmString: String {
@@ -27,27 +29,26 @@ extension TargetTriple {
 }
 
 enum SwiftCommand {
+  static let dumpPackage = AnyExecutable(executableName: "swift", arguments: ["package", "dump-package"])
   static let describe = AnyExecutable(executableName: "swift", arguments: ["package", "describe", "--type", "json"])
-  static let update = AnyExecutable(executableName: "swift", arguments: ["package", "update"])
+  static let clean = AnyExecutable(executableName: "swift", arguments: ["package", "clean"])
 }
 
 struct SwiftBuild: Executable {
   static let executableName = "swift"
 
-  let debug: Bool
-  let integrated: Bool
+  let configuration: String
   let arch: TargetArch
+  let buildPath: String
   let extraArguments: [String]
 
   var arguments: [String] {
     var arg = ["build"]
-    if !debug {
-      arg.append(contentsOf: ["-c", "release"])
-    }
-    if integrated {
-      arg.append("--use-integrated-swift-driver")
-    }
+
+    arg.append(contentsOf: ["-c", configuration])
+    arg.append(contentsOf: ["--build-path", buildPath])
     arg.append(contentsOf: ["--arch", arch.clangTripleString])
+
     #if !canImport(Darwin)
     arg.append("--enable-test-discovery")
     #endif
@@ -57,33 +58,28 @@ struct SwiftBuild: Executable {
   }
 }
 
-let spmProductDir = "spm_binaries"
-
 struct Build: ParsableCommand {
   static var configuration: CommandConfiguration {
     .init(abstract: "Build spm products")
   }
 
-  @Flag(name: .shortAndLong, help: "Use integrated swift driver")
-  var integrated: Bool = false
-
   @Flag(name: .shortAndLong, help: "Strip built binaries")
   var strip: Bool = false
 
-  @Flag(name: .shortAndLong, help: "Update before building")
-  var update: Bool = false
+  @Flag(help: "Clean before building")
+  var clean: Bool = false
 
   @Flag(name: .shortAndLong, help: "Debug mode")
   var debug: Bool = false
 
-  @Flag(name: .shortAndLong, help: "Exported executable only")
+  @Flag(name: .shortAndLong, help: "Install exported products only")
   var exported: Bool = false
 
   @Flag(name: .shortAndLong, help: "Verbose mode")
   var verbose: Bool = false
 
-  @Option(name: .long, help: "Install path")
-  var installPrefix: String?
+  @Option(help: "Install prefix")
+  var prefix: String?
 
   @Option(name: .customLong("arch"), help: ArgumentHelp(valueName: "arch"))
   var archs: [TargetArch] = [.native]
@@ -95,120 +91,101 @@ struct Build: ParsableCommand {
     try preconditionOrThrow(!archs.isEmpty, "No arch!")
   }
 
-  struct Description: Decodable {
-    let name, path: String
-    let targets: [Target]
-    struct Target: Decodable {
-      let c99name, module_type, name, path: String
-      let sources: [String]
-      let type: String
-    }
-  }
-
   func run() throws {
 
-    try spmSetup(force: false)
-
+    let logger = Logger(label: "build")
     let launcher = TSCExecutableLauncher(outputRedirection: verbose ? .none : .stream(stdout: { _ in
-
     }, stderr: { _ in
-
     }))
 
-    let installDirectoryURL = installPrefix.map {URL(fileURLWithPath: $0)}
+    let installDirectoryURL = prefix.map { URL(fileURLWithPath: $0) }
 
     try installDirectoryURL.map { url in
       switch fm.fileExistance(at: url) {
       case .directory:
         break
       case .file:
-        print("install prefix \(installPrefix!) is a file!")
-        throw ExitCode(1)
+        throw ValidationError("install prefix \(prefix!) is a file!")
       case .none:
         try fm.createDirectory(at: url)
       }
     }
 
-    let spmBinaryDirectoryURL = URL(fileURLWithPath: ".build/\(spmProductDir)")
+    let spmBinaryDirectoryURL = try getBuildPath(logger: logger, archs: archs, prefix: "bin", rootPath: nil)
     try? fm.removeItem(at: spmBinaryDirectoryURL)
     try fm.createDirectory(at: spmBinaryDirectoryURL)
 
-    if update {
-      print("Updating...")
-      try SwiftCommand.update
-        .launch(use: launcher)
-    }
+    let binaryNames: [String]
 
-    let result = try SwiftCommand.describe
-      .launch(use: TSCExecutableLauncher())
+    do {
+      let result = try SwiftCommand.dumpPackage
+        .launch(use: TSCExecutableLauncher())
 
-    let p: Description = try JSONDecoder().kwiftDecode(from: result.output.get())
-
-    let allArchs = Set(archs)
-    for arch in allArchs {
-      try build(arch: arch, launcher: launcher)
-    }
-
-    try p.targets.forEach { target in
-      guard target.type == "executable" else {
-        return
-      }
-      print("Creating universal binary for \(target.name)")
-
-      let archBinaries = try allArchs.map { arch -> String in
-        let triple = TargetTriple(arch: arch, system: .native)
-
-        var src = URL(fileURLWithPath: ".build/\(triple.spmString)/\(mode)").appendingPathComponent(target.name)
-        if strip {
-          let strippedFileURL = src.appendingPathExtension("stripped")
-          print("Stripping \(target.name)")
-          if fm.fileExistance(at: strippedFileURL).exists {
-            try fm.removeItem(at: strippedFileURL)
+      let json = try JSON.read(result.output.get())
+      if exported {
+        binaryNames = json.root["products"]!.array!.compactMap { product in
+          if product["type"]!["executable"] != nil {
+            return product["name"]!.string!
           }
-          try fm.copyItem(at: src, to: strippedFileURL)
-          try Strip(file: strippedFileURL.path)
-            .launch(use: launcher)
-          src = strippedFileURL
+          return nil
         }
-
-        return src.path
+      } else {
+        binaryNames = json.root["targets"]!.array!.compactMap { product in
+          if product["type"]!.string == "executable" {
+            return product["name"]!.string!
+          }
+          return nil
+        }
       }
 
-      let universalBinaryURL = spmBinaryDirectoryURL.appendingPathComponent(target.name)
+    }
 
-      try Lipo(files: archBinaries, output: universalBinaryURL.path)
+    let configuration = debug ? "debug" : "release"
+    var archBinPaths = [URL]()
+
+    for arch in Set(archs).sorted(by: \.rawValue) {
+      logger.info("Building arch \(arch) with configuration: \(configuration)")
+      let buildPath = try getBuildPath(logger: logger, archs: [arch], prefix: "build", rootPath: nil)
+
+      let startDate = Date()
+      try SwiftBuild(configuration: configuration, arch: arch, buildPath: buildPath.path, extraArguments: extraArguments)
         .launch(use: launcher)
+      logger.info("Totally used: \(String(format: "%.3f", Date().timeIntervalSince(startDate))) seconds")
+
+      // TODO: use --show-bin-path
+      archBinPaths.append(buildPath.appendingPathComponent(configuration))
+    }
+
+    try binaryNames.forEach { name in
+      let universalBinaryURL = spmBinaryDirectoryURL.appendingPathComponent(name)
+
+      if archBinPaths.count == 1 {
+        try fm.copyItem(at: archBinPaths[0].appendingPathComponent(name), to: universalBinaryURL)
+      } else {
+        let archBinaries = archBinPaths.map { $0.appendingPathComponent(name).path }
+        logger.info("Creating universal binary for \(name), output: \(universalBinaryURL.path)")
+
+        logger.info("Source files: \(archBinaries)")
+
+        try Lipo(files: archBinaries, output: universalBinaryURL.path)
+          .launch(use: launcher)
+      }
+
+      if strip {
+        logger.info("Striping \(name)")
+        try Strip(file: universalBinaryURL.path)
+          .launch(use: launcher)
+      }
 
       try installDirectoryURL.map { url in
-        let dst = url.appendingPathComponent(target.name)
+        let dst = url.appendingPathComponent(name)
         if fm.fileExistance(at: dst).exists {
-          print("Removing installed file at \(dst.path)")
+          logger.info("Removing installed file at \(dst.path)")
           try fm.removeItem(at: dst)
         }
-        print("Installing \(target.name) to \(dst.path)")
+        logger.info("Installing \(name) to \(dst.path)")
         try fm.copyItem(at: universalBinaryURL, to: dst)
       }
     }
-  }
-
-  var mode: String {
-    debug ? "debug" : "release"
-  }
-
-
-
-  func build(arch: TargetArch, launcher: TSCExecutableLauncher) throws {
-    func removeGarbages() {
-      try? fm.removeItem(at: URL(fileURLWithPath: ".build/\(mode).yaml"))
-      try? fm.removeItem(at: URL(fileURLWithPath: ".build/\(mode)"))
-    }
-
-    print("Build arch \(arch) with \(mode) configuration")
-    removeGarbages()
-    let startDate = Date()
-    try SwiftBuild(debug: debug, integrated: integrated, arch: arch, extraArguments: extraArguments)
-      .launch(use: launcher)
-    print("Totally used: \(Date().timeIntervalSince(startDate)) seconds")
-    removeGarbages()
   }
 }

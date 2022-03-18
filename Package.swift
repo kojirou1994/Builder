@@ -10,13 +10,15 @@ let package = Package(
   products: [
     .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"]),
     .library(name: "Packages", targets: ["Packages"]),
-    .executable(name: "build-cli", targets: ["build-cli"])
+    .executable(name: "build-cli", targets: ["build-cli"]),
+    .executable(name: "spm", targets: ["spm"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "0.3.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "1.0.0"),
+    .package(url: "https://github.com/kojirou1994/YYJSONEncoder.git", .branch("main")),
     .package(url: "https://github.com/kojirou1994/Precondition.git", from: "1.0.0"),
     .package(url: "https://github.com/kojirou1994/PrettyBytes.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
@@ -62,6 +64,7 @@ let package = Package(
       name: "spm",
       dependencies: [
         .target(name: "BuildSystem"),
+        .product(name: "JSON", package: "YYJSONEncoder"),
       ]),
     .executableTarget(
       name: "generate-code",

@@ -99,6 +99,24 @@
           "revision": "b52f9567ee80ef991ebf9c76d0edc2d9a6b63c47",
           "version": "0.1.3"
         }
+      },
+      {
+        "package": "yyjson",
+        "repositoryURL": "https://github.com/ibireme/yyjson.git",
+        "state": {
+          "branch": null,
+          "revision": "41069b2bcb628c7094dfe772a9cf7ca56b0c2075",
+          "version": "0.4.0"
+        }
+      },
+      {
+        "package": "YYJSONEncoder",
+        "repositoryURL": "https://github.com/kojirou1994/YYJSONEncoder.git",
+        "state": {
+          "branch": "main",
+          "revision": "3873c7d82070aaa5f299a03ccc73d0a3da7bf65b",
+          "version": null
+        }
       }
     ]
   },
