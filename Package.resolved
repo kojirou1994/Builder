@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "async-http-client",
-        "repositoryURL": "https://github.com/swift-server/async-http-client.git",
-        "state": {
-          "branch": null,
-          "revision": "1081b0b0541f535ca088acdb56f5ca5598bc6247",
-          "version": "1.6.3"
-        }
-      },
-      {
         "package": "console-kit",
         "repositoryURL": "https://github.com/vapor/console-kit.git",
         "state": {
@@ -33,16 +24,25 @@
         "repositoryURL": "https://github.com/kojirou1994/Kwift.git",
         "state": {
           "branch": null,
-          "revision": "9a60adf4e4767014cc9850f80c2d71afe708dd41",
-          "version": "0.9.0"
+          "revision": "9261a1508b935fe574c2aff29ffc4bbca7a034e8",
+          "version": "1.0.1"
         }
       },
       {
-        "package": "ProxyInfo",
-        "repositoryURL": "https://github.com/kojirou1994/ProxyInfo.git",
+        "package": "Precondition",
+        "repositoryURL": "https://github.com/kojirou1994/Precondition.git",
         "state": {
           "branch": null,
-          "revision": "49b4ee97c33ba750e176bb3b837b4cfa5b430526",
+          "revision": "8bfd454560f5bfafe9bf0db3e929ef65ba189400",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "PrettyBytes",
+        "repositoryURL": "https://github.com/kojirou1994/PrettyBytes.git",
+        "state": {
+          "branch": null,
+          "revision": "be137c20bafe9e215b7ece821fb9ac71f7636ae8",
           "version": "0.0.1"
         }
       },
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
-          "revision": "3bea268b223651c4ab7b7b9ad62ef9b2d4143eb6",
-          "version": "1.1.6"
+          "revision": "ddb07e896a2a8af79512543b1c7eb9797f8898a5",
+          "version": "1.1.7"
         }
       },
       {
@@ -74,48 +74,12 @@
         }
       },
       {
-        "package": "swift-nio",
-        "repositoryURL": "https://github.com/apple/swift-nio.git",
+        "package": "swift-system",
+        "repositoryURL": "https://github.com/apple/swift-system.git",
         "state": {
           "branch": null,
-          "revision": "6aa9347d9bc5bbfe6a84983aec955c17ffea96ef",
-          "version": "2.33.0"
-        }
-      },
-      {
-        "package": "swift-nio-extras",
-        "repositoryURL": "https://github.com/apple/swift-nio-extras.git",
-        "state": {
-          "branch": null,
-          "revision": "f73ca5ee9c6806800243f1ac415fcf82de9a4c91",
-          "version": "1.10.2"
-        }
-      },
-      {
-        "package": "swift-nio-http2",
-        "repositoryURL": "https://github.com/apple/swift-nio-http2.git",
-        "state": {
-          "branch": null,
-          "revision": "326f7f9a8c8c8402e3691adac04911cac9f9d87f",
-          "version": "1.18.4"
-        }
-      },
-      {
-        "package": "swift-nio-ssl",
-        "repositoryURL": "https://github.com/apple/swift-nio-ssl.git",
-        "state": {
-          "branch": null,
-          "revision": "5e68c1ded15619bb281b273fa8c2d8fd7f7b2b7d",
-          "version": "2.16.1"
-        }
-      },
-      {
-        "package": "swift-nio-transport-services",
-        "repositoryURL": "https://github.com/apple/swift-nio-transport-services.git",
-        "state": {
-          "branch": null,
-          "revision": "e7f5278a26442dc46783ba7e063643d524e414a0",
-          "version": "1.11.3"
+          "revision": "836bc4557b74fe6d2660218d56e3ce96aff76574",
+          "version": "1.1.1"
         }
       },
       {
@@ -123,8 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "f9bbd6b80d67408021576adf6247e17c2e957d92",
-          "version": "0.2.4"
+          "revision": "b7667f3e266af621e5cc9c77e74cacd8e8c00cb4",
+          "version": "0.2.5"
         }
       },
       {

@@ -1,5 +1,7 @@
 import URLFileManager
 import KwiftUtility
+import Precondition
+import PrettyBytes
 import Logging
 #if canImport(CryptoKit)
 import CryptoKit
@@ -258,8 +260,8 @@ extension Builder {
       var tag = package.tag
       if !ignoreTag, !tag.isEmpty {
         let tagHash = tag.withUTF8 { buffer in
-          SHA256.hash(data: buffer)
-            .hexString(uppercase: false, prefix: "")
+          BytesStringFormatter(uppercase: false)
+            .bytesToHexString(SHA256.hash(data: buffer))
         }
         versionTag.append("-")
         versionTag.append(tagHash)

@@ -4,9 +4,6 @@ public struct Aom: Package {
 
   public init() {}
 
-  @Flag(inversion: .prefixedEnableDisable)
-  var examples: Bool = false
-
   public var defaultVersion: PackageVersion {
     "3.2.0"
   }
@@ -41,7 +38,7 @@ public struct Aom: Package {
         "..",
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(false, "ENABLE_DOCS"),
-        cmakeOnFlag(examples, "ENABLE_EXAMPLES"),
+        cmakeOnFlag(true, "ENABLE_EXAMPLES"),
         cmakeOnFlag(false, "ENABLE_TESTDATA"),
         cmakeOnFlag(false, "ENABLE_TESTS"),
         cmakeOnFlag(false, "ENABLE_TOOLS"),
@@ -55,14 +52,6 @@ public struct Aom: Package {
     }
 
     try context.autoRemoveUnneedLibraryFiles()
-  }
-
-  public var tag: String {
-    [
-      examples ? "examples" : ""
-    ]
-    .filter { !$0.isEmpty }
-    .joined(separator: "_")
   }
 
 }

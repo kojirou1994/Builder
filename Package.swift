@@ -16,7 +16,9 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "0.3.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
-    .package(url: "https://github.com/kojirou1994/Kwift.git", from: "0.8.0"),
+    .package(url: "https://github.com/kojirou1994/Kwift.git", from: "1.0.0"),
+    .package(url: "https://github.com/kojirou1994/Precondition.git", from: "1.0.0"),
+    .package(url: "https://github.com/kojirou1994/PrettyBytes.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Executable.git", from: "0.4.0"),
     .package(url: "https://github.com/apple/swift-crypto.git", from: "1.0.0"),
     .package(url: "https://github.com/vapor/console-kit.git", from: "4.2.0"),
@@ -36,6 +38,8 @@ let package = Package(
         .product(name: "Logging", package: "swift-log"),
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "KwiftUtility", package: "Kwift"),
+        .product(name: "Precondition", package: "Precondition"),
+        .product(name: "PrettyBytes", package: "PrettyBytes"),
         .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.linux])),
       ]),
     .target(
@@ -63,7 +67,7 @@ let package = Package(
       name: "generate-code",
       dependencies: [
         .product(name: "URLFileManager", package: "URLFileManager"),
-        .product(name: "Precondition", package: "Kwift"),
+        .product(name: "Precondition", package: "Precondition"),
       ]),
     .testTarget(
       name: "BuilderSystemTests",

@@ -5,6 +5,7 @@ import KwiftExtension
 import URLFileManager
 import XcodeExecutable
 import BuildSystem
+import Precondition
 
 extension TargetSystem {
   var spmString: String {
