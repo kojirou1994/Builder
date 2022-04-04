@@ -5,7 +5,7 @@ public struct Pcre2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "10.37"
+    "10.39"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -14,7 +14,8 @@ public struct Pcre2: Package {
     case .head:
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
-      source = .tarball(url: "https://ftp.pcre.org/pub/pcre/pcre2-\(version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)).tar.bz2")
+      let str = version.toString(includeZeroMinor: true, includeZeroPatch: false, numberWidth: 2)
+      source = .tarball(url: "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-\(str)/pcre2-\(str).tar.bz2")
     }
 
     return .init(

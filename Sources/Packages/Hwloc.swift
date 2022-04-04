@@ -5,7 +5,7 @@ public struct Hwloc: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.7"
+    "2.7.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

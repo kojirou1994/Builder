@@ -5,7 +5,7 @@ public struct Flac: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3.3"
+    "1.3.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

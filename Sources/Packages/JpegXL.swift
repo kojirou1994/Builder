@@ -8,6 +8,7 @@ public struct JpegXL: Package {
     "0.6.1"
   }
 
+// TODO: use bundled highway repo
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let repoUrl = "https://github.com/libjxl/libjxl.git"
 
@@ -34,6 +35,10 @@ public struct JpegXL: Package {
         .runTime(Highway.self),
         .runTime(Png.self),
         order.version > "0.6.1" ? .runTime(Gflags.self) : nil,
+      ],
+      products: [
+        .bin("cjxl"), .bin("djxl"),
+        .library(name: "CJXL", libname: "libjxl", headerRoot: "jxl", headers: ["decode.h", "parallel_runner.h"], shimedHeaders: []),
       ]
     )
   }

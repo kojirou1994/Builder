@@ -5,7 +5,7 @@ public struct Bluray: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3.0"
+    "1.3.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

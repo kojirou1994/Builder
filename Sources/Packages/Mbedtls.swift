@@ -49,8 +49,12 @@ public struct Mbedtls: Package {
     let configPath = "include/mbedtls/\(configFilename).h"
 
     // enable pthread
-    try replace(contentIn: configPath, matching: "//#define MBEDTLS_THREADING_PTHREAD", with: "#define MBEDTLS_THREADING_PTHREAD")
-    try replace(contentIn: configPath, matching: "//#define MBEDTLS_THREADING_C", with: "#define MBEDTLS_THREADING_C")
+    try [
+      "MBEDTLS_THREADING_PTHREAD",
+      "MBEDTLS_THREADING_C",
+      "MBEDTLS_SHA256_USE_A64_CRYPTO_IF_PRESENT",
+    ]
+    .forEach { try replace(contentIn: configPath, matching: "//#define \($0)", with: "#define \($0)") }
 
     try context.inRandomDirectory { _ in
       try context.cmake(

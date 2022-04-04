@@ -1,5 +1,4 @@
 import BuildSystem
-import Combine
 
 public struct Bm3d: Package {
 
