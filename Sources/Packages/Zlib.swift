@@ -5,7 +5,11 @@ public struct Zlib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.2.11"
+    "1.2.12"
+  }
+
+  private func isLegacy(_ version: PackageVersion) -> Bool {
+    version < "1.2.12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -18,23 +22,51 @@ public struct Zlib: Package {
     }
 
     return .init(
-      source: source
+      source: source,
+      dependencies: [
+        isLegacy(order.version) ? nil : .runTime(Cmake.self),
+        isLegacy(order.version) ? nil : .runTime(Ninja.self),
+      ]
     )
   }
 
   public func build(with context: BuildContext) throws {
-    try context.launch(path: "configure",
+    if isLegacy(context.order.version) {
+try context.launch(path: "configure",
                    "--prefix=\(context.prefix.root.path)",
                    context.order.arch.is64Bits ? "--64" : nil
     )
     
     try context.make()
     try context.make("install")
+    } else {
+      try context.inRandomDirectory { _ in
+        try context.cmake(
+          toolType: .ninja,
+          "..",
+          cmakeDefineFlag(context.prefix.pkgConfig.path, "INSTALL_PKGCONFIG_DIR"),
+          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
+          nil
+        )
+
+        try context.make(toolType: .ninja)
+
+        if context.canRunTests {
+          try context.make(toolType: .ninja, "test")
+        }
+
+        try context.make(toolType: .ninja, "install")
+    }
+    }
+    
     try context.autoRemoveUnneedLibraryFiles()
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
-    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [.init(name: "zlib", content: """
+    guard isLegacy(order.version) else {
+      return nil
+    }
+    return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [.init(name: "zlib", content: """
       sdkPath=\(sdkPath)
       prefix=${sdkPath}/usr
       exec_prefix=/usr
