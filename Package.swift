@@ -14,7 +14,7 @@ let package = Package(
     .executable(name: "spm", targets: ["spm"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "0.3.0"),
+    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.0.0"),
     .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     .package(url: "https://github.com/kojirou1994/URLFileManager.git", from: "0.0.1"),
     .package(url: "https://github.com/kojirou1994/Kwift.git", from: "1.0.0"),

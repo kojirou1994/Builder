@@ -24,21 +24,21 @@ public struct Zlib: Package {
     return .init(
       source: source,
       dependencies: [
-        isLegacy(order.version) ? nil : .runTime(Cmake.self),
-        isLegacy(order.version) ? nil : .runTime(Ninja.self),
+        isLegacy(order.version) ? nil : .buildTool(Cmake.self),
+        isLegacy(order.version) ? nil : .buildTool(Ninja.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
     if isLegacy(context.order.version) {
-try context.launch(path: "configure",
-                   "--prefix=\(context.prefix.root.path)",
-                   context.order.arch.is64Bits ? "--64" : nil
-    )
-    
-    try context.make()
-    try context.make("install")
+      try context.launch(path: "configure",
+                         "--prefix=\(context.prefix.root.path)",
+                         context.order.arch.is64Bits ? "--64" : nil
+      )
+
+      try context.make()
+      try context.make("install")
     } else {
       try context.inRandomDirectory { _ in
         try context.cmake(
@@ -56,7 +56,7 @@ try context.launch(path: "configure",
         }
 
         try context.make(toolType: .ninja, "install")
-    }
+      }
     }
     
     try context.autoRemoveUnneedLibraryFiles()

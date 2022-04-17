@@ -32,7 +32,6 @@ public struct JpegXL: Package {
         .runTime(Openexr.self),
         .runTime(Webp.self),
         .runTime(Giflib.self),
-        .runTime(Highway.self),
         .runTime(Png.self),
         order.version > "0.6.1" ? .runTime(Gflags.self) : nil,
       ],
@@ -60,7 +59,7 @@ public struct JpegXL: Package {
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
-        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
+        cmakeOnFlag(false, "JPEGXL_FORCE_SYSTEM_HWY"),
         cmakeOnFlag(false, "BUILD_TESTING")
       )
 
