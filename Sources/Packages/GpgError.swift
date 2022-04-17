@@ -5,7 +5,7 @@ public struct GpgError: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.44"
+    "1.45"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
