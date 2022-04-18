@@ -28,11 +28,11 @@ public struct JpegXL: Package {
         .buildTool(PkgConfig.self),
         .runTime(Brotli.self),
         .runTime(Mozjpeg.self),
-        .runTime(Ilmbase.self),
         .runTime(Openexr.self),
         .runTime(Webp.self),
         .runTime(Giflib.self),
         .runTime(Png.self),
+        .runTime(Libavif.self),
         order.version > "0.6.1" ? .runTime(Gflags.self) : nil,
       ],
       products: [

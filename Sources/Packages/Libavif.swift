@@ -37,6 +37,9 @@ public struct Libavif: Package {
   }
 
   public func build(with context: BuildContext) throws {
+
+    try replace(contentIn: "libavif.pc.cmake", matching: "Version: @PROJECT_VERSION@", with: "Version: @PROJECT_VERSION@\nRequires: aom dav1d rav1e")
+
     try context.inRandomDirectory { _ in
       try context.cmake(
         toolType: .ninja,
