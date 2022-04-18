@@ -5,7 +5,7 @@ public struct ImageMagick: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7.1.0-12"
+    "7.1.0-30"
   }
 
   enum QuantumDepth: UInt8, ExpressibleByArgument, CustomStringConvertible, CaseIterable {
@@ -74,7 +74,7 @@ public struct ImageMagick: Package {
       configureWithFlag(true, "freetype"),
       configureWithFlag(true, "webp"),
       configureWithFlag(true, "magick-plus-plus"),
-      configureWithFlag(true, "jxl"),
+      configureWithFlag(false, "jxl"),
       configureWithFlag(false, "openexr"),
       configureWithFlag(true, "fftw")
     )
