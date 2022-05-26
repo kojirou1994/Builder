@@ -4,7 +4,7 @@ public struct Zimg: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.0.3"
+    "3.0.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
