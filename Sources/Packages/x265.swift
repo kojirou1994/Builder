@@ -19,7 +19,7 @@ public struct x265: Package {
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("3415705dda5928197f90d58f14f06080eeed4e1d"))
+      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("9b59d45549f460e41a852cfd276f9b89eed2112a"))
     case .stable(let version):
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
     }
@@ -33,12 +33,18 @@ public struct x265: Package {
         ]
       } else {
         source.patches += [
-          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/eaeccfa9409aa21cd0b02fd27937e4b9c7cc90fd/contrib/x265/A01-build-fix.patch", sha256: nil),
-          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/eaeccfa9409aa21cd0b02fd27937e4b9c7cc90fd/contrib/x265/A02-threads-priority.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A01-build-fix.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A02-threads-priority.patch", sha256: nil),
+          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A03-threads-pool-adjustments.patch", sha256: nil),
         ]
       }
     }
 
+    source.patches += [
+      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0001-fix-Ctrl-C.patch", sha256: nil),
+      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0002-presets-and-tunes.patch", sha256: nil),
+      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0003-update-build-info.patch", sha256: nil),
+    ]
 
     return .init(
       source: source,
@@ -56,26 +62,6 @@ public struct x265: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    var specialName = ""
-    if context.order.system.isApple {
-      if context.order.arch.isARM {
-        specialName = "Apple Silicon"
-      } else {
-        specialName = "Intel"
-      }
-      specialName = "[\(specialName)]"
-    }
-
-    // MARK: fix version string
-    try replace(contentIn: "source/common/version.cpp", matching: "#define ONOS    \"[Mac OS X]\"", with: "#define ONOS    \"[macOS]\(specialName)\"")
-    try replace(contentIn: "source/common/version.cpp", matching: """
-      #if X86_64
-      #define BITS
-      """, with: """
-      #if X86_64 || defined(__aarch64__)
-      #define BITS
-      """)
-
 
     let srcDir = "../source"
     let toolType: MakeToolType = .ninja
