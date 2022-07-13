@@ -37,7 +37,7 @@ struct SwiftPM: Executable {
   static let executableName = "swift"
 
   enum Command {
-    case build(showBinPath: Bool)
+    case build(showBinPath: Bool, staticLink: Bool)
     case clean
   }
   var command: Command
@@ -49,10 +49,16 @@ struct SwiftPM: Executable {
   var arguments: [String] {
     var arg = [String]()
     switch command {
-    case .build(let showBinPath):
+    case let .build(showBinPath, staticLink):
       arg.append("build")
       if showBinPath {
         arg.append("--show-bin-path")
+      } else {
+        #if os(Linux)
+        if staticLink {
+          arg.append("--static-swift-stdlib")
+        }
+        #endif
       }
     case .clean:
       arg.append("package")
@@ -76,6 +82,9 @@ struct Build: ParsableCommand {
   static var configuration: CommandConfiguration {
     .init(abstract: "Build spm products")
   }
+
+  @Flag(name: .customLong("static"), help: "Strip built binaries")
+  var staticLink: Bool = false
 
   @Flag(name: .shortAndLong, help: "Strip built binaries")
   var strip: Bool = false
@@ -138,16 +147,16 @@ struct Build: ParsableCommand {
       let result = try SwiftCommand.dumpPackage
         .launch(use: TSCExecutableLauncher())
 
-      let json = try JSON.read(result.output.get())
+      let json = try JSON.read(bytes: result.output.get()).get()
       if exported {
-        binaryNames = json.root["products"]!.array!.compactMap { product in
+        binaryNames = json.root!["products"]!.array!.compactMap { product in
           if product["type"]!["executable"] != nil {
             return product["name"]!.string!
           }
           return nil
         }
       } else {
-        binaryNames = json.root["targets"]!.array!.compactMap { product in
+        binaryNames = json.root!["targets"]!.array!.compactMap { product in
           if product["type"]!.string == "executable" {
             return product["name"]!.string!
           }
@@ -170,12 +179,12 @@ struct Build: ParsableCommand {
         try command.launch(use: launcher)
       }
 
-      command.command = .build(showBinPath: false)
+      command.command = .build(showBinPath: false, staticLink: staticLink)
       let startDate = Date()
       try command.launch(use: launcher)
       logger.info("Totally used: \(String(format: "%.3f", Date().timeIntervalSince(startDate))) seconds")
 
-      command.command = .build(showBinPath: true)
+      command.command = .build(showBinPath: true, staticLink: staticLink)
       let binPath = try command.launch(use: TSCExecutableLauncher())
         .utf8Output().trimmingCharacters(in: .whitespacesAndNewlines)
       logger.info("bin path: \(binPath)")
