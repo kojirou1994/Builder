@@ -6,7 +6,7 @@ public struct Tiff: Package {
 
 
   public var defaultVersion: PackageVersion {
-    "4.3"
+    "4.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

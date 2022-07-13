@@ -5,7 +5,7 @@ public struct Jemalloc: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "5.2.1"
+    "5.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

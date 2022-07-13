@@ -38,6 +38,8 @@ public struct Ffmpeg: Package {
       source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0001-disable-file-cache.patch", sha256: nil))
     }
 
+    source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0002-change-AV_CODEC_FLAG-priority-for-libx265.patch", sha256: nil))
+
     var deps: [PackageDependency] = [
       .buildTool(Nasm.self),
       .buildTool(PkgConfig.self),

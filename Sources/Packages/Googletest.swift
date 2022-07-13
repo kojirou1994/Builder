@@ -5,7 +5,7 @@ public struct Googletest: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.11.0"
+    "1.12.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

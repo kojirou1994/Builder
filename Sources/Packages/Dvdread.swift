@@ -5,7 +5,7 @@ public struct Dvdread: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "6.1.2"
+    "6.1.3"
   }
 
   @Flag(inversion: .prefixedEnableDisable)

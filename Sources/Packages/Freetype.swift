@@ -3,7 +3,7 @@ import BuildSystem
 public struct Freetype: Package {
   
   public var defaultVersion: PackageVersion {
-    "2.11.1"
+    "2.12.1"
   }
   
   @Flag
@@ -22,7 +22,7 @@ public struct Freetype: Package {
       throw PackageRecipeError.unsupportedVersion
     case .stable(let version):
       let versionString = version.toString(includeZeroPatch: false)
-      source = .tarball(url: "https://downloads.sourceforge.net/project/freetype/freetype2/\(versionString)/freetype-\(versionString).tar.xz")
+      source = .tarball(url: "https://download.savannah.gnu.org/releases/freetype/freetype-\(versionString).tar.xz")
     }
     
     return .init(

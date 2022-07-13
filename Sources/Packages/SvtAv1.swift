@@ -12,7 +12,7 @@ public struct SvtAv1: Package {
   var apps: Bool = true
 
   public var defaultVersion: PackageVersion {
-    "0.9.1"
+    "1.1.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

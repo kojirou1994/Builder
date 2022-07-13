@@ -31,13 +31,14 @@ public struct Flac: Package {
         suffix = "xz"
       }
       source = .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
-      dependencies = [
+    }
+
+    dependencies = [
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
       ]
-    }
 
     if ogg {
       dependencies.append(.runTime(Ogg.self))
@@ -67,10 +68,11 @@ public struct Flac: Package {
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
       configureEnableFlag(cpplibs, "cpplibs"),
-      configureEnableFlag(true, "64-bit-words"),
+      configureEnableFlag(context.order.arch.is64Bits, "64-bit-words"),
       configureEnableFlag(false, "examples"),
       configureEnableFlag(context.strictMode, "exhaustive-tests"), /* VERY long, took 30 minutes on my i7-4770hq machine */
-      configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true)
+      configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true),
+      configureEnableFlag(!context.order.arch.isARM, "sse", defaultEnabled: true)
     )
 
     try context.make()

@@ -5,7 +5,7 @@ public struct Ninja: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.10.2"
+    "1.11.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
