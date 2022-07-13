@@ -220,12 +220,19 @@ struct Builder {
       gitApply.currentDirectoryURL = srcDirURL
       switch patch {
       case .raw(let rawPatch):
-        let pipe = Pipe()
-        let patcher = try ContiguousPipeline(gitApply, standardInput: .pipe(pipe))
-        try patcher.run()
-        try pipe.fileHandleForWriting.kwiftWrite(contentsOf: Array(rawPatch.utf8))
-        try pipe.fileHandleForWriting.close()
-        patcher.waitUntilExit()
+        while true {
+          let pipe = Pipe()
+          let patcher = try ContiguousPipeline(gitApply, standardInput: .pipe(pipe))
+          try patcher.run()
+          try pipe.fileHandleForWriting.kwiftWrite(contentsOf: Array(rawPatch.utf8))
+          try pipe.fileHandleForWriting.close()
+          patcher.waitUntilExit()
+          if patcher.processes.allSatisfy { $0.terminationStatus == 0 } {
+            break
+          } else {
+            logger.warning("retry patching...")
+          }
+        }
       case let .remote(url: url, sha256: _):
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
           .append(gitApply, isLast: true)
