@@ -36,7 +36,8 @@ let package = Package(
       dependencies: [
         .target(name: "XcodeExecutable"),
         .product(name: "URLFileManager", package: "URLFileManager"),
-        .product(name: "ExecutableLauncher", package: "Executable"),
+        .product(name: "TSCExecutableLauncher", package: "Executable"),
+        .product(name: "FPExecutableLauncher", package: "Executable"),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "KwiftUtility", package: "Kwift"),

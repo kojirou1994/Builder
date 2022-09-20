@@ -1,6 +1,6 @@
 import Logging
 import Foundation
-import ExecutableLauncher
+import TSCExecutableLauncher
 import URLFileManager
 import Precondition
 import KwiftUtility
@@ -54,12 +54,12 @@ final class ExeLoggingLauncher {
       return try launcher.launch(executable: executable, options: .init(checkNonZeroExitCode: true))
     } catch let error as ExecutableError {
       switch error {
-      case .executableNotFound(let name):
-        actionLogger.error("Executable \(name) is not found! Used PATH: \(environment[.path])")
-      case .invalidExecutableURL(let url):
-        actionLogger.error("Used file at \(url.path) is not valid executable!")
-      case .nonZeroExit(let status):
-        actionLogger.error("Non zero exit code: \(status), failed command: \(executable.commandLineArguments)")
+      case .executableNotFound:
+        actionLogger.error("Executable \(executable.executableName) is not found! Used PATH: \(environment[.path])")
+      case .invalidProvidedExecutablePath:
+        actionLogger.error("Used file at \(executable.executablePath ?? "") is not valid executable!")
+      case .nonZeroExit:
+        actionLogger.error("Non zero exit code, failed command: \(executable.commandLineArguments)")
       }
       throw error
     }
@@ -79,5 +79,11 @@ final class ExeLoggingLauncher {
 
   public func launchResult(path: String, _ arguments: [String?]) throws -> LaunchResult {
     try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}), outputRedirection: .collect)
+  }
+}
+
+extension Executable {
+  var commandLineArguments: [String] {
+    [executableName] + arguments
   }
 }

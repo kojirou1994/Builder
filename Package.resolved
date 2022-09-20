@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/vapor/console-kit.git",
         "state": {
           "branch": null,
-          "revision": "c085098102c18ac5b3eac741fd4101868ddb5a2e",
-          "version": "4.4.1"
+          "revision": "a7e67a1719933318b5ab7eaaed355cde020465b1",
+          "version": "4.5.0"
         }
       },
       {
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/kojirou1994/CUtility.git",
         "state": {
           "branch": null,
-          "revision": "1143502f7b80cad866ecd6ff54d7e47736bcbd98",
-          "version": "0.1.5"
+          "revision": "863541d18eefca052239f51af65ae44f5df4dcb7",
+          "version": "0.1.12"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/kojirou1994/Executable.git",
         "state": {
           "branch": null,
-          "revision": "0665fc9e82a1f988a3d945da84accfcee2b561e1",
-          "version": "0.4.8"
+          "revision": "9ba0aabcb4789c85d7f5d699ade3193246eaf81c",
+          "version": "0.5.2"
         }
       },
       {
@@ -56,12 +56,21 @@
         }
       },
       {
+        "package": "swift-algorithms",
+        "repositoryURL": "https://github.com/apple/swift-algorithms.git",
+        "state": {
+          "branch": null,
+          "revision": "b14b7f4c528c942f121c8b860b9410b2bf57825e",
+          "version": "1.0.0"
+        }
+      },
+      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
         "state": {
           "branch": null,
-          "revision": "df9ee6676cd5b3bf5b330ec7568a5644f547201b",
-          "version": "1.1.3"
+          "revision": "9f39744e025c7d377987f30b03770805dcb0bcd1",
+          "version": "1.1.4"
         }
       },
       {
@@ -78,8 +87,17 @@
         "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-          "version": "1.4.2"
+          "revision": "6fe203dc33195667ce1759bf0182975e4653ba1c",
+          "version": "1.4.4"
+        }
+      },
+      {
+        "package": "swift-numerics",
+        "repositoryURL": "https://github.com/apple/swift-numerics",
+        "state": {
+          "branch": null,
+          "revision": "0a5bc04095a675662cf24757cc0640aa2204253b",
+          "version": "1.0.2"
         }
       },
       {
@@ -96,8 +114,26 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "b7667f3e266af621e5cc9c77e74cacd8e8c00cb4",
-          "version": "0.2.5"
+          "revision": "0b77e67c484e532444ceeab60119b8536f8cd648",
+          "version": "0.3.0"
+        }
+      },
+      {
+        "package": "SyscallValue",
+        "repositoryURL": "https://github.com/kojirou1994/SyscallValue.git",
+        "state": {
+          "branch": null,
+          "revision": "a2576782e2f360a9a28ed7b4378d68109b443fd9",
+          "version": "0.0.1"
+        }
+      },
+      {
+        "package": "SystemUp",
+        "repositoryURL": "https://github.com/kojirou1994/SystemUp.git",
+        "state": {
+          "branch": null,
+          "revision": "36ec15b49425a4280fb8cf858944b3b26ce96fbc",
+          "version": "0.0.2"
         }
       },
       {

@@ -1,10 +1,11 @@
 import Foundation
 import TSCBasic
-import ExecutableLauncher
+import TSCExecutableLauncher
+import FPExecutableLauncher
 
 public struct BuilderLauncher: ExecutableLauncher {
   public func generateProcess<T>(for executable: T) throws -> Process where T : Executable {
-    let launchPath = try executable.executableURL?.path ?? ExecutablePath.lookup(executable, overridePath: environment[.path])
+    let launchPath = try ExecutablePath.lookup(executable, forcePATH: environment[.path]).get()
     let arguments = CollectionOfOne(launchPath) + executable.arguments
 
     if let workingDirectory = executable.currentDirectoryURL?.path {
@@ -12,12 +13,12 @@ public struct BuilderLauncher: ExecutableLauncher {
                    environment: environment.values,
                    workingDirectory: AbsolutePath(workingDirectory),
                    outputRedirection: tsc.outputRedirection,
-                   verbose: false, startNewProcessGroup: tsc.startNewProcessGroup)
+                   startNewProcessGroup: tsc.startNewProcessGroup)
     } else {
       return .init(arguments: arguments,
                    environment: environment.values,
                    outputRedirection: tsc.outputRedirection,
-                   verbose: false, startNewProcessGroup: tsc.startNewProcessGroup)
+                   startNewProcessGroup: tsc.startNewProcessGroup)
     }
   }
 
@@ -32,7 +33,7 @@ public struct BuilderLauncher: ExecutableLauncher {
     if options.checkNonZeroExitCode, result.exitStatus != .terminated(code: 0) {
       print("FAILED CMD:", process.arguments)
       // print last xx line log
-      throw ExecutableError.nonZeroExit(result.exitStatus)
+      throw ExecutableError.nonZeroExit
     }
     let finishDate = Date()
     print("Time used:", finishDate.timeIntervalSince(launchDate))
