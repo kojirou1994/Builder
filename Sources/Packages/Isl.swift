@@ -4,7 +4,7 @@ public struct Isl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.24"
+    "0.25"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

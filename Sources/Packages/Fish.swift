@@ -5,7 +5,7 @@ public struct Fish: Package {
   public init() {}
   
   public var defaultVersion: PackageVersion {
-    "3.5"
+    "3.5.1"
   }
   
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

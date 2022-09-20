@@ -5,7 +5,7 @@ public struct Imwri: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1"
+    "2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

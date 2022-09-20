@@ -5,7 +5,7 @@ public struct Opencore: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.1.5"
+    "0.1.6"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

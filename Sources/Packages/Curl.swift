@@ -5,7 +5,7 @@ public struct Curl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "7.84"
+    "7.85"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

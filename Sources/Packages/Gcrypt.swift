@@ -44,7 +44,7 @@ public struct Gcrypt: Package {
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
       "--with-gpg-error-prefix=\(context.dependencyMap[GpgError.self].root.path)",
-      configureEnableFlag(context.isBuildingNative, "asm", defaultEnabled: true)
+      configureEnableFlag(context.order.system.isApple, "asm", defaultEnabled: true)
     )
 
     try context.make()

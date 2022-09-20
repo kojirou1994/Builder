@@ -22,7 +22,7 @@ public struct Ffmpeg: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "5.0.1"
+    "5.1.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

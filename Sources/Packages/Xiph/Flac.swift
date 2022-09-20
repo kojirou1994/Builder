@@ -5,7 +5,7 @@ public struct Flac: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3.4"
+    "1.4.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -20,17 +20,22 @@ public struct Flac: Package {
         .buildTool(Ninja.self),
       ]
     case .stable(let version):
-      var versionString = version.toString(includeZeroPatch: false)
-      if version < "1.0.3" {
-        versionString += "-src"
-      }
       let suffix: String
       if version < "1.3.0" {
         suffix = "gz"
       } else {
         suffix = "xz"
       }
-      source = .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
+      if version < "1.3.3" {
+                var versionString = version.toString(includeZeroPatch: false)
+      if version < "1.0.3" {
+        versionString += "-src"
+      }
+        source = .tarball(url: "https://downloads.xiph.org/releases/flac/flac-\(versionString).tar.\(suffix)")
+      } else {
+        let versionString = version.toString()
+        source = .tarball(url: "https://github.com/xiph/flac/releases/download/\(versionString)/flac-\(versionString).tar.\(suffix)")
+      }
     }
 
     dependencies = [

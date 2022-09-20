@@ -4,7 +4,7 @@ public struct Mozjpeg: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "4.0.3"
+    "4.1.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

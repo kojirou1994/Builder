@@ -5,7 +5,7 @@ public struct Libheif: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.12"
+    "1.13"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

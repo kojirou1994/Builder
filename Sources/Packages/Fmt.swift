@@ -12,7 +12,7 @@ public struct Fmt: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/fmtlib/fmt.git")
     case .stable(let version):
       source = .tarball(url: "https://github.com/fmtlib/fmt/archive/refs/tags/\(version.toString()).tar.gz")
     }
