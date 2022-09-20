@@ -105,6 +105,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Libssh>.self,
       PackageCheckUpdateCommand<Libssh2>.self,
       PackageCheckUpdateCommand<Libtool>.self,
+      PackageCheckUpdateCommand<LibtorrentRasterbar>.self,
       PackageCheckUpdateCommand<Libuv>.self,
       PackageCheckUpdateCommand<Lsmash>.self,
       PackageCheckUpdateCommand<LsmashWorks>.self,

@@ -105,6 +105,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Libssh>.self,
       PackageBuildCommand<Libssh2>.self,
       PackageBuildCommand<Libtool>.self,
+      PackageBuildCommand<LibtorrentRasterbar>.self,
       PackageBuildCommand<Libuv>.self,
       PackageBuildCommand<Lsmash>.self,
       PackageBuildCommand<LsmashWorks>.self,
