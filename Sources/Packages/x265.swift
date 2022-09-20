@@ -19,7 +19,7 @@ public struct x265: Package {
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("9b59d45549f460e41a852cfd276f9b89eed2112a"))
+      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("a41d7cd8bdb23abfee672c8a108874b11b54de69"))
     case .stable(let version):
       source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
     }
