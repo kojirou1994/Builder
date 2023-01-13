@@ -24,10 +24,15 @@ public struct GpgError: Package {
 
   public func build(with context: BuildContext) throws {
 
+    /*
+     make gcrypt happy:
+     https://dev.gnupg.org/T6257
+     */
     try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,
-      context.libraryType.sharedConfigureFlag
+      context.libraryType.sharedConfigureFlag,
+      context.order.version >= "1.46" ? configureEnableFlag(true, "install-gpg-error-config") : nil
     )
 
     try context.make()
