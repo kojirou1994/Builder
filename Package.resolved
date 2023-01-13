@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/kojirou1994/CUtility.git",
         "state": {
           "branch": null,
-          "revision": "863541d18eefca052239f51af65ae44f5df4dcb7",
-          "version": "0.1.12"
+          "revision": "c9ed36fff94696294bf08c4bc38309097669f590",
+          "version": "0.2.1"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
         "state": {
           "branch": null,
-          "revision": "9f39744e025c7d377987f30b03770805dcb0bcd1",
-          "version": "1.1.4"
+          "revision": "fddd1c00396eed152c45a46bea9f47b98e59301d",
+          "version": "1.2.0"
         }
       },
       {
@@ -114,8 +114,8 @@
         "repositoryURL": "https://github.com/apple/swift-tools-support-core.git",
         "state": {
           "branch": null,
-          "revision": "0b77e67c484e532444ceeab60119b8536f8cd648",
-          "version": "0.3.0"
+          "revision": "284a41800b7c5565512ec6ae21ee818aac1f84ac",
+          "version": "0.4.0"
         }
       },
       {
@@ -132,8 +132,8 @@
         "repositoryURL": "https://github.com/kojirou1994/SystemUp.git",
         "state": {
           "branch": null,
-          "revision": "36ec15b49425a4280fb8cf858944b3b26ce96fbc",
-          "version": "0.0.2"
+          "revision": "31f8b256243fb4f6d3826e2fc72ae6d140a6459d",
+          "version": "0.2.3"
         }
       },
       {
@@ -150,17 +150,17 @@
         "repositoryURL": "https://github.com/ibireme/yyjson.git",
         "state": {
           "branch": null,
-          "revision": "c3856514de0a67d7b66939bf3ed491a2d6e61277",
-          "version": "0.5.1"
+          "revision": "7b210d66cb73536f351e8a82a63508bc77bffd20",
+          "version": "0.6.0"
         }
       },
       {
         "package": "YYJSONEncoder",
         "repositoryURL": "https://github.com/kojirou1994/YYJSONEncoder.git",
         "state": {
-          "branch": "main",
-          "revision": "9afe9efe07a8b0912f0d26a41159170bed79932f",
-          "version": null
+          "branch": null,
+          "revision": "7be0fcc0a39bc91fe11efb7ff54a1909e673e704",
+          "version": "0.1.1"
         }
       }
     ]
