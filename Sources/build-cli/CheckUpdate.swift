@@ -12,6 +12,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Ass>.self,
       PackageCheckUpdateCommand<Assrender>.self,
       PackageCheckUpdateCommand<Autoconf>.self,
+      PackageCheckUpdateCommand<AutoconfArchive>.self,
       PackageCheckUpdateCommand<Automake>.self,
       PackageCheckUpdateCommand<Bestaudiosource>.self,
       PackageCheckUpdateCommand<Bilateral>.self,

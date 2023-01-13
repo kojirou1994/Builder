@@ -12,6 +12,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Ass>.self,
       PackageBuildCommand<Assrender>.self,
       PackageBuildCommand<Autoconf>.self,
+      PackageBuildCommand<AutoconfArchive>.self,
       PackageBuildCommand<Automake>.self,
       PackageBuildCommand<Bestaudiosource>.self,
       PackageBuildCommand<Bilateral>.self,
