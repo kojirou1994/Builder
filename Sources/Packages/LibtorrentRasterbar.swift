@@ -14,7 +14,6 @@ public struct LibtorrentRasterbar: Package {
     case .head:
       source = .repository(url: "https://github.com/arvidn/libtorrent.git")
     case .stable(let version):
-      let versionString = version.toString()
       source = .tarball(url: "https://github.com/arvidn/libtorrent/releases/download/v\(version.toString(includeZeroMinor: false))/libtorrent-rasterbar-\(version.toString()).tar.gz")
     }
 

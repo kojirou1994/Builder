@@ -46,17 +46,6 @@ public struct yyjson: Package {
     )
   }
 
-  /*
-   YYJSON_DISABLE_COMMENT_READER    OFF
-   YYJSON_DISABLE_FP_READER         OFF
-   YYJSON_DISABLE_FP_WRITER         OFF
-   YYJSON_DISABLE_INF_AND_NAN_REA   OFF
-   YYJSON_DISABLE_READER            OFF
-   YYJSON_DISABLE_WRITER            OFF
-   YYJSON_ENABLE_COVERAGE           OFF
-   YYJSON_ENABLE_SANITIZE           OFF
-   YYJSON_ENABLE_VALGRIND           OFF
-   */
   public func build(with context: BuildContext) throws {
     try context.inRandomDirectory { _ in
       try context.cmake(

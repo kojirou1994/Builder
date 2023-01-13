@@ -5,7 +5,7 @@ public struct Openssl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["l"]))
+    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["s"]))
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
