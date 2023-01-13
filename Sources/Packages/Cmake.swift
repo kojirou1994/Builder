@@ -21,27 +21,12 @@ public struct Cmake: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.launch(
         path: "../bootstrap",
         "--prefix=\(context.prefix.root.path)",
-//        --no-system-libs
-        "--parallel=\(context.parallelJobs ?? 8)",
-//        --datadir=/share/cmake
-//        --docdir=/share/doc/cmake
-//        --mandir=/share/man
-//        --sphinx-build=#{Formula["sphinx-doc"].opt_bin}/sphinx-build
-//        --sphinx-html
-//        --sphinx-man
-
-//        on_macos do
-//        args += %w[
-        "--system-zlib",
-        "--system-bzip2",
-        "--system-curl"
-//        cmakeOnFlag(true, "SPHINX_HTML"),
-//        cmakeOnFlag(true, "SPHINX_MAN"),
-//        cmakeDefineFlag(context.dependencyMap["sphinx-doc"].bin.appendingPathComponent("sphinx-build").path, "SPHINX_EXECUTABLE")
+        "--no-system-libs",
+        "--parallel=\(context.parallelJobs ?? 1)"
       )
 
       try context.make()
