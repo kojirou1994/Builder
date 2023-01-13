@@ -5,7 +5,7 @@ public struct Go: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.19.1"
+    "1.19.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

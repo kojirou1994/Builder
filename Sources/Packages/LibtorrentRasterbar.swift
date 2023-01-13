@@ -5,7 +5,7 @@ public struct LibtorrentRasterbar: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.2.17"
+    "1.2.18"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

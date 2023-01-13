@@ -5,7 +5,7 @@ public struct Ebml: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.4.2"
+    "1.4.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

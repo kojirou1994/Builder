@@ -5,7 +5,7 @@ public struct Highway: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.0.1"
+    "1.0.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

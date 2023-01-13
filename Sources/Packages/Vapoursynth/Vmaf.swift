@@ -4,7 +4,7 @@ public struct Vmaf: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "9"
+    "10"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -29,7 +29,7 @@ public struct Vmaf: Package {
                 matching: "join_paths(vapoursynth_dep.get_pkgconfig_variable('libdir'), 'vapoursynth')",
                 with: "join_paths(get_option('prefix'), get_option('libdir'), 'vapoursynth')")
 
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.meson("..")
 
       try context.launch("ninja")

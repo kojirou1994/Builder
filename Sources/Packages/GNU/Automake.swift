@@ -5,7 +5,7 @@ public struct Automake: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.16.3"
+    "1.16.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

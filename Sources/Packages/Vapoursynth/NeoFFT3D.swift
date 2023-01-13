@@ -4,7 +4,7 @@ public struct NeoFFT3D: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "11"
+    "12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -27,7 +27,7 @@ public struct NeoFFT3D: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.cmake(toolType: .ninja, "..")
 
       try context.make(toolType: .ninja)

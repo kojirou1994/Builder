@@ -5,14 +5,14 @@ public struct Utfcpp: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.2.1"
+    "3.2.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/nemtrif/utfcpp.git")
     case .stable(let version):
       // test required repo
       // https://github.com/nemtrif/utfcpp.git

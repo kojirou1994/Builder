@@ -5,7 +5,7 @@ public struct Zlib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.2.12"
+    "1.2.13"
   }
 
   private func isLegacy(_ version: PackageVersion) -> Bool {
@@ -21,11 +21,12 @@ public struct Zlib: Package {
       source = .tarball(url: "https://zlib.net/zlib-\(version.toString()).tar.gz")
     }
 
+    let isLegacy = isLegacy(order.version)
     return .init(
       source: source,
       dependencies: [
-        isLegacy(order.version) ? nil : .buildTool(Cmake.self),
-        isLegacy(order.version) ? nil : .buildTool(Ninja.self),
+        isLegacy ? nil : .buildTool(Cmake.self),
+        isLegacy ? nil : .buildTool(Ninja.self),
       ]
     )
   }

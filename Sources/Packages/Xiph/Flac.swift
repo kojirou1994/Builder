@@ -5,7 +5,7 @@ public struct Flac: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.4.0"
+    "1.4.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -77,7 +77,7 @@ public struct Flac: Package {
       configureEnableFlag(false, "examples"),
       configureEnableFlag(context.strictMode, "exhaustive-tests"), /* VERY long, took 30 minutes on my i7-4770hq machine */
       configureEnableFlag(useASM, "asm-optimizations", defaultEnabled: true),
-      configureEnableFlag(!context.order.arch.isARM, "sse", defaultEnabled: true)
+      context.order.version < "1.4.2" ? configureEnableFlag(!context.order.arch.isARM, "sse", defaultEnabled: true) : nil // sse option removed from 1.4.2
     )
 
     try context.make()

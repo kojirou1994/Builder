@@ -5,7 +5,7 @@ public struct Fmtconv: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "28"
+    "30"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
