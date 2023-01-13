@@ -5,7 +5,7 @@ public struct Icu4c: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "69.1"
+    "72.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -24,6 +24,7 @@ public struct Icu4c: Package {
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
         .buildTool(PkgConfig.self),
+        .buildTool(AutoconfArchive.self),
       ]
     )
   }
