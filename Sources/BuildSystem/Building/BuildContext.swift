@@ -268,6 +268,7 @@ extension BuildContext {
 
   public func meson(_ arguments: [String?]) throws {
     var mesonArguments = [
+      "setup",
       "--prefix=\(prefix.root.path)",
       "--buildtype=release",
     ]
