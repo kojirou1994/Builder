@@ -140,16 +140,13 @@ extension TargetSystem {
 #else
     macOSSystemVersion = "10.15"
 #endif
-    func notImplemented() -> Never {
-      fatalError("NotImplemented!")
-    }
     switch self {
     case .macOS:
       return macOSSystemVersion
     case .macCatalyst, .tvOS, .tvSimulator, .iphoneOS, .iphoneSimulator, .watchOS, .watchSimulator:
       return convertDarwinVersionToAppleVersion(system: self, version: convertAppleVersionToDarwinVersion(system: .macOS, version: macOSSystemVersion))
     case .linuxGNU:
-      notImplemented()
+      return "0"
     }
   }
 }
