@@ -1,5 +1,7 @@
 import BuildSystem
 
+private let officialRepo = "https://bitbucket.org/multicoreware/x265_git.git"
+private let chocoRepo = "https://github.com/kojirou1994/x265_choco.git"
 public struct x265: Package {
 
   public init() {}
@@ -19,9 +21,9 @@ public struct x265: Package {
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .revision("a41d7cd8bdb23abfee672c8a108874b11b54de69"))
+      source = .repository(url: chocoRepo, requirement: .revision("ac4f5b9440056f2b075addf8a00c8c558a5e9383"))
     case .stable(let version):
-      source = .repository(url: "https://bitbucket.org/multicoreware/x265_git.git", requirement: .tag(version.toString(includeZeroPatch: false)))
+      source = .repository(url: officialRepo, requirement: .tag(version.toString(includeZeroPatch: false)))
     }
 
     if order.arch.isARM {
@@ -33,18 +35,19 @@ public struct x265: Package {
         ]
       } else {
         source.patches += [
-          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A01-build-fix.patch", sha256: nil),
           .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A02-threads-priority.patch", sha256: nil),
           .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A03-threads-pool-adjustments.patch", sha256: nil),
         ]
       }
     }
 
-    source.patches += [
-      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0001-fix-Ctrl-C.patch", sha256: nil),
-      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0002-presets-and-tunes.patch", sha256: nil),
-      .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0003-update-build-info.patch", sha256: nil),
-    ]
+    if case .stable = order.version {
+      source.patches += [
+        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0001-fix-Ctrl-C.patch", sha256: nil),
+        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0002-presets-and-tunes.patch", sha256: nil),
+        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0003-update-build-info.patch", sha256: nil),
+      ]
+    }
 
     return .init(
       source: source,
@@ -65,6 +68,8 @@ public struct x265: Package {
 
     let srcDir = "../source"
     let toolType: MakeToolType = .ninja
+
+    try replace(contentIn: "source/common/aarch64/pixel-util.S", matching: " x265_entropyStateBits", with: " _x265_entropyStateBits")
 
     if enable12bit {
       try context.changingDirectory("12bit") { cwd in
