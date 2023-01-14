@@ -82,6 +82,7 @@ public extension EnvironmentKey {
   static let libs: Self = "LIBS"
   static let aclocalPath: Self = "ACLOCAL_PATH"
   static let cmakePrefixPath: Self = "CMAKE_PREFIX_PATH"
+  static let rustFlags: Self = "RUSTFLAGS"
 }
 
 extension EnvironmentKey: Equatable { }

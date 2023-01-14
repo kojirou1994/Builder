@@ -40,6 +40,7 @@ struct Builder {
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
+       deployMode: DeployMode,
        strictMode: Bool, preferSystemPackage: Bool,
        enableBitcode: Bool) throws {
     self.builderDirectoryURL = workDirectoryURL
@@ -57,6 +58,7 @@ struct Builder {
     }
     self.addLibInfoInPrefix = addLibInfoInPrefix
     self.optimize = optimize
+    self.deployMode = deployMode
     self.preferSystemPackage = preferSystemPackage
 
     let sdkPath: String?
@@ -145,6 +147,7 @@ struct Builder {
   let prefixGenerator: PrefixGenerator? = nil
   let addLibInfoInPrefix: Bool
   let optimize: String?
+  let deployMode: DeployMode
   let preferSystemPackage: Bool
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
@@ -455,6 +458,21 @@ extension Builder {
             environment.append("-iframework", for: .ldflags)
             environment.append(sysroot + "/System/iOSSupport/System/Library/Frameworks", for: .ldflags)
             environment.append("-L\(sysroot)/System/iOSSupport/usr/lib", for: .ldflags)
+          }
+        }
+      } else {
+        // building for native
+        switch deployMode {
+        case .generic: break
+        case .native:
+          // TODO: better compiler detect
+          if order.arch.isX86 {
+            if cc.contains("clang") {
+              environment.append("-march=native", for: .cflags, .cxxflags)
+            } else if cc.contains("gcc") {
+              environment.append("-mtune=native", for: .cflags, .cxxflags)
+            }
+            environment.append("-C target-cpu=native", for: .rustFlags)
           }
         }
       }

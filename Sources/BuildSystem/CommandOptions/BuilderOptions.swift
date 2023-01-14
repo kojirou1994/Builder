@@ -46,8 +46,11 @@ struct BuilderOptions: ParsableArguments {
   @Flag(help: "Use system package if available.")
   var preferSystemPackage: Bool = false
 
-  @Option(name: [.long, .customShort("O", allowingJoined: true)])
+  @Option(name: [.long, .customShort("O", allowingJoined: true)], help: "Specify which optimization level to use")
   var optimize: String?
+
+  @Option
+  var deployMode: DeployMode = .native
 
   func validate() throws {
     try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
@@ -82,7 +85,14 @@ extension Builder {
       target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
-      addLibInfoInPrefix: addLibInfoInPrefix, optimize: options.optimize, strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
+      addLibInfoInPrefix: addLibInfoInPrefix,
+      optimize: options.optimize, deployMode: options.deployMode,
+      strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
       enableBitcode: options.bitcode)
   }
+}
+
+enum DeployMode: String, ExpressibleByArgument {
+  case generic
+  case native
 }
