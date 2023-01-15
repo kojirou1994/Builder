@@ -50,14 +50,6 @@ public struct Vpx: Package {
    mips64-linux-gcc
    ppc64le-linux-gcc
    sparc-solaris-gcc
-   x86-android-gcc          x86-darwin8-gcc          x86-darwin8-icc
-   x86-darwin9-gcc          x86-darwin9-icc          x86-darwin10-gcc
-   x86-darwin11-gcc         x86-darwin12-gcc         x86-darwin13-gcc
-   x86-darwin14-gcc         x86-darwin15-gcc         x86-darwin16-gcc
-   x86-darwin17-gcc         x86-iphonesimulator-gcc  x86-linux-gcc
-   x86-linux-icc            x86-os2-gcc              x86-solaris-gcc
-   x86-win32-gcc            x86-win32-vs14           x86-win32-vs15
-   x86-win32-vs16
    x86_64-android-gcc       x86_64-darwin9-gcc       x86_64-darwin10-gcc
    x86_64-darwin11-gcc      x86_64-darwin12-gcc      x86_64-darwin13-gcc
    x86_64-darwin14-gcc      x86_64-darwin15-gcc      x86_64-darwin16-gcc
@@ -83,10 +75,21 @@ public struct Vpx: Package {
       }
     }
 
+    var vpxSystem: String {
+      switch context.order.system {
+      case .macOS:
+        return "darwin20"
+      case .linuxGNU:
+        return "linux"
+      default:
+        return "darwin"
+      }
+    }
+
     try context.launch(
       path: "configure",
       "--prefix=\(context.prefix)",
-      "--target=\(vpxArch)-darwin20-gcc",
+      "--target=\(vpxArch)-\(vpxSystem)-gcc",
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
