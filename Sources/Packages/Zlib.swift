@@ -67,6 +67,9 @@ public struct Zlib: Package {
     guard isLegacy(order.version) else {
       return nil
     }
+    guard order.system.isApple else {
+      return nil
+    }
     return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [.init(name: "zlib", content: """
       sdkPath=\(sdkPath)
       prefix=${sdkPath}/usr
