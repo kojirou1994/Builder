@@ -270,6 +270,7 @@ extension BuildContext {
     var mesonArguments = [
       "setup",
       "--prefix=\(prefix.root.path)",
+      "--libdir=lib",
       "--buildtype=release",
     ]
     if isBuildingCross {
