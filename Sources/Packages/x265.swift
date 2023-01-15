@@ -1,4 +1,5 @@
 import BuildSystem
+import FPExecutableLauncher
 
 private let officialRepo = "https://bitbucket.org/multicoreware/x265_git.git"
 private let chocoRepo = "https://github.com/kojirou1994/x265_choco.git"
@@ -161,9 +162,9 @@ public struct x265: Package {
           .joined(separator: "\n")
           .write(to: scriptFileURL, atomically: true, encoding: .utf8)
 
-        _ = try FileHandle(forReadingFrom: scriptFileURL)
-//        try AnyExecutable(executableName: "ar", arguments: ["-M"])
-//          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
+        let fh = try FileHandle(forReadingFrom: scriptFileURL)
+        try AnyExecutable(executableName: "ar", arguments: ["-M"])
+          .launch(use: FPExecutableLauncher(standardInput: .fileHandle(fh), standardOutput: nil, standardError: nil))
       default: break
       }
 
