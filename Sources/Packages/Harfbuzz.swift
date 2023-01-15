@@ -33,7 +33,7 @@ public struct Harfbuzz: Package {
     try context.inRandomDirectory { _ in
       try context.meson(
         "--default-library=\(context.libraryType.mesonFlag)",
-        context.libraryType == .static ? mesonDefineFlag(false, "b_lundef") : nil,
+        (context.libraryType == .static && context.order.system.isApple) ? mesonDefineFlag(false, "b_lundef") : nil,
         mesonFeatureFlag(false, "cairo"),
         mesonFeatureFlag(context.order.system.isApple, "coretext"),
         mesonFeatureFlag(true, "freetype"),
