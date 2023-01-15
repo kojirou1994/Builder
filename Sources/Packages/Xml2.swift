@@ -55,7 +55,10 @@ public struct Xml2: Package {
   }
 
   public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
-    .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [
+    guard order.system.isApple else {
+      return nil
+    }
+    return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [
       .init(name: "libxml-2.0", content: """
         prefix=\(sdkPath)/usr
         exec_prefix=${prefix}
