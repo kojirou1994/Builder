@@ -10,13 +10,6 @@ public struct Gcrypt: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
-    switch order.system {
-    case .macOS:
-      break
-    default:
-      throw PackageRecipeError.unsupportedTarget
-    }
-
     let source: PackageSource
     switch order.version {
     case .head:
