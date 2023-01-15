@@ -111,7 +111,9 @@ public struct Ffmpeg: Package {
       case .libvpx:
         deps.append(.runTime(Vpx.self))
       case .libxvid:
+        #if !os(Linux)
         deps.append(.runTime(Xvid.self))
+        #endif
       case .libxml2:
         deps.append(.runTime(Xml2.self))
       case .gcrypt:
