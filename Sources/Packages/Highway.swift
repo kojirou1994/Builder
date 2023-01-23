@@ -27,7 +27,7 @@ public struct Highway: Package {
         // TODO: should use buildTime runTime
         .runTime(Googletest.self),
       ],
-      supportedLibraryType: .static
+      canBuildAllLibraryTogether: false
     )
   }
 
@@ -36,6 +36,8 @@ public struct Highway: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         context.strictMode ? cmakeOnFlag(true, "HWY_SYSTEM_GTEST") : nil,
         cmakeOnFlag(context.strictMode, "BUILD_TESTING")
       )
