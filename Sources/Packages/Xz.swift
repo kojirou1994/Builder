@@ -5,20 +5,26 @@ public struct Xz: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "5.2.10"
+    "5.4.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/tukaani-project/xz.git")
     case .stable(let version):
-      source = .tarball(url: "https://downloads.sourceforge.net/project/lzmautils/xz-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://tukaani.org/xz/xz-\(version.toString()).tar.gz")
     }
 
     return .init(
       source: source,
+      dependencies: [
+        .buildTool(Autoconf.self),
+        .buildTool(Automake.self),
+        .buildTool(Libtool.self),
+        .buildTool(Gettext.self),
+      ],
       products: [
         .bin("xzdec"),
         .bin("lzmadec"),
@@ -30,8 +36,11 @@ public struct Xz: Package {
   }
 
   public func build(with context: BuildContext) throws {
-
-    try context.fixAutotoolsForDarwin()
+    /*
+     If po4a is missing, autogen.sh will fail at the end but the package can be built normally still;
+     only the translated documentation will be missing.
+     */
+    try? context.autogen()
 
     try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
