@@ -13,7 +13,7 @@ public struct PackageSource: CustomStringConvertible {
 
   enum Requirement {
     // url is git repo
-    case repository(RepositoryRequirement?)
+    case repository(RepositoryRequirement?, RepositorySubmodule)
 
     // url is download link
     case tarball(sha256: String?)
@@ -35,10 +35,17 @@ public struct PackageSource: CustomStringConvertible {
     case branch(String)
   }
 
+  public enum RepositorySubmodule {
+    case all
+    case none
+    case paths([String])
+  }
+
   public static func repository(url: String, requirement: RepositoryRequirement? = nil,
+                                submodule: RepositorySubmodule = .all,
                                 patches: [PackagePatch] = [],
                                 mirrors: [String] = []) -> Self {
-    .init(url: url, requirement: .repository(requirement), patches: patches, mirrors: mirrors)
+    .init(url: url, requirement: .repository(requirement, submodule), patches: patches, mirrors: mirrors)
   }
 
   public static func tarball(url: String,

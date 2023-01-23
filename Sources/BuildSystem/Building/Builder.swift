@@ -156,16 +156,43 @@ struct Builder {
 
     switch source.requirement {
     case .empty: return fm.currentDirectory
-    case .repository(let requirement):
+    case .repository(let requirement, let submodule):
+      var arguments = ["clone"]
+      let depthArguments = ["--depth", "1", "--shallow-submodules"]
+
+      func handleSubmodules() throws {
+        try env.changingDirectory(safeDirName) { _ in
+          try env.launch("git", "submodule", "init")
+          switch submodule {
+          case .paths(let paths):
+            try env.launch("git", ["submodule", "update"] + paths)
+          default: break
+          }
+        }
+      }
+
       switch requirement {
       case .branch(let branch), .tag(let branch):
-        try env.launch("git", "clone", "-b", branch,
-         "--depth", "1", "--recursive", "--shallow-submodules",
-         source.url, safeDirName)
+        arguments.append(contentsOf: ["-b", branch])
+        arguments += depthArguments
+        switch submodule {
+        case .all:
+          arguments.append("--recursive")
+        default: break
+        }
+        arguments.append(contentsOf: [source.url, safeDirName])
+        try env.launch("git", arguments)
+        try handleSubmodules()
       case .none:
-        try env.launch("git", "clone",
-         "--depth", "1", "--recursive", "--shallow-submodules",
-         source.url, safeDirName)
+        arguments += depthArguments
+        switch submodule {
+        case .all:
+          arguments.append("--recursive")
+        default: break
+        }
+        arguments.append(contentsOf: [source.url, safeDirName])
+        try env.launch("git", arguments)
+        try handleSubmodules()
       case .revision(let revision):
         try env.launch("git", "clone", source.url, safeDirName)
         try env.changingDirectory(safeDirName) { _ in
