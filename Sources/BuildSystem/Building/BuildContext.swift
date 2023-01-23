@@ -131,7 +131,9 @@ extension BuildContext {
     case .static: searchExtension = order.system.sharedLibraryExtension
     }
     let dstFiles = try fm.contentsOfDirectory(at: prefix.lib)
-      .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame }
+      .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame
+        || $0.lastPathComponent.contains("." + searchExtension + ".")
+      }
     try dstFiles.forEach { try removeItem(at: $0) }
   }
 

@@ -553,6 +553,7 @@ extension Builder {
           if usedLibraryType == .all, !recipe.canBuildAllLibraryTogether {
             // build separately
             func build(libraryType: PackageLibraryBuildType) throws {
+              logger.info("separately build library type: \(libraryType)")
               let savedEnv = env.environment
               defer {
                 env.environment = savedEnv
