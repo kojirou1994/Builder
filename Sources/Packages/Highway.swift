@@ -32,6 +32,9 @@ public struct Highway: Package {
   }
 
   public func build(with context: BuildContext) throws {
+    /*
+     BUILD_TESTING means build google test
+     */
     try context.inRandomDirectory { _ in
       try context.cmake(
         toolType: .ninja,
@@ -39,6 +42,7 @@ public struct Highway: Package {
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         context.strictMode ? cmakeOnFlag(true, "HWY_SYSTEM_GTEST") : nil,
+        cmakeOnFlag(false, "HWY_ENABLE_EXAMPLES"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING")
       )
 

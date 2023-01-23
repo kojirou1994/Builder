@@ -1,15 +1,21 @@
 import BuildSystem
 
+private let minVersion: PackageVersion = "0.7.0"
+
 public struct JpegXL: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.6.1"
+    "0.8.0"
   }
 
 // TODO: use bundled highway repo
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
+    guard order.version > minVersion else {
+      throw PackageRecipeError.unsupportedVersion
+    }
+
     let repoUrl = "https://github.com/libjxl/libjxl.git"
 
     let source: PackageSource
@@ -17,7 +23,7 @@ public struct JpegXL: Package {
     case .head:
       source = .repository(url: repoUrl)
     case .stable(let version):
-      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString(includeZeroPatch: false))"))
+      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString())"), submodule: .paths(["third_party/sjpeg", "third_party/skcms"]))
     }
 
     return .init(
@@ -26,6 +32,7 @@ public struct JpegXL: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
+        .runTime(Highway.self),
         .runTime(Brotli.self),
         .runTime(Mozjpeg.self),
         .runTime(Openexr.self),
@@ -33,7 +40,7 @@ public struct JpegXL: Package {
         .runTime(Giflib.self),
         .runTime(Png.self),
         .runTime(Libavif.self),
-        order.version > "0.6.1" ? .runTime(Gflags.self) : nil,
+        .runTime(Gflags.self),
       ],
       products: [
         .bin("cjxl"), .bin("djxl"),
@@ -44,27 +51,21 @@ public struct JpegXL: Package {
 
   public func build(with context: BuildContext) throws {
 
-    try replace(contentIn: "CMakeLists.txt", matching: "find_package(Python COMPONENTS Interpreter)", with: "") // disable manpages
-
     try context.inRandomDirectory { _ in
 
       try context.cmake(
         toolType: .ninja,
         "..",
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
-        context.order.version > "0.6.1" ? cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS") : nil,
-        context.order.version > "0.6.1" ? cmakeOnFlag(context.libraryType.buildStatic, "JPEGXL_STATIC") : nil,
-        cmakeOnFlag(true, "SJPEG_BUILD_EXAMPLES"),
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeOnFlag(context.libraryType.buildStatic, "JPEGXL_STATIC"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
-        cmakeOnFlag(false, "JPEGXL_FORCE_SYSTEM_HWY"),
+        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
         cmakeOnFlag(false, "BUILD_TESTING")
       )
-
-      // fix darwin ld
-      try replace(contentIn: "build.ninja", matching: "-Wl,--exclude-libs=ALL", with: "")
 
       try context.make(toolType: .ninja)
       try context.make(toolType: .ninja, "install")
