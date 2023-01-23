@@ -5,7 +5,7 @@ public struct Libgit2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.5.0"
+    "1.5.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -13,7 +13,7 @@ public struct Libgit2: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/libgit2/libgit2.git")
     case .stable(let version):
       let versionString = version.toString()
       source = .tarball(url: "https://github.com/libgit2/libgit2/archive/v\(versionString).tar.gz")

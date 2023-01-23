@@ -5,7 +5,7 @@ public struct Cmake: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.25.1"
+    "3.25.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
