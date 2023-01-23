@@ -134,7 +134,11 @@ extension BuildContext {
       .filter { $0.pathExtension.caseInsensitiveCompare(searchExtension) == .orderedSame
         || $0.lastPathComponent.contains("." + searchExtension + ".")
       }
-    try dstFiles.forEach { try removeItem(at: $0) }
+    try dstFiles.forEach {
+      logger.info("removing unneed library file: \($0.path)")
+      try removeItem(at: $0)
+
+    }
   }
 
   public func removeItem(at url: URL) throws {

@@ -58,7 +58,6 @@ public struct JpegXL: Package {
         "..",
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeOnFlag(context.libraryType.buildStatic, "JPEGXL_STATIC"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
