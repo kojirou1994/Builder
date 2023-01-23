@@ -52,6 +52,9 @@ struct BuilderOptions: ParsableArguments {
   @Option
   var deployMode: DeployMode = .native
 
+  @Flag(inversion: .prefixedEnableDisable, help: "Enable user's flags from environment.")
+  var userFlags: Bool = false
+
   func validate() throws {
     try preconditionOrThrow(!(version != nil && head), ValidationError("Both --version and --head is used, it's not allowed."))
     try preconditionOrThrow((dependencyLevel ?? 1) > 0, ValidationError("dependencyLevel must > 0"))
@@ -86,7 +89,7 @@ extension Builder {
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,
       addLibInfoInPrefix: addLibInfoInPrefix,
-      optimize: options.optimize, deployMode: options.deployMode,
+      optimize: options.optimize, deployMode: options.deployMode, userFlags: options.userFlags,
       strictMode: options.strictMode, preferSystemPackage: options.preferSystemPackage,
       enableBitcode: options.bitcode)
   }

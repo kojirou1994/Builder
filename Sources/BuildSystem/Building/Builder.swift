@@ -40,7 +40,7 @@ struct Builder {
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool,
        addLibInfoInPrefix: Bool, optimize: String?,
-       deployMode: DeployMode,
+       deployMode: DeployMode, userFlags: Bool,
        strictMode: Bool, preferSystemPackage: Bool,
        enableBitcode: Bool) throws {
     self.builderDirectoryURL = workDirectoryURL
@@ -59,6 +59,7 @@ struct Builder {
     self.addLibInfoInPrefix = addLibInfoInPrefix
     self.optimize = optimize
     self.deployMode = deployMode
+    self.userFlags = userFlags
     self.preferSystemPackage = preferSystemPackage
 
     let sdkPath: String?
@@ -149,6 +150,7 @@ struct Builder {
   let optimize: String?
   let deployMode: DeployMode
   let preferSystemPackage: Bool
+  let userFlags: Bool
 
   func checkout(package: Package, version: PackageVersion, source: PackageSource, directoryName: String) throws -> URL {
     let safeDirName = directoryName.safeFilename()
@@ -461,10 +463,12 @@ extension Builder {
       ).joined(separator: ":")
       environment[.cmakePrefixPath] = environment[.path]
 
-      // TODO: keep user's flags?
-      environment[.cflags] = ""
-      environment[.cxxflags] = ""
-      environment[.ldflags] = ""
+      if !userFlags {
+        environment[.cflags] = ""
+        environment[.cxxflags] = ""
+        environment[.ldflags] = ""
+        environment[.rustFlags] = ""
+      }
 
       if order.target != .native { // isBuildingCross
         if order.system == .macCatalyst {
