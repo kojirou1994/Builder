@@ -78,3 +78,7 @@ extension Package {
 public protocol CustomNextVersion {
   var nextVersion: PackageVersion { get }
 }
+
+public protocol AbstractPackage: Package {}
+
+public protocol PipPackage: AbstractPackage {}

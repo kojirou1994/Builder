@@ -1,6 +1,6 @@
 import BuildSystem
 
-public struct Meson: Package {
+public struct Meson: PipPackage {
 
   public init() {}
 
