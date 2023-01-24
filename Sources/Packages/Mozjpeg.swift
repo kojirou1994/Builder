@@ -50,7 +50,6 @@ public struct Mozjpeg: Package {
         "..",
         context.libraryType.staticCmakeFlag,
         context.libraryType.sharedCmakeFlag,
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "PNG_SUPPORTED"),
         cmakeOnFlag(true, "WITH_TURBOJPEG"),
         cmakeOnFlag(false, "WITH_12BIT"), // simd will be disabled if 12bit is enabled

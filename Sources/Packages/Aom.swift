@@ -36,7 +36,6 @@ public struct Aom: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(false, "ENABLE_DOCS"),
         cmakeOnFlag(true, "ENABLE_EXAMPLES"),
         cmakeOnFlag(false, "ENABLE_TESTDATA"),

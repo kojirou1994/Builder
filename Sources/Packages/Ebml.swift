@@ -35,7 +35,6 @@ public struct Ebml: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
       )
 

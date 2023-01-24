@@ -54,8 +54,7 @@ public struct Libavif: Package {
         cmakeOnFlag(false, "AVIF_BUILD_TESTS"),
         cmakeOnFlag(true, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(false, "AVIF_ENABLE_WERROR"), /* jpeg header error */
-        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
       )
 
       try context.make(toolType: .ninja)

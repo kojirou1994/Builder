@@ -126,7 +126,6 @@ public struct x265: Package {
         cmakeOnFlag(enable10bit, "LINKED_10BIT"),
         cmakeOnFlag(enable12bit, "LINKED_12BIT"),
         context.libraryType.sharedCmakeFlag,
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "ENABLE_CLI")
       )
 

@@ -46,7 +46,6 @@ public struct Zlib: Package {
           toolType: .ninja,
           "..",
           cmakeDefineFlag(context.prefix.pkgConfig.path, "INSTALL_PKGCONFIG_DIR"),
-          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           nil
         )
 

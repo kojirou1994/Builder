@@ -38,7 +38,6 @@ public struct Ilmbase: Package {
         "..",
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeDefineFlag("", "ILMBASE_STATIC_LIB_SUFFIX")
       )
       try context.make(toolType: .ninja)

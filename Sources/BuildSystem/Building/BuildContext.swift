@@ -241,6 +241,10 @@ extension BuildContext {
     }
     cmakeArguments.append(cmakeDefineFlag(dependencyMap.allPrefixes.map(\.root.path).joined(separator: ";"), "CMAKE_PREFIX_PATH"))
 
+    if libraryType.buildShared {
+      cmakeArguments.append(cmakeDefineFlag(prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"))
+    }
+
 //    if order.system == .macOS {
 //      cmakeArguments.append(cmakeDefineFlag(order.arch.isX86 ? "x86_64": "arm64", "CMAKE_APPLE_SILICON_PROCESSOR"))
 //    }

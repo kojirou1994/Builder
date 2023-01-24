@@ -40,8 +40,7 @@ public struct Lzfse: Package {
         "..",
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(!context.strictMode, "LZFSE_DISABLE_TESTS"),
-        cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(true, "CMAKE_MACOSX_RPATH")
       )
 
       try context.make(toolType: .ninja)

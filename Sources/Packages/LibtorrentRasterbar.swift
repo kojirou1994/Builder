@@ -34,7 +34,6 @@ public struct LibtorrentRasterbar: Package {
         toolType: .ninja,
         cmakeOnFlag(context.order.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(context.strictMode, "build_tests"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         ".."
       )
 

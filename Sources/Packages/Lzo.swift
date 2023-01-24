@@ -39,8 +39,7 @@ public struct Lzo: Package {
         "..",
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
         cmakeOnFlag(context.libraryType.buildShared, "ENABLE_SHARED"),
-        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC")
       )
       
       try context.make(toolType: .ninja)

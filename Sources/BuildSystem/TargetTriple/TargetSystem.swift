@@ -56,7 +56,7 @@ public enum TargetSystem: String, CaseIterable, ExpressibleByArgument, CustomStr
     }
   }
 
-  /// recommended cc
+  /// default cc for this system
   public var cc: String {
     switch self {
     case .macOS, .macCatalyst,
@@ -69,6 +69,7 @@ public enum TargetSystem: String, CaseIterable, ExpressibleByArgument, CustomStr
     }
   }
 
+  /// default cxx for this system
   public var cxx: String {
     switch self {
     case .macOS, .macCatalyst,

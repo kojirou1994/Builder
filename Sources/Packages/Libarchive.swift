@@ -81,7 +81,7 @@ public struct Libarchive: Package {
         cmakeOnFlag(true, "ENABLE_LZO"),
         cmakeOnFlag(true, "ENABLE_MBEDTLS"),
         // ENABLE_NETTLE
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        nil
       )
 
       try context.make(toolType: .ninja)

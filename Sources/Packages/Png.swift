@@ -34,8 +34,7 @@ public struct Png: Package {
         "..",
         cmakeDefineFlag(context.order.arch.isARM ? "on" : "off" , "PNG_ARM_NEON"),
         cmakeOnFlag(context.libraryType.buildStatic, "PNG_STATIC"),
-        cmakeOnFlag(context.libraryType.buildShared, "PNG_SHARED"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.libraryType.buildShared, "PNG_SHARED")
       )
 
       try context.make(toolType: .ninja)

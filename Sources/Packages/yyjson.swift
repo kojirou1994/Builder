@@ -52,7 +52,6 @@ public struct yyjson: Package {
         toolType: .ninja,
         "..",
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(misc, "YYJSON_BUILD_MISC"),
         cmakeOnFlag(context.canRunTests, "YYJSON_BUILD_TESTS")
       )

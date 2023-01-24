@@ -56,8 +56,7 @@ public struct Opus: Package {
             toolType: .ninja,
             "..",
             cmakeOnFlag(true, "OPUS_CUSTOM_MODES"),
-            cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
-            cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+            cmakeOnFlag(shared, "BUILD_SHARED_LIBS")
           )
 
           try context.make(toolType: .ninja)

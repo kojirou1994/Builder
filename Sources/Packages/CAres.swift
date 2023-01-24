@@ -45,7 +45,6 @@ public struct CAres: Package {
         "..",
         cmakeOnFlag(context.libraryType.buildStatic, "CARES_STATIC"),
         cmakeOnFlag(context.libraryType.buildShared, "CARES_SHARED"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.isBuildingCross, "CARES_STATIC_PIC")
       )
 

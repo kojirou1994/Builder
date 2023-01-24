@@ -51,8 +51,7 @@ public struct Nghttp2: Package {
 //        cmakeOnFlag(true, "ENABLE_EXAMPLES"),
         cmakeOnFlag(context.libraryType == .static, "Boost_USE_STATIC_LIBS"),
         cmakeOnFlag(context.libraryType.buildShared, "ENABLE_SHARED_LIB"),
-        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC_LIB"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC_LIB")
       )
 
       try context.make(toolType: .ninja, "lib/install")

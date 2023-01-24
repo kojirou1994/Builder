@@ -46,7 +46,6 @@ public struct Curl: Package {
         "..",
         cmakeOnFlag(true, "BUILD_CURL_EXE"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
         /*
          // Enable BearSSL for SSL/TLS

@@ -37,7 +37,6 @@ public struct Libgit2: Package {
         toolType: .ninja,
         "..",
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(false, "BUILD_CLAR")
       )
 

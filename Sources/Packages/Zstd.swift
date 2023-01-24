@@ -63,7 +63,6 @@ public struct Zstd: Package {
           cmakeOnFlag(programs, "ZSTD_LZ4_SUPPORT", defaultEnabled: false),
           cmakeOnFlag(programs, "ZSTD_LZMA_SUPPORT", defaultEnabled: false),
           cmakeOnFlag(programs, "ZSTD_ZLIB_SUPPORT", defaultEnabled: false),
-          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeDefineFlag("@loader_path/../lib", "CMAKE_BUILD_RPATH") // fix for test time dyld error
         )
 

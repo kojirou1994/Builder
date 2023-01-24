@@ -41,8 +41,7 @@ public struct Lz4: Package {
           cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
           cmakeOnFlag(false, "LZ4_BUILD_LEGACY_LZ4C"),
           cmakeOnFlag(true, "LZ4_BUILD_CLI"),
-          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH")
         )
 
         try context.make(toolType: .ninja)

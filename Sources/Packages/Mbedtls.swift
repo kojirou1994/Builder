@@ -63,7 +63,6 @@ public struct Mbedtls: Package {
         cmakeOnFlag(context.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
         cmakeOnFlag(context.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
         cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
         cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
         isLegacy ? cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT") : nil,

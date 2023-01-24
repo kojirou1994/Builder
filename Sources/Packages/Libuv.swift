@@ -34,8 +34,7 @@ public struct Libuv: Package {
         toolType: .ninja,
         "..",
         cmakeOnFlag(false, "ASAN"), // Enable AddressSanitizer (ASan)
-        cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.strictMode, "BUILD_TESTING")
       )
 
       try context.make(toolType: .ninja)

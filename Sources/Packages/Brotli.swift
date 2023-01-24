@@ -32,8 +32,7 @@ public struct Brotli: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(context.order.system.isApple, "CMAKE_MACOSX_RPATH"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
+        cmakeOnFlag(context.order.system.isApple, "CMAKE_MACOSX_RPATH")
       )
 
       try context.make(toolType: .ninja)

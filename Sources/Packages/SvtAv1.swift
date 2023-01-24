@@ -54,7 +54,6 @@ public struct SvtAv1: Package {
         try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
           cmakeOnFlag(shared, "BUILD_SHARED_LIBS"),
           cmakeOnFlag(context.isBuildingNative, "NATIVE"),
           compileCOnly,

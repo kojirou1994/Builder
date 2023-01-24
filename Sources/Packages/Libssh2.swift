@@ -41,7 +41,6 @@ public struct Libssh2: Package {
         "..",
         cmakeOnFlag(false, "BUILD_EXAMPLES"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-        cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
 //        cmakeOnFlag(true, "CLEAR_MEMORY"),
         cmakeOnFlag(true, "ENABLE_CRYPT_NONE"),
