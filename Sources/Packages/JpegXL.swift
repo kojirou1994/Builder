@@ -2,6 +2,12 @@ import BuildSystem
 
 private let minVersion: PackageVersion = "0.7.0"
 
+private extension PackageOrder {
+  var linkBrotli: Bool {
+    system.isApple || libraryType.buildShared
+  }
+}
+
 public struct JpegXL: Package {
 
   public init() {}
@@ -34,9 +40,9 @@ public struct JpegXL: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Highway.self),
-        .optional(.runTime(Brotli.self), when: order.system.isApple),
+        .optional(.runTime(Brotli.self), when: order.linkBrotli),
         .runTime(Mozjpeg.self),
-        .optional(.runTime(Openexr.self), when: order.system.isApple),
+        .optional(.runTime(Openexr.self), when: order.linkBrotli),
         .runTime(Webp.self),
         .runTime(Giflib.self),
         .runTime(Png.self),
@@ -62,8 +68,8 @@ public struct JpegXL: Package {
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_EXAMPLES"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_PLUGINS"),
-        cmakeOnFlag(context.order.system.isApple, "JPEGXL_FORCE_SYSTEM_BROTLI"),
-        cmakeOnFlag(context.order.system.isApple, "JPEGXL_ENABLE_OPENEXR"),
+        cmakeOnFlag(context.order.linkBrotli, "JPEGXL_FORCE_SYSTEM_BROTLI"),
+        cmakeOnFlag(context.order.linkBrotli, "JPEGXL_ENABLE_OPENEXR"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
         cmakeOnFlag(false, "BUILD_TESTING")
