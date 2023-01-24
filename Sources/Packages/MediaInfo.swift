@@ -34,6 +34,7 @@ public struct MediaInfo: Package {
   public func build(with context: BuildContext) throws {
     if context.libraryType.buildStatic {
       context.environment["PKG_CONFIG"] = "pkg-config --static"
+      context.environment.append("-ltinyxml2", for: .ldflags)
     }
 
     try context.changingDirectory("Project/GNU/CLI") { _ in

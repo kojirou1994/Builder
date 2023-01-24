@@ -28,6 +28,7 @@ public struct MediaInfoLib: Package {
         .runTime(Zlib.self),
         .runTime(ZenLib.self),
         .runTime(Curl.self),
+        .runTime(Tinyxml2.self),
       ],
       canBuildAllLibraryTogether: false
     )
