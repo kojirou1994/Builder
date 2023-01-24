@@ -28,11 +28,11 @@ public struct Brotli: Package {
 
   public func build(with context: BuildContext) throws {
 
-    try context.changingDirectory(context.randomFilename) { _ in
+    try context.inRandomDirectory { _ in
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
+        cmakeOnFlag(context.order.system.isApple, "CMAKE_MACOSX_RPATH"),
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR")
       )
 
