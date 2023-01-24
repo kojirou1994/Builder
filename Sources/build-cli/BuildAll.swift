@@ -167,6 +167,7 @@ struct BuildAll: ParsableCommand {
       PackageBuildAllCommand<TTempSmooth>.self,
       PackageBuildAllCommand<Temporalsoften2>.self,
       PackageBuildAllCommand<Tiff>.self,
+      PackageBuildAllCommand<Tinyxml2>.self,
       PackageBuildAllCommand<Utfcpp>.self,
       PackageBuildAllCommand<VagueDenoiser>.self,
       PackageBuildAllCommand<Vapoursynth>.self,

@@ -167,6 +167,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<TTempSmooth>.self,
       PackageCheckUpdateCommand<Temporalsoften2>.self,
       PackageCheckUpdateCommand<Tiff>.self,
+      PackageCheckUpdateCommand<Tinyxml2>.self,
       PackageCheckUpdateCommand<Utfcpp>.self,
       PackageCheckUpdateCommand<VagueDenoiser>.self,
       PackageCheckUpdateCommand<Vapoursynth>.self,
