@@ -1,6 +1,6 @@
 import BuildSystem
 
-public struct VapoursynthBundle: Package {
+public struct VapoursynthBundle: AbstractPackage {
 
   public init() {}
 

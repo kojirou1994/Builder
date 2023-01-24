@@ -5,7 +5,7 @@ public struct MediaInfo: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "21.03"
+    "22.12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -27,13 +27,14 @@ public struct MediaInfo: Package {
         .buildTool(PkgConfig.self),
         .runTime(MediaInfoLib.self),
       ],
-      supportsBitcode: false,
-      supportedLibraryType: nil
+      supportsBitcode: false
     )
   }
 
   public func build(with context: BuildContext) throws {
-    context.environment["PKG_CONFIG"] = "pkg-config --static"
+    if context.libraryType.buildStatic {
+      context.environment["PKG_CONFIG"] = "pkg-config --static"
+    }
 
     try context.changingDirectory("Project/GNU/CLI") { _ in
 
@@ -48,13 +49,7 @@ public struct MediaInfo: Package {
 
       try context.fixAutotoolsForDarwin()
 
-      try context.configure(
-        configureEnableFlag(false, CommonOptions.dependencyTracking),
-//        context.libraryType.staticConfigureFlag,
-//        context.libraryType.sharedConfigureFlag
-//        configureEnableFlag(context.libraryType.buildStatic, "staticlibs")
-        nil
-      )
+      try context.configure()
 
       try context.make()
       try context.make("install")

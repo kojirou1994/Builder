@@ -5,7 +5,7 @@ public struct MediaInfoLib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "21.3.0"
+    "22.12"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -42,7 +42,6 @@ public struct MediaInfoLib: Package {
           toolType: .ninja,
           "..",
           cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
           cmakeOnFlag(false, "BUILD_ZLIB"),
           cmakeOnFlag(false, "BUILD_ZENLIB")
         )

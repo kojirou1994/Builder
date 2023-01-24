@@ -1,6 +1,6 @@
 import BuildSystem
 
-public struct MediaBundle: Package {
+public struct MediaBundle: AbstractPackage {
 
   public init() {}
 

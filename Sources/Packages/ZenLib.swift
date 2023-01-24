@@ -36,8 +36,7 @@ public struct ZenLib: Package {
         try context.cmake(
           toolType: .ninja,
           "..",
-          cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
-          cmakeOnFlag(true, "CMAKE_MACOSX_RPATH")
+          cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
         )
 
         try context.make(toolType: .ninja)
