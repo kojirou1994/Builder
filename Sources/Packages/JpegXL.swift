@@ -23,7 +23,8 @@ public struct JpegXL: Package {
     case .head:
       source = .repository(url: repoUrl)
     case .stable(let version):
-      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString())"), submodule: .paths(["third_party/sjpeg", "third_party/skcms"]))
+      source = .repository(url: repoUrl, requirement: .tag("v\(version.toString())"),
+                           submodule: .paths(["third_party/sjpeg", "third_party/skcms", "third_party/brotli"]))
     }
 
     return .init(
@@ -33,9 +34,9 @@ public struct JpegXL: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Highway.self),
-        .runTime(Brotli.self),
+        .optional(.runTime(Brotli.self), when: order.system.isApple),
         .runTime(Mozjpeg.self),
-        .runTime(Openexr.self),
+        .optional(.runTime(Openexr.self), when: order.system.isApple),
         .runTime(Webp.self),
         .runTime(Giflib.self),
         .runTime(Png.self),
@@ -59,8 +60,10 @@ public struct JpegXL: Package {
         cmakeDefineFlag(context.prefix.lib.path, "CMAKE_INSTALL_NAME_DIR"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
-        cmakeOnFlag(true, "JPEGXL_ENABLE_PLUGINS"),
-        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
+        cmakeOnFlag(true, "JPEGXL_ENABLE_EXAMPLES"),
+        cmakeOnFlag(false, "JPEGXL_ENABLE_PLUGINS"),
+        cmakeOnFlag(context.order.system.isApple, "JPEGXL_FORCE_SYSTEM_BROTLI"),
+        cmakeOnFlag(context.order.system.isApple, "JPEGXL_ENABLE_OPENEXR"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
         cmakeOnFlag(false, "BUILD_TESTING")
