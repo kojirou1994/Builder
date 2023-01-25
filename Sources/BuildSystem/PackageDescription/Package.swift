@@ -82,3 +82,15 @@ public protocol CustomNextVersion {
 public protocol AbstractPackage: Package {}
 
 public protocol PipPackage: AbstractPackage {}
+
+public protocol PackageFeature: RawRepresentable, ExpressibleByArgument, CustomStringConvertible, Codable where RawValue: ExpressibleByArgument {
+
+}
+
+extension PackageFeature where RawValue: CustomStringConvertible {
+  public var description: String { rawValue.description }
+}
+
+public protocol MultiplePackageFeature: PackageFeature, EnumerableFlag {
+
+}
