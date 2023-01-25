@@ -44,11 +44,6 @@ public struct Libssh2: Package {
 
   public func build(with context: BuildContext) throws {
 
-    if context.libraryType == .static {
-      // just help building examples
-      context.environment.append("-lgpg-error", for: .ldflags)
-    }
-
     try context.inRandomDirectory { _ in
 
       try context.cmake(
@@ -58,7 +53,7 @@ public struct Libssh2: Package {
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeDefineFlag(crypto.option, "CRYPTO_BACKEND"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
-        cmakeOnFlag(true, "BUILD_EXAMPLES"),
+        cmakeOnFlag(false, "BUILD_EXAMPLES"),
         cmakeOnFlag(true, "ENABLE_CRYPT_NONE"),
         cmakeOnFlag(true, "ENABLE_ZLIB_COMPRESSION")
       )
