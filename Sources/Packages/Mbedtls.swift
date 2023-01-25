@@ -41,6 +41,7 @@ public struct Mbedtls: Package {
   }
 
   public func build(with context: BuildContext) throws {
+    // requirement: pip3 install --user jinja2 jsonschema
 
     let isLegacy = isLegacyVer(context.order.version)
 
@@ -49,12 +50,16 @@ public struct Mbedtls: Package {
     let configPath = "include/mbedtls/\(configFilename).h"
 
     // enable pthread
-    try [
+    let featureMacros: [String?] = [
       "MBEDTLS_THREADING_PTHREAD",
       "MBEDTLS_THREADING_C",
+      context.order.arch.isX86 ? "MBEDTLS_HAVE_SSE2" : nil,
       "MBEDTLS_SHA256_USE_A64_CRYPTO_IF_PRESENT",
     ]
-    .forEach { try replace(contentIn: configPath, matching: "//#define \($0)", with: "#define \($0)") }
+
+    try featureMacros
+      .compactMap { $0 }
+      .forEach { try replace(contentIn: configPath, matching: "//#define \($0)", with: "#define \($0)") }
 
     try context.inRandomDirectory { _ in
       try context.cmake(
@@ -62,7 +67,6 @@ public struct Mbedtls: Package {
         "..",
         cmakeOnFlag(context.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
         cmakeOnFlag(context.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
-        cmakeOnFlag(true, "CMAKE_MACOSX_RPATH"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
         cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
         isLegacy ? cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT") : nil,
