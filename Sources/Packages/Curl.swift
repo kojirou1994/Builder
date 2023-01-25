@@ -28,10 +28,10 @@ public struct Curl: Package {
         .runTime(Brotli.self),
         .runTime(Zstd.self),
         .runTime(CAres.self),
-//        .runTime(Openssl.self),
+        .runTime(Openssl.self),
         .runTime(Zlib.self),
 //        .runTime(Nghttp2.self),
-//        .runTime(Libssh2.self),
+        .runTime(Libssh2.self),
       ],
       canBuildAllLibraryTogether: false
     )
@@ -49,11 +49,11 @@ public struct Curl: Package {
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
 
-        cmakeOnFlag(false, "CURL_USE_LIBSSH2"),
+        cmakeOnFlag(true, "CURL_USE_LIBSSH2"),
         cmakeOnFlag(false, "CURL_USE_LIBPSL"),
         cmakeOnFlag(true, "CURL_DISABLE_LDAP"),
         cmakeOnFlag(true, "CURL_BROTLI"),
-        cmakeOnFlag(false, "CURL_USE_OPENSSL"),
+        cmakeOnFlag(true, "CURL_USE_OPENSSL"),
         cmakeOnFlag(true, "CURL_CA_FALLBACK"),
         cmakeOnFlag(true, "ENABLE_ARES"),
         cmakeOnFlag(true, "CURL_USE_SECTRANSP"),
