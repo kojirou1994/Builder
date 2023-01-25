@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/vapor/console-kit.git",
         "state": {
           "branch": null,
-          "revision": "a7e67a1719933318b5ab7eaaed355cde020465b1",
-          "version": "4.5.0"
+          "revision": "447f1046fb4e9df40973fe426ecb24a6f0e8d3b4",
+          "version": "4.6.0"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser.git",
         "state": {
           "branch": null,
-          "revision": "fddd1c00396eed152c45a46bea9f47b98e59301d",
-          "version": "1.2.0"
+          "revision": "4ad606ba5d7673ea60679a61ff867cc1ff8c8e86",
+          "version": "1.2.1"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-log.git",
         "state": {
           "branch": null,
-          "revision": "6fe203dc33195667ce1759bf0182975e4653ba1c",
-          "version": "1.4.4"
+          "revision": "32e8d724467f8fe623624570367e3d50c5638e46",
+          "version": "1.5.2"
         }
       },
       {
