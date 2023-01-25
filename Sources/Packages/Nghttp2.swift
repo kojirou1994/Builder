@@ -29,12 +29,13 @@ public struct Nghttp2: Package {
 //        .runTime(CAres.self),
 //        .runTime(Xml2.self),
 //        .runTime(Jemalloc.self),
-//        .runTime(Boost.self),
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
+
+    try replace(contentIn: "src/shrpx_client_handler.cc", matching: "return dconn;", with: "return std::move(dconn);")
 
     try context.inRandomDirectory { _ in
 
@@ -46,10 +47,11 @@ public struct Nghttp2: Package {
         "..",
         cmakeOnFlag(false, "ENABLE_APP"),
         cmakeOnFlag(false, "ENABLE_ASIO_LIB"),
-//        cmakeOnFlag(true, "ENABLE_EXAMPLES"),
-        cmakeOnFlag(context.libraryType == .static, "Boost_USE_STATIC_LIBS"),
+        cmakeOnFlag(false, "ENABLE_EXAMPLES"),
         cmakeOnFlag(context.libraryType.buildShared, "ENABLE_SHARED_LIB"),
-        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC_LIB")
+        cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC_LIB"),
+        cmakeOnFlag(false, "ENABLE_HTTP3"),
+        cmakeOnFlag(false, "ENABLE_DOC")
       )
 
       try context.make(toolType: .ninja, "lib/install")

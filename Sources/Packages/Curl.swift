@@ -30,7 +30,7 @@ public struct Curl: Package {
         .runTime(CAres.self),
         .runTime(Openssl.self),
         .runTime(Zlib.self),
-//        .runTime(Nghttp2.self),
+        .runTime(Nghttp2.self),
         .runTime(Libssh2.self),
       ],
       canBuildAllLibraryTogether: false
@@ -57,7 +57,7 @@ public struct Curl: Package {
         cmakeOnFlag(true, "CURL_CA_FALLBACK"),
         cmakeOnFlag(true, "ENABLE_ARES"),
         cmakeOnFlag(context.order.system.isApple, "CURL_USE_SECTRANSP"),
-        cmakeOnFlag(false, "USE_NGHTTP2"),
+        cmakeOnFlag(true, "USE_NGHTTP2"),
         cmakeOnFlag(true, "CURL_ZSTD")
       )
 

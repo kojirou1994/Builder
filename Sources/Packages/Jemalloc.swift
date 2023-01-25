@@ -14,22 +14,22 @@ public struct Jemalloc: Package {
     case .head:
       source = .tarball(url: "https://github.com/jemalloc/jemalloc/archive/refs/heads/dev.zip")
     case .stable(let version):
-      source = .tarball(url: "https://github.com/jemalloc/jemalloc/archive/refs/tags/\(version.toString()).tar.gz")
+      source = .tarball(url: "https://github.com/jemalloc/jemalloc/releases/download/\(version.toString())/jemalloc-\(version.toString()).tar.bz2")
     }
 
     return .init(
       source: source,
       dependencies: [
-        .buildTool(Autoconf.self),
-        .buildTool(Automake.self),
-        .buildTool(Libtool.self),
+//        .buildTool(Autoconf.self),
+//        .buildTool(Automake.self),
+//        .buildTool(Libtool.self),
       ],
       products: [.library(name: "jemalloc", headers: ["jemalloc"])]
     )
   }
 
   public func build(with context: BuildContext) throws {
-    try context.autoconf()
+//    try context.autoconf()
 
     try context.fixAutotoolsForDarwin()
 
@@ -40,7 +40,7 @@ public struct Jemalloc: Package {
     )
 
     try context.make()
-    try context.make("install")
+    try context.make(parallelJobs: 1, "install")
 
   }
 
