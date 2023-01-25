@@ -8,15 +8,25 @@ public struct Libssh2: Package {
     "1.10"
   }
 
+  @Option
+  private var crypto: CryptoBackend = .openssl
+
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/libssh2/libssh2.git")
     case .stable(let version):
       let versionString = version.toString()
       source = .tarball(url: "https://libssh2.org/download/libssh2-\(versionString).tar.gz")
+    }
+
+    let cryptoDep: PackageDependency
+    switch crypto {
+    case .openssl: cryptoDep = .runTime(Openssl.self)
+    case .gcrypt:  cryptoDep = .runTime(Gcrypt.self)
+//    case .mbedtls: cryptoDep = .runTime(Mbedtls.self)
     }
 
     return .init(
@@ -25,7 +35,7 @@ public struct Libssh2: Package {
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
-        .runTime(Openssl.self),
+        cryptoDep,
         .runTime(Zlib.self),
       ],
       canBuildAllLibraryTogether: false
@@ -34,15 +44,21 @@ public struct Libssh2: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if context.libraryType == .static {
+      // just help building examples
+      context.environment.append("-lgpg-error", for: .ldflags)
+    }
+
     try context.inRandomDirectory { _ in
 
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(false, "BUILD_EXAMPLES"),
+        cmakeOnFlag(false, "LINT"),
         cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS"),
+        cmakeDefineFlag(crypto.option, "CRYPTO_BACKEND"),
         cmakeOnFlag(context.strictMode, "BUILD_TESTING"),
-//        cmakeOnFlag(true, "CLEAR_MEMORY"),
+        cmakeOnFlag(true, "BUILD_EXAMPLES"),
         cmakeOnFlag(true, "ENABLE_CRYPT_NONE"),
         cmakeOnFlag(true, "ENABLE_ZLIB_COMPRESSION")
       )
@@ -54,6 +70,20 @@ public struct Libssh2: Package {
       }
 
       try context.make(toolType: .ninja, "install")
+    }
+  }
+
+  enum CryptoBackend: String, PackageFeature {
+    case openssl
+    case gcrypt
+//    case mbedtls // only 2.* is supported
+
+    var option: String {
+      switch self {
+      case .openssl: return "OpenSSL"
+      case .gcrypt:  return "Libgcrypt"
+//      case .mbedtls: return "mbedTLS"
+      }
     }
   }
 }
