@@ -46,7 +46,7 @@ public struct Nghttp2: Package {
         toolType: .ninja,
         "..",
         cmakeOnFlag(false, "ENABLE_APP"),
-        cmakeOnFlag(false, "ENABLE_ASIO_LIB"),
+        cmakeOnFlag(false, "ENABLE_HPACK_TOOLS"),
         cmakeOnFlag(false, "ENABLE_EXAMPLES"),
         cmakeOnFlag(context.libraryType.buildShared, "ENABLE_SHARED_LIB"),
         cmakeOnFlag(context.libraryType.buildStatic, "ENABLE_STATIC_LIB"),
