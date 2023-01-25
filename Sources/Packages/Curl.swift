@@ -56,7 +56,7 @@ public struct Curl: Package {
         cmakeOnFlag(true, "CURL_USE_OPENSSL"),
         cmakeOnFlag(true, "CURL_CA_FALLBACK"),
         cmakeOnFlag(true, "ENABLE_ARES"),
-        cmakeOnFlag(true, "CURL_USE_SECTRANSP"),
+        cmakeOnFlag(context.order.system.isApple, "CURL_USE_SECTRANSP"),
         cmakeOnFlag(false, "USE_NGHTTP2"),
         cmakeOnFlag(true, "CURL_ZSTD")
       )

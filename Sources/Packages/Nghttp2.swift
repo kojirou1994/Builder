@@ -36,8 +36,6 @@ public struct Nghttp2: Package {
 
   public func build(with context: BuildContext) throws {
 
-    try replace(contentIn: "src/shrpx_client_handler.cc", matching: "return dconn;", with: "return std::move(dconn);")
-
     try context.inRandomDirectory { _ in
 
       context.environment.append("-I\(context.prefix.include.path)", for: .cxxflags, .cflags)
