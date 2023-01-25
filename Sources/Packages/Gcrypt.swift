@@ -32,11 +32,15 @@ public struct Gcrypt: Package {
   public func build(with context: BuildContext) throws {
     try context.autogen()
 
+    // TODO: edit random/Makefile
+    // change CCASFLAGS and CFLAGS to -O0
+    // call make rndjent.lo rndjent.o
+
     try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,
       context.libraryType.sharedConfigureFlag,
-      "--with-gpg-error-prefix=\(context.dependencyMap[GpgError.self].root.path)",
+      configureWithFlag(context.dependencyMap[GpgError.self].root.path, "gpg-error-prefix"),
       configureEnableFlag(!context.order.system.isApple, "asm")
     )
 
