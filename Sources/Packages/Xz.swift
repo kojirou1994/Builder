@@ -42,6 +42,8 @@ public struct Xz: Package {
      */
     try? context.autogen()
 
+    try context.fixAutotoolsForDarwin()
+
     try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,
