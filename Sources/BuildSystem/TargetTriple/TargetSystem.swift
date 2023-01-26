@@ -47,6 +47,13 @@ public enum TargetSystem: String, CaseIterable, ExpressibleByArgument, CustomStr
     }
   }
 
+  public var isMobile: Bool {
+    switch self {
+    case .macOS, .macCatalyst, .linuxGNU: return false
+    default: return true
+    }
+  }
+
   public var isSimulator: Bool {
     switch self {
     case  .tvSimulator, .iphoneSimulator,

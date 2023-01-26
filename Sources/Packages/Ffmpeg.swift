@@ -333,23 +333,6 @@ extension Ffmpeg {
     case avdevice, avcodec, avformat, swresample, swscale, postproc, avfilter
     case programs, ffmpeg, ffplay, ffprobe
     case doc, htmlpages, manpages, podpages, txtpages
-    /*
-     Component options:
-     --enable-avresample      enable libavresample build (deprecated) [no]
-     --disable-pthreads       disable pthreads [autodetect]
-     --disable-w32threads     disable Win32 threads [autodetect]
-     --disable-os2threads     disable OS/2 threads [autodetect]
-     --disable-dct            disable DCT code
-     --disable-dwt            disable DWT code
-     --disable-error-resilience disable error resilience code
-     --disable-lsp            disable LSP code
-     --disable-lzo            disable LZO decoder code
-     --disable-mdct           disable MDCT code
-     --disable-rdft           disable RDFT code
-     --disable-fft            disable FFT code
-     --disable-faan           disable floating point AAN (I)DCT code
-     --disable-pixelutils     disable pixel utils in libavutil
-     */
     case network
 
     var description: String { rawValue }
