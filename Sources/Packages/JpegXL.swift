@@ -16,7 +16,6 @@ public struct JpegXL: Package {
     "0.8.0"
   }
 
-// TODO: use bundled highway repo
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     guard order.version > minVersion else {
       throw PackageRecipeError.unsupportedVersion
@@ -30,7 +29,7 @@ public struct JpegXL: Package {
       source = .repository(url: repoUrl)
     case .stable(let version):
       source = .repository(url: repoUrl, requirement: .tag("v\(version.toString())"),
-                           submodule: .paths(["third_party/sjpeg", "third_party/skcms", "third_party/brotli"]))
+                           submodule: .paths(["third_party/sjpeg", "third_party/skcms"]))
     }
 
     return .init(
@@ -40,7 +39,7 @@ public struct JpegXL: Package {
         .buildTool(Ninja.self),
         .buildTool(PkgConfig.self),
         .runTime(Highway.self),
-        .optional(.runTime(Brotli.self), when: order.linkBrotli),
+        .runTime(Brotli.self),
         .runTime(Mozjpeg.self),
         .optional(.runTime(Openexr.self), when: order.linkBrotli),
         .runTime(Webp.self),
@@ -58,6 +57,13 @@ public struct JpegXL: Package {
 
   public func build(with context: BuildContext) throws {
 
+    if context.cCompiler == .gcc {
+      try replace(
+        contentIn: "cmake/FindBrotli.cmake",
+        matching: "set(Brotli_LIBRARIES ${BROTLICOMMON_LIBRARY} ${BROTLIENC_LIBRARY} ${BROTLIDEC_LIBRARY})",
+        with: "set(Brotli_LIBRARIES ${BROTLIENC_LIBRARY} ${BROTLIDEC_LIBRARY} ${BROTLICOMMON_LIBRARY})")
+    }
+
     try context.inRandomDirectory { _ in
 
       try context.cmake(
@@ -67,7 +73,7 @@ public struct JpegXL: Package {
         cmakeOnFlag(false, "JPEGXL_ENABLE_MANPAGES"),
         cmakeOnFlag(true, "JPEGXL_ENABLE_EXAMPLES"),
         cmakeOnFlag(false, "JPEGXL_ENABLE_PLUGINS"),
-        cmakeOnFlag(context.order.linkBrotli, "JPEGXL_FORCE_SYSTEM_BROTLI"),
+        cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_BROTLI"),
         cmakeOnFlag(context.order.linkBrotli, "JPEGXL_ENABLE_OPENEXR"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_GTEST"),
         cmakeOnFlag(true, "JPEGXL_FORCE_SYSTEM_HWY"),
