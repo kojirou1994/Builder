@@ -38,6 +38,11 @@ public struct Curl: Package {
   }
 
   public func build(with context: BuildContext) throws {
+
+    if context.order.system == .linuxGNU {
+      try replace(contentIn: "CMake/FindBrotli.cmake", matching: "set(BROTLI_LIBRARIES ${BROTLICOMMON_LIBRARY} ${BROTLIDEC_LIBRARY})", with: "set(BROTLI_LIBRARIES ${BROTLIDEC_LIBRARY} ${BROTLICOMMON_LIBRARY})")
+    }
+
     try context.inRandomDirectory { _ in
       if context.libraryType == .static {
         context.environment.append("-lresolv", for: .ldflags)
