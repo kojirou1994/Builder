@@ -29,6 +29,7 @@ public struct Curl: Package {
         .runTime(Zstd.self),
         .runTime(CAres.self),
         .runTime(Openssl.self),
+        .runTime(Mbedtls.self),
         .runTime(Zlib.self),
         .runTime(Nghttp2.self),
         .runTime(Libssh2.self),
@@ -67,6 +68,7 @@ public struct Curl: Package {
         cmakeOnFlag(true, "CURL_CA_FALLBACK"),
         cmakeOnFlag(true, "ENABLE_ARES"),
         cmakeOnFlag(CURL_USE_SECTRANSP, "CURL_USE_SECTRANSP"),
+        cmakeOnFlag(true, "CURL_USE_MBEDTLS"),
         cmakeOnFlag(true, "USE_NGHTTP2"),
         cmakeOnFlag(true, "CURL_ZSTD")
       )
