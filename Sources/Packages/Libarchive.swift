@@ -8,6 +8,9 @@ public struct Libarchive: Package {
     "3.6.2"
   }
 
+  @Option
+  private var crypt: Crypt = .openssl
+
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
     switch order.system {
@@ -30,6 +33,12 @@ public struct Libarchive: Package {
       source = .tarball(url: "https://github.com/libarchive/libarchive/releases/download/v\(versionString)/libarchive-\(versionString).tar.xz")
     }
 
+    let cryptDep: PackageDependency
+    switch crypt {
+    case .openssl: cryptDep = .runTime(Openssl.self)
+    case .mbedtls: cryptDep = .runTime(Mbedtls.self)
+    }
+
     return .init(
       source: source,
       dependencies: [
@@ -40,30 +49,28 @@ public struct Libarchive: Package {
         .runTime(Zstd.self),
         .runTime(Xz.self),
         .runTime(Libb2.self),
-        .runTime(Lzo.self),
-        .runTime(Mbedtls.self),
+        .optional(.runTime(Zlib.self), when: !order.system.isMobile),
+        .optional(.runTime(Bzip2.self), when: !order.system.isMobile),
+        .optional(.runTime(Xml2.self), when: !order.system.isMobile),
+        cryptDep,
       ]
     )
   }
 
   public func build(with context: BuildContext) throws {
 
-    /*
-     still failed:
-    switch context.order.system {
-    case .watchOS, .watchSimulator,
-         .tvOS, .tvSimulator:
-      try [
-        "posix_spawnp HAVE_POSIX_SPAWNP",
-        "fork HAVE_FORK",
-        "vfork HAVE_VFORK",
-      ].forEach { fn in
-        try replace(contentIn: "CMakeLists.txt", matching: "CHECK_FUNCTION_EXISTS_GLIBC(\(fn))", with: "")
+    if context.order.system.isApple {
+      if crypt == .openssl {
+        try replace(contentIn: "CMakeLists.txt", matching: """
+IF(ENABLE_OPENSSL AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+""", with: """
+IF(ENABLE_OPENSSL)
+""")
       }
-    default:
-      break
+
+      // perfer system's libs(eg. iconv) which xml2 depends on
+      try replace(contentIn: "CMakeLists.txt", matching: "list(APPEND CMAKE_PREFIX_PATH /opt/local)", with: "")
     }
-    */
 
     try context.inRandomDirectory { _ in
 
@@ -78,19 +85,35 @@ public struct Libarchive: Package {
         cmakeOnFlag(enableShared, "ENABLE_TAR_SHARED"),
         cmakeOnFlag(enableShared, "ENABLE_CAT_SHARED"),
         cmakeOnFlag(enableShared, "ENABLE_CPIO_SHARED"),
-        cmakeOnFlag(true, "ENABLE_LZO"),
-        cmakeOnFlag(true, "ENABLE_MBEDTLS"),
-        // ENABLE_NETTLE
+        cmakeOnFlag(crypt == .openssl, "ENABLE_OPENSSL"),
+        cmakeOnFlag(crypt == .mbedtls, "ENABLE_MBEDTLS"),
+        cmakeOnFlag(true, "ENABLE_LIBB2"),
+        cmakeOnFlag(true, "ENABLE_LZ4"),
+        cmakeOnFlag(false, "ENABLE_LZO"),
+        cmakeOnFlag(true, "ENABLE_LZMA"),
+        cmakeOnFlag(true, "ENABLE_ZSTD"),
+        cmakeOnFlag(true, "ENABLE_ZLIB"),
+        cmakeOnFlag(true, "ENABLE_BZip2"),
+        cmakeOnFlag(true, "ENABLE_LIBXML2"),
+        cmakeOnFlag(false, "ENABLE_EXPAT"),
+        cmakeOnFlag(false, "ENABLE_LIBGCC"),
         nil
       )
 
       try context.make(toolType: .ninja)
       if enableTests {
+        // test_sparse_basic always fails (APFS)
+        context.environment["SKIP_TEST_SPARSE"] = "1"
         try context.make(toolType: .ninja, "test")
       }
       try context.make(toolType: .ninja, "install")
 
       try context.autoRemoveUnneedLibraryFiles()
     }
+  }
+
+  enum Crypt: String, PackageFeature {
+    case openssl
+    case mbedtls
   }
 }
