@@ -78,20 +78,21 @@ extension Builder {
   init(options: BuilderOptions, target: TargetTriple, addLibInfoInPrefix: Bool) throws {
     // TODO: use argument parser to parse environment
     // see: https://github.com/apple/swift-argument-parser/issues/4
-    let cc = ProcessInfo.processInfo.environment[EnvironmentKey.cc.string] ?? TargetSystem.native.cc
-    let cxx = ProcessInfo.processInfo.environment[EnvironmentKey.cxx.string] ?? TargetSystem.native.cxx
+    let cc = (try? ProcessInfo.processInfo.environment[EnvironmentKey.cc.string].notEmpty()) ?? TargetSystem.native.cc
+    let cxx = (try? ProcessInfo.processInfo.environment[EnvironmentKey.cxx.string].notEmpty()) ?? TargetSystem.native.cxx
 
-    var cToolchain: CToolchain?
-    if cc.contains("clang") {
-      cToolchain = .clang
-    } else if cc.contains("gcc") {
-      cToolchain = .gcc
+    var cCompiler: CToolchain?
+    let mainName = try cc.split(separator: "/").last.unwrap("CC is empty string!")
+    if mainName.hasPrefix("clang") {
+      cCompiler = .clang
+    } else if mainName.hasPrefix("gcc") {
+      cCompiler = .gcc
     }
 
     try self.init(
       workDirectoryURL: URL(fileURLWithPath: options.workPath),
       packagesDirectoryURL: URL(fileURLWithPath: options.packagePath),
-      cc: cc, cxx: cxx, cToolchain: cToolchain,
+      cc: cc, cxx: cxx, cCompiler: cCompiler,
       target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,

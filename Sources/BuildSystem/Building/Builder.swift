@@ -35,7 +35,7 @@ public enum RebuildLevel: String, ExpressibleByArgument, CaseIterable, CustomStr
 struct Builder {
   init(workDirectoryURL: URL,
        packagesDirectoryURL: URL,
-       cc: String, cxx: String, cToolchain: CToolchain?,
+       cc: String, cxx: String, cCompiler: CToolchain?,
        target: TargetTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool,
@@ -102,7 +102,7 @@ struct Builder {
     self.packageRootPath = .init(productsDirectoryURL)
     self.cc = cc
     self.cxx = cxx
-    self.cToolchain = cToolchain
+    self.cCompiler = cCompiler
     self.strictMode = strictMode
     self.envValues = envValues
     self.enableBitcode = enableBitcode
@@ -114,7 +114,7 @@ struct Builder {
       prefix: .init(productsDirectoryURL),
       dependencyMap: .init(),
       strictMode: strictMode,
-      cc: cc, cxx: cxx, cToolchain: cToolchain,
+      cc: cc, cxx: cxx, cCompiler: cCompiler,
       environment: envValues,
       libraryType: .all, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
 
@@ -129,7 +129,7 @@ struct Builder {
   let mainTarget: TargetTriple
   let strictMode: Bool
   let cc: String, cxx: String
-  let cToolchain: CToolchain?
+  let cCompiler: CToolchain?
   let envValues: EnvironmentValues
   let enableBitcode: Bool
   let sdkPath: String?
@@ -500,7 +500,7 @@ extension Builder {
         case .native:
           // TODO: better compiler detect
           if order.arch.isX86 {
-            switch cToolchain {
+            switch cCompiler {
             case .clang:
               environment.append("-march=native", for: .cflags, .cxxflags)
             case .gcc:
@@ -714,7 +714,7 @@ extension Builder {
     .init(
       order: order, source: source,
       prefix: prefix, dependencyMap: dependencyMap,
-      strictMode: strictMode, cc: cc, cxx: cxx, cToolchain: cToolchain,
+      strictMode: strictMode, cc: cc, cxx: cxx, cCompiler: cCompiler,
       environment: environment,
       libraryType: libraryType, logger: env.logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
   }
