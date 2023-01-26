@@ -44,6 +44,9 @@ public struct Curl: Package {
       try replace(contentIn: "CMake/FindBrotli.cmake", matching: "set(BROTLI_LIBRARIES ${BROTLICOMMON_LIBRARY} ${BROTLIDEC_LIBRARY})", with: "set(BROTLI_LIBRARIES ${BROTLIDEC_LIBRARY} ${BROTLICOMMON_LIBRARY})")
     }
 
+    // sec transp errors on 7.87 https://github.com/curl/curl/issues/10227
+    let CURL_USE_SECTRANSP = context.order.system.isApple && context.order.version != "7.87"
+
     try context.inRandomDirectory { _ in
       if context.libraryType == .static {
         context.environment.append("-lresolv", for: .ldflags)
@@ -63,7 +66,7 @@ public struct Curl: Package {
         cmakeOnFlag(true, "CURL_USE_OPENSSL"),
         cmakeOnFlag(true, "CURL_CA_FALLBACK"),
         cmakeOnFlag(true, "ENABLE_ARES"),
-        cmakeOnFlag(context.order.system.isApple, "CURL_USE_SECTRANSP"),
+        cmakeOnFlag(CURL_USE_SECTRANSP, "CURL_USE_SECTRANSP"),
         cmakeOnFlag(true, "USE_NGHTTP2"),
         cmakeOnFlag(true, "CURL_ZSTD")
       )
@@ -78,36 +81,3 @@ public struct Curl: Package {
     }
   }
 }
-
-public enum CurlOpensslBackend: String, CaseIterable, CustomStringConvertible {
-
-  case amissl
-  case bearssl
-  case gnutls
-  case mbedtls
-  case mesalink
-  case nss
-  case openssl
-  case boringssl
-  case libressl
-  case rustls
-  case wintls
-  case darwintls
-  case wolfssl
-
-  public var description: String { rawValue }
-}
-/*
- Select from these:
- --with-amissl
- --with-bearssl
- --with-gnutls
- --with-mbedtls
- --with-mesalink
- --with-nss
- --with-openssl (also works for BoringSSL and libressl)
- --with-rustls
- --with-schannel
- --with-secure-transport
- --with-wolfssl
- */
