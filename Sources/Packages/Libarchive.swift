@@ -5,7 +5,7 @@ public struct Libarchive: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.5.1"
+    "3.6.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -24,10 +24,10 @@ public struct Libarchive: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/libarchive/libarchive.git")
     case .stable(let version):
       let versionString = version.toString()
-      source = .tarball(url: "https://github.com/libarchive/libarchive/releases/download/\(versionString)/libarchive-\(versionString).tar.xz")
+      source = .tarball(url: "https://github.com/libarchive/libarchive/releases/download/v\(versionString)/libarchive-\(versionString).tar.xz")
     }
 
     return .init(
