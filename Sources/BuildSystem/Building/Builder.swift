@@ -35,7 +35,7 @@ public enum RebuildLevel: String, ExpressibleByArgument, CaseIterable, CustomStr
 struct Builder {
   init(workDirectoryURL: URL,
        packagesDirectoryURL: URL,
-       cc: String, cxx: String,
+       cc: String, cxx: String, cToolchain: CToolchain?,
        target: TargetTriple,
        ignoreTag: Bool, dependencyLevelLimit: UInt?,
        rebuildLevel: RebuildLevel?, joinDependency: Bool,
@@ -102,6 +102,7 @@ struct Builder {
     self.packageRootPath = .init(productsDirectoryURL)
     self.cc = cc
     self.cxx = cxx
+    self.cToolchain = cToolchain
     self.strictMode = strictMode
     self.envValues = envValues
     self.enableBitcode = enableBitcode
@@ -113,7 +114,7 @@ struct Builder {
       prefix: .init(productsDirectoryURL),
       dependencyMap: .init(),
       strictMode: strictMode,
-      cc: cc, cxx: cxx,
+      cc: cc, cxx: cxx, cToolchain: cToolchain,
       environment: envValues,
       libraryType: .all, logger: logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
 
@@ -128,6 +129,7 @@ struct Builder {
   let mainTarget: TargetTriple
   let strictMode: Bool
   let cc: String, cxx: String
+  let cToolchain: CToolchain?
   let envValues: EnvironmentValues
   let enableBitcode: Bool
   let sdkPath: String?
@@ -498,10 +500,12 @@ extension Builder {
         case .native:
           // TODO: better compiler detect
           if order.arch.isX86 {
-            if cc.contains("clang") {
+            switch cToolchain {
+            case .clang:
               environment.append("-march=native", for: .cflags, .cxxflags)
-            } else if cc.contains("gcc") {
+            case .gcc:
               environment.append("-mtune=native", for: .cflags, .cxxflags)
+            case .none: break
             }
             environment.append("-C target-cpu=native", for: .rustFlags)
           }
@@ -710,8 +714,13 @@ extension Builder {
     .init(
       order: order, source: source,
       prefix: prefix, dependencyMap: dependencyMap,
-      strictMode: strictMode, cc: cc, cxx: cxx,
+      strictMode: strictMode, cc: cc, cxx: cxx, cToolchain: cToolchain,
       environment: environment,
       libraryType: libraryType, logger: env.logger, enableBitcode: enableBitcode, sdkPath: sdkPath, external: external)
   }
+}
+
+public enum CToolchain {
+  case clang
+  case gcc
 }

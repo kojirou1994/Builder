@@ -81,10 +81,17 @@ extension Builder {
     let cc = ProcessInfo.processInfo.environment[EnvironmentKey.cc.string] ?? TargetSystem.native.cc
     let cxx = ProcessInfo.processInfo.environment[EnvironmentKey.cxx.string] ?? TargetSystem.native.cxx
 
+    var cToolchain: CToolchain?
+    if cc.contains("clang") {
+      cToolchain = .clang
+    } else if cc.contains("gcc") {
+      cToolchain = .gcc
+    }
+
     try self.init(
       workDirectoryURL: URL(fileURLWithPath: options.workPath),
       packagesDirectoryURL: URL(fileURLWithPath: options.packagePath),
-      cc: cc, cxx: cxx,
+      cc: cc, cxx: cxx, cToolchain: cToolchain,
       target: target,
       ignoreTag: options.ignoreTag, dependencyLevelLimit: options.dependencyLevel,
       rebuildLevel: options.rebuildLevel, joinDependency: options.joinDependency,

@@ -5,7 +5,7 @@ import ExecutableDescription
 
 public class BuildContext {
 
-  internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, external: ExternalPackageEnvironment) {
+  internal init(order: PackageOrder, source: PackageSource, prefix: PackagePath, dependencyMap: PackageDependencyMap, strictMode: Bool, cc: String, cxx: String, cToolchain: CToolchain?, environment: EnvironmentValues, libraryType: PackageLibraryBuildType?, logger: Logger, enableBitcode: Bool, sdkPath: String?, external: ExternalPackageEnvironment) {
     self.order = order
     self.source = source
     self.prefix = prefix
@@ -13,6 +13,7 @@ public class BuildContext {
     self.strictMode = strictMode
     self.cc = cc
     self.cxx = cxx
+    self.cToolchain = cToolchain
     self.environment = environment
     self._libraryType = libraryType
 
@@ -47,6 +48,8 @@ public class BuildContext {
   public let cc: String
   /// cpp compiler
   public let cxx: String
+  /// detected c tool type
+  public let cToolchain: CToolchain?
 
   /// the environment will be used to run processes
   public var environment: EnvironmentValues
