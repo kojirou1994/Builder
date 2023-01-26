@@ -58,10 +58,22 @@ public struct JpegXL: Package {
   public func build(with context: BuildContext) throws {
 
     if context.cCompiler == .gcc {
+      let origin = """
+set(JPEGXL_INTERNAL_LIBS
+  ${JPEGXL_DEC_INTERNAL_LIBS}
+  brotlienc-static
+)
+"""
+      let fixed = """
+set(JPEGXL_INTERNAL_LIBS
+  brotlienc-static
+  ${JPEGXL_DEC_INTERNAL_LIBS}
+)
+"""
       try replace(
-        contentIn: "cmake/FindBrotli.cmake",
-        matching: "set(Brotli_LIBRARIES ${BROTLICOMMON_LIBRARY} ${BROTLIENC_LIBRARY} ${BROTLIDEC_LIBRARY})",
-        with: "set(Brotli_LIBRARIES ${BROTLIENC_LIBRARY} ${BROTLIDEC_LIBRARY} ${BROTLICOMMON_LIBRARY})")
+        contentIn: "lib/jxl.cmake",
+        matching: origin,
+        with: fixed)
     }
 
     try context.inRandomDirectory { _ in
