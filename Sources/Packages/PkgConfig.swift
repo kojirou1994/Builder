@@ -29,7 +29,9 @@ public struct PkgConfig: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.autoreconf()
+    if context.order.system.isApple {
+      try context.autoreconf()
+    }
 
     try context.configure(
       configureWithFlag(true, "internal-glib"),
