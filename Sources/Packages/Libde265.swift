@@ -5,7 +5,7 @@ public struct Libde265: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.0.9"
+    "1.0.11"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

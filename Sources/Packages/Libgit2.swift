@@ -5,7 +5,7 @@ public struct Libgit2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.5.1"
+    "1.6.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

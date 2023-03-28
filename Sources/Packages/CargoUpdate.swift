@@ -5,7 +5,7 @@ public struct CargoUpdate: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "11.1.1"
+    "12.0.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

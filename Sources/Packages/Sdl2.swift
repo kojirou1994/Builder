@@ -5,7 +5,7 @@ public struct Sdl2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.0.16"
+    "2.26.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -22,7 +22,7 @@ public struct Sdl2: Package {
     case .head:
       source = .repository(url: "https://github.com/libsdl-org/SDL.git")
     case .stable(let version):
-      source = .tarball(url: "https://libsdl.org/release/SDL2-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://github.com/libsdl-org/SDL/archive/refs/tags/release-\(version.toString()).tar.gz")
     }
 
     return .init(
