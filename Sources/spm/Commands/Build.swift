@@ -66,12 +66,8 @@ struct SwiftPM: Executable {
     }
 
     arg.append(contentsOf: ["-c", configuration])
-    arg.append(contentsOf: ["--build-path", buildPath])
+    arg.append(contentsOf: ["--scratch-path", buildPath])
     archs.forEach { arg.append(contentsOf: ["--arch", $0.clangTripleString]) }
-
-    #if !canImport(Darwin)
-    arg.append("--enable-test-discovery")
-    #endif
 
     arg.append(contentsOf: extraArguments)
     return arg
