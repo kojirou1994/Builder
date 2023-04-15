@@ -5,7 +5,7 @@ public struct Python: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.10.10"
+    "3.10.11"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
