@@ -1,5 +1,8 @@
 import BuildSystem
 
+/*
+ requires libssl-dev on linux
+ */
 public struct Cmake: Package {
 
   public init() {}

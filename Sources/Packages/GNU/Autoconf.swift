@@ -9,14 +9,14 @@ public struct Autoconf: Package {
    https://savannah.gnu.org/support/index.php?110397
    */
   public var defaultVersion: PackageVersion {
-    "2.69"
+    "2.71"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "http://git.sv.gnu.org/r/autoconf.git")
     case .stable(let version):
       source = .tarball(url: "https://ftp.gnu.org/gnu/autoconf/autoconf-\(version.toString(includeZeroPatch: false)).tar.xz")
     }
@@ -30,9 +30,7 @@ public struct Autoconf: Package {
 
   public func build(with context: BuildContext) throws {
 
-    try context.configure(
-
-    )
+    try context.configure()
 
     try context.make()
     try context.make("install")

@@ -1,5 +1,8 @@
 import BuildSystem
 
+/*
+ official repo: https://gitlab.com/bzip2/bzip2
+ */
 public struct Bzip2: Package {
 
   public init() {}
