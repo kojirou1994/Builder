@@ -23,6 +23,7 @@ public struct FdkAac: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .buildTool(M4.self),
       ]
     )
   }
