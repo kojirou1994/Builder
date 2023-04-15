@@ -25,6 +25,7 @@ public struct Python: Package {
         .runTime(Openssl.self),
         .runTime(Xz.self),
         .runTime(Bzip2.self),
+        .runTime(Zlib.self),
 //        .runTime(Gdbm.self),
       ]
     )
