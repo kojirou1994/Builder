@@ -35,6 +35,7 @@ public struct Ogg: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .buildTool(M4.self),
       ],
       products: [
         .library(name: "ogg", libname: "ogg", headerRoot: "ogg", headers: ["ogg.h", "os_types.h"], shimedHeaders: [])
