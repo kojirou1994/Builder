@@ -27,7 +27,8 @@ public struct Python: Package {
         .runTime(Bzip2.self),
         .runTime(Zlib.self),
 //        .runTime(Gdbm.self),
-      ]
+      ],
+      supportedLibraryType: .shared
     )
   }
 
