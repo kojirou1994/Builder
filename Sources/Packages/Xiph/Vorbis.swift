@@ -23,6 +23,7 @@ public struct Vorbis: Package {
         .buildTool(Autoconf.self),
         .buildTool(Automake.self),
         .buildTool(Libtool.self),
+        .buildTool(M4.self),
         .buildTool(PkgConfig.self),
         .runTime(Ogg.self),
       ],
