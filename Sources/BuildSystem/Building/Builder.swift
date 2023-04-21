@@ -261,19 +261,29 @@ struct Builder {
           try pipe.fileHandleForWriting.kwiftWrite(contentsOf: Array(rawPatch.utf8))
           try pipe.fileHandleForWriting.close()
           patcher.waitUntilExit()
-          if patcher.processes.allSatisfy { $0.terminationStatus == 0 } {
+          if patcher.processes.allSatisfy({ $0.terminationStatus == 0 }) {
             break
           } else {
             logger.warning("retry patching...")
           }
         }
-      case let .remote(url: url, sha256: _):
+      case let .remote(url: url, sha256: _, tool: patchTool):
         let patcher = try ContiguousPipeline(AnyExecutable(executableName: "curl", arguments: [url]))
-          .append(gitApply, isLast: true)
+        switch patchTool {
+        case .git:
+          try patcher.append(gitApply, isLast: true)
+        case let .patch(stripCount: stripCount):
+          var patchCommand = AnyExecutable(executableName: "patch", arguments: ["-p\(stripCount)"])
+          patchCommand.currentDirectoryURL = srcDirURL
+          try patcher.append(patchCommand, isLast: true)
+        }
 
         print(patcher)
         try patcher.run()
         patcher.waitUntilExit()
+        if patcher.processes.contains(where: { $0.terminationStatus != 0 }) {
+
+        }
       }
     }
 

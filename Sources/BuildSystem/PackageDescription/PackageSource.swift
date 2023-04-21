@@ -1,8 +1,17 @@
 import Foundation
 
 public enum PackagePatch {
-  case remote(url: String, sha256: String?)
+  case remote(url: String, sha256: String?, tool: PatchTool)
   case raw(String)
+
+  public static func remote(url: String, sha256: String?) -> Self {
+    .remote(url: url, sha256: sha256, tool: .git)
+  }
+
+  public enum PatchTool {
+    case git
+    case patch(stripCount: Int)
+  }
 }
 
 public struct PackageSource: CustomStringConvertible {
