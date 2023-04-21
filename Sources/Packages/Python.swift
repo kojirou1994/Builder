@@ -1,11 +1,14 @@
 import BuildSystem
 
+/*
+ install zlib1g-dev libbz2-dev on linux
+ */
 public struct Python: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.10.11"
+    "3.11.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -23,12 +26,13 @@ public struct Python: Package {
         .optional(.custom(Python.self, requiredTime: .buildTime, excludeDependencyTree: true, target: .native), when: order.target != .native),
         .buildTool(PkgConfig.self),
         .runTime(Openssl.self),
+        .runTime(Readline.self),
+//        .runTime(Mpdecimal.self), / * bug: https://github.com/python/cpython/issues/98557 */
         .runTime(Xz.self),
         .runTime(Bzip2.self),
         .runTime(Zlib.self),
 //        .runTime(Gdbm.self),
-      ],
-      supportedLibraryType: .shared
+      ]
     )
   }
 
@@ -56,20 +60,27 @@ public struct Python: Package {
     try context.configure(
       context.libraryType.sharedConfigureFlag,
       configureEnableFlag(context.isBuildingNative, "optimizations"),
-//      configureWithFlag(true, "lto"),
+      configureWithFlag(context.order.system.isApple, "lto"),
       configureEnableFlag(true, "ipv6"),
-//      configureEnableFlag(true, "loadable-sqlite-extensions")
-//      configureWithFlag(context.dependencyMap[Openssl.self], "openssl"),
+      configureEnableFlag(true, "loadable-sqlite-extensions"),
+      "--with-system-expat",
+//      "--with-system-libmpdec",
+      "--with-readline=editline",
+//      context.order.system.isApple ? "--enable-framework=\(context.prefix.appending("Frameworks").path)" : "--enable-shared",
+      configureWithFlag(context.order.system.isApple, "dtrace"),
+      configureWithFlag(context.order.system.isApple ? "ndbm" : "bdb", "dbmliborder"),
       nil
     )
 
     try context.make()
 
-//    if context.canRunTests {
-//      try context.make("test")
-//    }
-
     try context.make("install")
   }
 
+  public func systemPackage(for order: PackageOrder, sdkPath: String) -> SystemPackage? {
+    if order.system == .linuxGNU {
+      return .init(prefix: PackagePath(URL(fileURLWithPath: "/usr")), pkgConfigs: [])
+    }
+    return nil
+  }
 }
