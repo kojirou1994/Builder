@@ -43,7 +43,7 @@ struct SwiftPM: Executable {
   var command: Command
   let configuration: String
   let archs: [TargetArch]
-  let buildPath: String
+  let buildPath: String?
   let extraArguments: [String]
 
   var arguments: [String] {
@@ -66,7 +66,9 @@ struct SwiftPM: Executable {
     }
 
     arg.append(contentsOf: ["-c", configuration])
-    arg.append(contentsOf: ["--scratch-path", buildPath])
+    if let buildPath {
+      arg.append(contentsOf: ["--scratch-path", buildPath])
+    }
     archs.forEach { arg.append(contentsOf: ["--arch", $0.clangTripleString]) }
 
     arg.append(contentsOf: extraArguments)
@@ -164,11 +166,11 @@ struct Build: ParsableCommand {
 
     let configuration = debug ? "debug" : "release"
 
-    func build(archs: [TargetArch]) throws -> URL {
+    func build(archs: [TargetArch], onlyBuildingNativeArch: Bool) throws -> URL {
       logger.info("Building arch \(archs.map(\.clangTripleString).joined(separator: "_")) with configuration: \(configuration)")
-      let buildPath = try getBuildPath(logger: logger, archs: archs, prefix: "build", rootPath: nil)
+      let buildPath: String? = try onlyBuildingNativeArch ? nil : getBuildPath(logger: logger, archs: archs, prefix: "build", rootPath: nil).path
 
-      var command = SwiftPM(command: .clean, configuration: configuration, archs: archs, buildPath: buildPath.path, extraArguments: extraArguments)
+      var command = SwiftPM(command: .clean, configuration: configuration, archs: archs, buildPath: buildPath, extraArguments: extraArguments)
 
       if clean {
         logger.info("Cleaning")
@@ -190,12 +192,13 @@ struct Build: ParsableCommand {
     var archBinPaths = [URL]()
 
     let allArchs = Set(archs).sorted(by: \.rawValue)
+    let onlyBuildingNativeArch = allArchs == [.native]
     if directUniversal {
-      let binPath = try build(archs: allArchs)
+      let binPath = try build(archs: allArchs, onlyBuildingNativeArch: onlyBuildingNativeArch)
       archBinPaths.append(binPath)
     } else {
       for arch in allArchs {
-        let binPath = try build(archs: [arch])
+        let binPath = try build(archs: [arch], onlyBuildingNativeArch: onlyBuildingNativeArch)
         archBinPaths.append(binPath)
       }
     }
