@@ -315,7 +315,7 @@ extension BuildContext {
   }
 
   public func autogen() throws {
-    try launch(path: "autogen.sh")
+    try launch(path: "./autogen.sh")
   }
 }
 
