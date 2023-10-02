@@ -5,7 +5,7 @@ public struct Zlib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.2.13"
+    "1.3"
   }
 
   private func isLegacy(_ version: PackageVersion) -> Bool {
@@ -18,7 +18,7 @@ public struct Zlib: Package {
     case .head:
       source = .repository(url: "https://github.com/madler/zlib.git", requirement: .branch("develop"))
     case .stable(let version):
-      source = .tarball(url: "https://zlib.net/zlib-\(version.toString()).tar.gz")
+      source = .tarball(url: "https://zlib.net/zlib-\(version.toString(includeZeroPatch: false)).tar.gz")
     }
 
     let isLegacy = isLegacy(order.version)

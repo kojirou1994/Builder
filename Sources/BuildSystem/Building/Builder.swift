@@ -251,7 +251,7 @@ struct Builder {
     try source.patches.forEach { patch in
       logger.info("Applying patch \(patch)")
       var gitApply = AnyExecutable(executableName: "git", arguments: ["apply"])
-      gitApply.currentDirectoryURL = srcDirURL
+      gitApply.changeWorkingDirectory = srcDirURL.path
       switch patch {
       case .raw(let rawPatch):
         while true {
@@ -274,7 +274,7 @@ struct Builder {
           try patcher.append(gitApply, isLast: true)
         case let .patch(stripCount: stripCount):
           var patchCommand = AnyExecutable(executableName: "patch", arguments: ["-p\(stripCount)"])
-          patchCommand.currentDirectoryURL = srcDirURL
+          patchCommand.changeWorkingDirectory = srcDirURL.path
           try patcher.append(patchCommand, isLast: true)
         }
 

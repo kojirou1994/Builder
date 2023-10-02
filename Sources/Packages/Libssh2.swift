@@ -5,7 +5,7 @@ public struct Libssh2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.10"
+    "1.11"
   }
 
   @Option

@@ -5,7 +5,7 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.3.0"
+    "3.4.1"
   }
 
   private func isLegacyVer(_ ver: PackageVersion) -> Bool {
@@ -35,6 +35,7 @@ public struct Mbedtls: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self),
+        .buildTool(Python.self),
         isLegacyVer(order.version) ? .runTime(Zlib.self) : nil,
       ]
     )
@@ -42,6 +43,8 @@ public struct Mbedtls: Package {
 
   public func build(with context: BuildContext) throws {
     // requirement: pip3 install --user jinja2 jsonschema
+
+    try context.launch("pip3", ["install", "jinja2", "jsonschema"])
 
     let isLegacy = isLegacyVer(context.order.version)
 
@@ -67,6 +70,7 @@ public struct Mbedtls: Package {
         "..",
         cmakeOnFlag(context.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
         cmakeOnFlag(context.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
+        cmakeDefineFlag(context.dependencyMap[Python.self], "Python3_ROOT"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
         cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
         isLegacy ? cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT") : nil,

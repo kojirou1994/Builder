@@ -163,6 +163,7 @@ struct Build: ParsableCommand {
       PackageBuildCommand<Sangnom>.self,
       PackageBuildCommand<Sdl2>.self,
       PackageBuildCommand<Smartmontools>.self,
+      PackageBuildCommand<Sqlite>.self,
       PackageBuildCommand<SvtAv1>.self,
       PackageBuildCommand<TCanny>.self,
       PackageBuildCommand<TDeintMod>.self,

@@ -5,7 +5,7 @@ public struct Gcc: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "11.3.0"
+    "11.4.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

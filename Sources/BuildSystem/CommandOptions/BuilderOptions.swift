@@ -89,6 +89,8 @@ extension Builder {
       cCompiler = .gcc
     }
 
+    print("cc: \(cc), cxx: \(cxx), cCompiler: \(cCompiler)")
+
     try self.init(
       workDirectoryURL: URL(fileURLWithPath: options.workPath),
       packagesDirectoryURL: URL(fileURLWithPath: options.packagePath),

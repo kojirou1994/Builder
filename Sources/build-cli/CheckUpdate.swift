@@ -163,6 +163,7 @@ struct CheckUpdate: ParsableCommand {
       PackageCheckUpdateCommand<Sangnom>.self,
       PackageCheckUpdateCommand<Sdl2>.self,
       PackageCheckUpdateCommand<Smartmontools>.self,
+      PackageCheckUpdateCommand<Sqlite>.self,
       PackageCheckUpdateCommand<SvtAv1>.self,
       PackageCheckUpdateCommand<TCanny>.self,
       PackageCheckUpdateCommand<TDeintMod>.self,

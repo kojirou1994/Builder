@@ -70,7 +70,7 @@ final class ExeLoggingLauncher {
   }
 
   public func launch(path: String, _ arguments: [String?]) throws {
-    try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
+    try launch(AnyExecutable(executablePath: path, arguments: arguments.compactMap {$0}))
   }
 
   public func launchResult(_ executableName: String, _ arguments: [String?]) throws -> LaunchResult {
@@ -78,7 +78,7 @@ final class ExeLoggingLauncher {
   }
 
   public func launchResult(path: String, _ arguments: [String?]) throws -> LaunchResult {
-    try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}), outputRedirection: .collect)
+    try launch(AnyExecutable(executablePath: path, arguments: arguments.compactMap {$0}), outputRedirection: .collect)
   }
 }
 

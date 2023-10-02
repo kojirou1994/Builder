@@ -5,7 +5,7 @@ public struct ZenLib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.4.40"
+    "0.4.41"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

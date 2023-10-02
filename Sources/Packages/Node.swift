@@ -5,7 +5,7 @@ public struct Node: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "19.8.1"
+    "20.8.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

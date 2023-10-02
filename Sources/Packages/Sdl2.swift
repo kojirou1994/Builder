@@ -5,7 +5,7 @@ public struct Sdl2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.26.4"
+    "2.26.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -32,7 +32,7 @@ public struct EnvironmentValues {
       switch key {
       case .path, .pkgConfigPath, .aclocalPath:
         separator = EnvironmentValueSeparator.path
-      case .cflags, .ldflags, .cxxflags,
+      case .cflags, .ldflags, .cxxflags, .cppflags,
            .libs:
         separator = EnvironmentValueSeparator.flag
       default: separator = ""
@@ -78,6 +78,7 @@ public extension EnvironmentKey {
   static let pkgConfigPath: Self = "PKG_CONFIG_PATH"
   static let cflags: Self = "CFLAGS"
   static let cxxflags: Self = "CXXFLAGS"
+  static let cppflags: Self = "CPPFLAGS"
   static let ldflags: Self = "LDFLAGS"
   static let libs: Self = "LIBS"
   static let aclocalPath: Self = "ACLOCAL_PATH"

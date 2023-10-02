@@ -5,7 +5,7 @@ public struct Gcrypt: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.10.1"
+    "1.10.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

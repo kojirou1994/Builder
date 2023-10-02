@@ -5,7 +5,7 @@ public struct Rav1e: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.6.3"
+    "0.6.6"
   }
 
   /*
@@ -26,7 +26,7 @@ public struct Rav1e: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/xiph/rav1e/archive/refs/heads/master.zip")
+      source = .repository(url: "https://github.com/xiph/rav1e.git")
     case .stable(let version):
       source = .tarball(url: "https://github.com/xiph/rav1e/archive/refs/tags/v\(version.toString()).tar.gz")
     }

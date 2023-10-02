@@ -145,7 +145,7 @@ struct Build: ParsableCommand {
       let result = try SwiftCommand.dumpPackage
         .launch(use: TSCExecutableLauncher())
 
-      let json = try JSON.read(bytes: result.output.get()).get()
+      let json = try JSON.read(string: result.output.get()).get()
       if exported {
         binaryNames = json.root!["products"]!.array!.compactMap { product in
           if product["type"]!["executable"] != nil {

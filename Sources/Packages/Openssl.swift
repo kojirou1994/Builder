@@ -5,7 +5,7 @@ public struct Openssl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    .stable(.init(major: 1, minor: 1, patch: 1, buildMetadataIdentifiers: ["s"]))
+    "3.1.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -13,7 +13,7 @@ public struct Openssl: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/openssl/openssl")
     case .stable(let version):
       var versionString = version.toString(includeZeroMinor: true, includeZeroPatch: true, includePrerelease: false, includeBuildMetadata: false)
       if !version.prereleaseIdentifiers.isEmpty {

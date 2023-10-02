@@ -16,7 +16,7 @@ public struct yyjson: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "0.6.0"
+    "0.8.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -24,7 +24,7 @@ public struct yyjson: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      throw PackageRecipeError.unsupportedVersion
+      source = .repository(url: "https://github.com/ibireme/yyjson.git")
     case .stable(let version):
       let versionString = version.toString()
       source = .tarball(url: "https://github.com/ibireme/yyjson/archive/refs/tags/\(versionString).tar.gz")

@@ -5,7 +5,7 @@ public struct GnuTar: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.34"
+    "1.35"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -1,11 +1,12 @@
 import BuildSystem
 
+// TODO: FIX ME
 public struct Dupd: Package {
 
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.7.1"
+    "1.7.3"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

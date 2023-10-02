@@ -8,10 +8,10 @@ public struct BuilderLauncher: ExecutableLauncher {
     let launchPath = try ExecutablePath.lookup(executable, forcePATH: environment[.path]).get()
     let arguments = CollectionOfOne(launchPath) + executable.arguments
 
-    if let workingDirectory = executable.currentDirectoryURL?.path {
+    if let workingDirectory = executable.changeWorkingDirectory {
       return .init(arguments: arguments,
                    environment: environment.values,
-                   workingDirectory: AbsolutePath(workingDirectory),
+                   workingDirectory: try AbsolutePath(validating: workingDirectory),
                    outputRedirection: tsc.outputRedirection,
                    startNewProcessGroup: tsc.startNewProcessGroup)
     } else {

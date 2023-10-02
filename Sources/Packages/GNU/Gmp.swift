@@ -5,7 +5,7 @@ public struct Gmp: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "6.2.1"
+    "6.3.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

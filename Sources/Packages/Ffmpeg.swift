@@ -193,6 +193,10 @@ public struct Ffmpeg: Package {
 //    r.insert(configureEnableFlag(true, "pthreads"))
     extraVersion.map { _ = r.insert("--extra-version=\($0)") }
 
+//    if context.order.arch.isARM {
+//      r.insert(configureEnableFlag(false, "fast-unaligned"))
+//    }
+
     r.formUnion([context.libraryType.staticConfigureFlag,
                  context.libraryType.sharedConfigureFlag])
 

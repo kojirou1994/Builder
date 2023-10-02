@@ -185,7 +185,7 @@ extension BuildContext {
   }
 
   public func launch(path: String, _ arguments: [String?]) throws {
-    try launch(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
+    try launch(AnyExecutable(executablePath: path, arguments: arguments.compactMap {$0}))
   }
 
   private func launchResult<T>(_ executable: T) throws -> LaunchResult where T : Executable {
@@ -198,7 +198,7 @@ extension BuildContext {
   }
 
   public func launchResult(path: String, _ arguments: [String?]) throws -> LaunchResult {
-    try launchResult(AnyExecutable(executableURL: URL(fileURLWithPath: path), arguments: arguments.compactMap {$0}))
+    try launchResult(AnyExecutable(executablePath: path, arguments: arguments.compactMap {$0}))
   }
 }
 
