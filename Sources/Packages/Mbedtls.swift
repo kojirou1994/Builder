@@ -5,7 +5,7 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.4.1"
+    .head
   }
 
   private func isLegacyVer(_ ver: PackageVersion) -> Bool {
@@ -58,6 +58,7 @@ public struct Mbedtls: Package {
       "MBEDTLS_THREADING_C",
       context.order.arch.isX86 ? "MBEDTLS_HAVE_SSE2" : nil,
       "MBEDTLS_SHA256_USE_A64_CRYPTO_IF_PRESENT",
+      "MBEDTLS_SSL_DTLS_SRTP",
     ]
 
     try featureMacros
@@ -70,7 +71,7 @@ public struct Mbedtls: Package {
         "..",
         cmakeOnFlag(context.libraryType.buildStatic, "USE_STATIC_MBEDTLS_LIBRARY"),
         cmakeOnFlag(context.libraryType.buildShared, "USE_SHARED_MBEDTLS_LIBRARY"),
-        cmakeDefineFlag(context.dependencyMap[Python.self], "Python3_ROOT"),
+        cmakeDefineFlag(context.dependencyMap[Python.self], "Python3_ROOT_DIR"),
         cmakeOnFlag(true, "LINK_WITH_PTHREAD"),
         cmakeOnFlag(context.strictMode, "ENABLE_TESTING"),
         isLegacy ? cmakeOnFlag(true, "ENABLE_ZLIB_SUPPORT") : nil,
