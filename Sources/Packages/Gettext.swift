@@ -23,6 +23,11 @@ public struct Gettext: Package {
   }
 
   public func build(with context: BuildContext) throws {
+
+    if context.order.system.isApple {
+      context.environment.append("-liconv", for: .ldflags)
+    }
+
     try context.configure(
       configureEnableFlag(false, CommonOptions.dependencyTracking),
       context.libraryType.staticConfigureFlag,

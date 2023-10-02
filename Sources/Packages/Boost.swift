@@ -34,7 +34,7 @@ public struct Boost: Package {
     try replace(contentIn: "boostcpp.jam", matching: "<base> <threading> <runtime> <arch-and-model>", with: "<base> <threading> <runtime>")
 
     try context.launch(
-      path: "bootstrap.sh",
+      path: "./bootstrap.sh",
       "--prefix=\(context.prefix.root.path)",
       "--without-libraries=python",
       "--without-libraries=mpi",
@@ -42,7 +42,7 @@ public struct Boost: Package {
     )
 
     try context.launch(
-      path: "b2",
+      path: "./b2",
       "--prefix=\(context.prefix.root.path)",
       "--libdir=\(context.prefix.lib.path)",
       "-d2",

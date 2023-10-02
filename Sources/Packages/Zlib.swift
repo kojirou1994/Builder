@@ -33,7 +33,7 @@ public struct Zlib: Package {
 
   public func build(with context: BuildContext) throws {
     if isLegacy(context.order.version) {
-      try context.launch(path: "configure",
+      try context.launch(path: "./configure",
                          "--prefix=\(context.prefix.root.path)",
                          context.order.arch.is64Bits ? "--64" : nil
       )

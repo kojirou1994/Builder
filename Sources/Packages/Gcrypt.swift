@@ -5,7 +5,8 @@ public struct Gcrypt: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.10.2"
+    // 1.10.2 failed to build: https://dev.gnupg.org/T6442
+    "1.10.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

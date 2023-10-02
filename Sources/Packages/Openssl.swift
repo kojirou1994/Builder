@@ -75,7 +75,7 @@ public struct Openssl: Package {
 //    let os = "darwin64-arm64-cc"
 
     try context.launch(
-      path: "Configure",
+      path: "./Configure",
       "--prefix=\(context.prefix.root.path)",
       "--openssldir=\(context.prefix.appending("etc", "openssl").path)",
       context.libraryType.buildShared ? "shared" : "no-shared",

@@ -29,7 +29,7 @@ public struct Node: Package {
   public func build(with context: BuildContext) throws {
 
     try context.launch(
-      path: "configure",
+      path: "./configure",
       "--prefix=\(context.prefix.root.path)",
       "--ninja",
       configureWithFlag("softfp", "arm-float-abi"),

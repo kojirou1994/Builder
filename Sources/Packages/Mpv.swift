@@ -32,7 +32,7 @@ public struct Mpv: Package {
 
   public func build(with context: BuildContext) throws {
 
-    try context.launch(path: "bootstrap.py")
+    try context.launch(path: "./bootstrap.py")
 
     try context.launch(
       path: "waf",

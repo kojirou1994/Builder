@@ -33,7 +33,7 @@ public struct Xvid: Package {
   public func build(with context: BuildContext) throws {
 
     try context.changingDirectory("build/generic") { _ in
-      try context.launch(path: "bootstrap.sh")
+      try context.launch(path: "./bootstrap.sh")
 
       try context.fixAutotoolsForDarwin()
 

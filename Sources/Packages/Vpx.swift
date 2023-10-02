@@ -87,7 +87,7 @@ public struct Vpx: Package {
     }
 
     try context.launch(
-      path: "configure",
+      path: "./configure",
       "--prefix=\(context.prefix)",
       "--target=\(vpxArch)-\(vpxSystem)-gcc",
       configureEnableFlag(false, CommonOptions.dependencyTracking),

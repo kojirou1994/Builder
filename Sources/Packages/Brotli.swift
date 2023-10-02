@@ -22,7 +22,8 @@ public struct Brotli: Package {
       dependencies: [
         .buildTool(Cmake.self),
         .buildTool(Ninja.self)
-      ]
+      ],
+      canBuildAllLibraryTogether: false
     )
   }
 
@@ -32,7 +33,7 @@ public struct Brotli: Package {
       try context.cmake(
         toolType: .ninja,
         "..",
-        cmakeOnFlag(context.order.system.isApple, "CMAKE_MACOSX_RPATH")
+        cmakeOnFlag(context.libraryType.buildShared, "BUILD_SHARED_LIBS")
       )
 
       try context.make(toolType: .ninja)
@@ -40,17 +41,8 @@ public struct Brotli: Package {
       try context.make(toolType: .ninja, "install")
     }
 
-    try context.autoRemoveUnneedLibraryFiles()
-    if context.libraryType.buildStatic {
-      try """
-      libbrotlicommon-static.a
-      libbrotlidec-static.a
-      libbrotlienc-static.a
-      """.split(separator: "\n")
-        .forEach { filename in
-          try context.moveItem(at: context.prefix.lib.appendingPathComponent(String(filename)),
-                              to: context.prefix.lib.appendingPathComponent(String(filename.dropLast("-static.a".count)) + ".a"))
-        }
+    if context.order.version < "1.1.0" {
+      try context.autoRemoveUnneedLibraryFiles()
     }
   }
 }

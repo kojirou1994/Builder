@@ -29,7 +29,7 @@ public struct Iperf3: Package {
   }
 
   public func build(with context: BuildContext) throws {
-    try context.launch(path: "bootstrap.sh")
+    try context.launch(path: "./bootstrap.sh")
     try context.configure(
       context.libraryType.sharedConfigureFlag,
       context.libraryType.staticConfigureFlag,
