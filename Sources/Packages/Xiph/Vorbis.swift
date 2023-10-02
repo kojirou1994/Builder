@@ -36,10 +36,8 @@ public struct Vorbis: Package {
   }
 
   public func build(with context: BuildContext) throws {
-
-//    if context.enableBitcode {
-//      try replace(contentIn: "configure.ac", matching: "-force_cpusubtype_ALL", with: "")
-//    }
+    
+    try replace(contentIn: "configure.ac", matching: "-force_cpusubtype_ALL", with: "")
 
     try context.autoreconf()
 
