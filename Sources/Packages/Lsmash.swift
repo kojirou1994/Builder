@@ -31,7 +31,11 @@ public struct Lsmash: Package {
     try replace(contentIn: "configure", matching: ",--version-script,liblsmash.ver", with: "")
     #endif
 
-    try context.configure(
+    try context.launch(
+      path: "./configure",
+      "--prefix=\(context.prefix.root.path)",
+      "--cc=\(context.cc)",
+      "--extra-cflags=\(context.environment[.cflags])",
       configureEnableFlag(context.libraryType.buildStatic, "static", defaultEnabled: true),
       configureEnableFlag(context.libraryType.buildShared, "shared", defaultEnabled: false)
     )
