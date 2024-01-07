@@ -5,7 +5,7 @@ public struct Ilmbase: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.5.9"
+    "2.5.10"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

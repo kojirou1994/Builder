@@ -5,7 +5,7 @@ public struct Mbedtls: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.5.0"
+    "3.5.1"
   }
 
   private func isLegacyVer(_ ver: PackageVersion) -> Bool {

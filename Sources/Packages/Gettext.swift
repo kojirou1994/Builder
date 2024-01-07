@@ -5,7 +5,7 @@ public struct Gettext: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.22.2"
+    "0.22.4"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

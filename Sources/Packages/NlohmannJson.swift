@@ -5,7 +5,7 @@ public struct NlohmannJson: Package {
   public init() {}
   
   public var defaultVersion: PackageVersion {
-    "3.11.2"
+    "3.11.3"
   }
   
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

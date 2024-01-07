@@ -5,7 +5,7 @@ public struct Harfbuzz: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "8.2.1"
+    "8.3.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

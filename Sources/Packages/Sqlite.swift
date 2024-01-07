@@ -5,7 +5,7 @@ public struct Sqlite: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.43.1"
+    "3.44.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

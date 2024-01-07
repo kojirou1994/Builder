@@ -5,7 +5,7 @@ public struct Libssh: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.9.7"
+    "0.9.8"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

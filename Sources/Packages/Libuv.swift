@@ -5,7 +5,7 @@ public struct Libuv: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.46.0"
+    "1.47.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

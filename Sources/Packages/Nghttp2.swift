@@ -5,7 +5,7 @@ public struct Nghttp2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.56.0"
+    "1.58.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

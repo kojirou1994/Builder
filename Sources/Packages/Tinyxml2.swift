@@ -5,7 +5,7 @@ public struct Tinyxml2: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "9.0.0"
+    "10.0.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

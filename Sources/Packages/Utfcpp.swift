@@ -5,7 +5,7 @@ public struct Utfcpp: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.2.5"
+    "4.0.5"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

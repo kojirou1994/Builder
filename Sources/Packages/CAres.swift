@@ -5,7 +5,7 @@ public struct CAres: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.19.1"
+    "1.25.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
