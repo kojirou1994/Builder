@@ -5,7 +5,7 @@ public struct Png: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.6.40"
+    "1.6.43"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

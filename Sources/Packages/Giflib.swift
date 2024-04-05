@@ -6,7 +6,7 @@ public struct Giflib: Package {
 
   public var defaultVersion: PackageVersion {
 //    .stable("5.1.4")
-    "5.2.1"
+    "5.2.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

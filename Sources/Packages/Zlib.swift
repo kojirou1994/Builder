@@ -5,7 +5,7 @@ public struct Zlib: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.3"
+    "1.3.1"
   }
 
   private func isLegacy(_ version: PackageVersion) -> Bool {

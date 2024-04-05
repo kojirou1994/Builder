@@ -5,7 +5,7 @@ public struct Rav1e: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.7.0"
+    "0.7.1"
   }
 
   /*

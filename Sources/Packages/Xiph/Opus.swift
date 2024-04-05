@@ -5,7 +5,7 @@ public struct Opus: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.4.0"
+    "1.5.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

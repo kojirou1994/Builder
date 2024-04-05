@@ -5,7 +5,7 @@ public struct Nasm: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.16.1"
+    "2.16.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

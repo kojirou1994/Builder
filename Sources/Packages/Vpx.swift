@@ -5,7 +5,7 @@ public struct Vpx: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.13.1"
+    "1.14.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

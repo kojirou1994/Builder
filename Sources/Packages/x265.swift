@@ -22,7 +22,7 @@ public struct x265: Package {
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: chocoRepo, requirement: .revision("8ed0bc95434ba22e5b418a66e9aa73f6ac7672d0"))
+      source = .repository(url: chocoRepo, requirement: .revision("0db4b2efadec842370d06fa7aa06832ee4c668a4"))
     case .stable(let version):
       source = .repository(url: officialRepo, requirement: .tag(version.toString(includeZeroPatch: false)))
     }
