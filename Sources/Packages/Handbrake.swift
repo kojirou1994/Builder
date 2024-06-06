@@ -5,7 +5,7 @@ public struct Handbrake: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.7.3"
+    "1.8.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

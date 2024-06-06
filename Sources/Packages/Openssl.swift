@@ -5,7 +5,7 @@ public struct Openssl: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.2.1"
+    "3.3.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

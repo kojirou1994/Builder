@@ -5,7 +5,7 @@ public struct Dav1d: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.4.1"
+    "1.4.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

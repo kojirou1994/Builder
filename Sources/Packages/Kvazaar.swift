@@ -5,7 +5,7 @@ public struct Kvazaar: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "2.2.0"
+    "2.3.1"
   }
 
   private func asmEnabled(_ order: PackageOrder) -> Bool {
