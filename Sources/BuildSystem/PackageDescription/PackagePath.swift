@@ -36,7 +36,7 @@ public struct PackagePath: Hashable, CustomStringConvertible {
   }
 
   public var pkgConfig: URL {
-    appending("lib", "pkgconfig")
+    lib.appendingPathComponent("pkgconfig")
   }
 
   public func appending(_ pathComponents: String...) -> URL {
