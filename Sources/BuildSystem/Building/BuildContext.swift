@@ -299,10 +299,11 @@ extension BuildContext {
       "--prefix=\(prefix.root.path)",
       "--build=\(TargetTriple.native.gnuTripleString)",
       "--host=\(order.target.gnuTripleString)",
-      #if os(Linux)
-      "--libdir=\(prefix.lib.path)",
-      #endif
     ]
+
+    #if os(Linux)
+    configureArguments.append("--libdir=\(prefix.lib.path)")
+    #endif
 
     arguments.forEach { $0.map { configureArguments.append($0) } }
 
