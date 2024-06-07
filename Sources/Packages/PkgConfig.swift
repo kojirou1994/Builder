@@ -29,6 +29,9 @@ public struct PkgConfig: Package {
   }
 
   public func build(with context: BuildContext) throws {
+
+    context.environment.append("-Wno-int-conversion", for: .cflags)
+
     if context.order.system.isApple {
       try context.autoreconf()
     }
