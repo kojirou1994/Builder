@@ -24,7 +24,11 @@ public struct PackagePath: Hashable, CustomStringConvertible {
   }
 
   public var lib: URL {
+    #if os(macOS)
     root.appendingPathComponent("lib")
+    #else
+    root.appendingPathComponent("lib64") // fedora
+    #endif
   }
 
   public var share: URL {
