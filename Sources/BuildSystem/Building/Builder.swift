@@ -221,7 +221,7 @@ struct Builder {
       let versionString: String
       switch version {
       case .head:
-        versionString = UUID().uuidString
+        versionString = "HEAD"
       case .stable(let v):
         versionString = v.toString()
       }
