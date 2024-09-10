@@ -8,26 +8,33 @@ public struct LsmashWorks: Package {
     let source: PackageSource
     switch order.version {
     case .head:
-      source = .tarball(url: "https://github.com/VFR-maniac/L-SMASH-Works/archive/refs/heads/master.zip")
+      source = .repository(url: "https://github.com/AkarinVS/L-SMASH-Works")
     case .stable:
       throw PackageRecipeError.unsupportedVersion
     }
 
     return .init(
       source: source,
-      dependencies: [.runTime(Lsmash.self)]
+      dependencies: [
+        .buildTool(Meson.self),
+        .buildTool(Ninja.self),
+        .buildTool(Cmake.self),
+        .buildTool(PkgConfig.self),
+        .runTime(Lsmash.self),
+      ],
+      supportedLibraryType: .shared
     )
   }
 
   public func build(with context: BuildContext) throws {
 
     try context.changingDirectory("VapourSynth") { _ in
-      try context.configure(
-      )
+      try context.inRandomDirectory { _ in
+        try context.meson("..")
 
-      try context.make()
-
-      try context.make("install")
+        try context.make(toolType: .ninja)
+        try context.make(toolType: .ninja, "install")
+      }
     }
   }
 

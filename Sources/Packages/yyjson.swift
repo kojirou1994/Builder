@@ -16,7 +16,7 @@ public struct yyjson: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "0.9.0"
+    "0.10.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -9,7 +9,7 @@ public struct Autoconf: Package {
    https://savannah.gnu.org/support/index.php?110397
    */
   public var defaultVersion: PackageVersion {
-    "2.71"
+    "2.72"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

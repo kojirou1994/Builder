@@ -63,7 +63,7 @@ public struct Python: Package {
       configureWithFlag(context.order.system.isApple, "lto"),
       configureEnableFlag(true, "ipv6"),
       configureEnableFlag(true, "loadable-sqlite-extensions"),
-      "--with-system-expat",
+      // "--with-system-expat",
 //      "--with-system-libmpdec",
       "--with-readline=editline",
 //      context.order.system.isApple ? "--enable-framework=\(context.prefix.appending("Frameworks").path)" : "--enable-shared",

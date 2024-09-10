@@ -3,7 +3,7 @@ import BuildSystem
 public struct Freetype: Package {
   
   public var defaultVersion: PackageVersion {
-    "2.13.2"
+    "2.13.3"
   }
   
   @Flag
