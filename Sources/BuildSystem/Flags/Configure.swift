@@ -57,10 +57,20 @@ import Foundation
 
 public func replace(contentIn file: URL, matching string: String, with newString: String) throws {
   try String(contentsOf: file)
-    .replacingOccurrences(of: string, with: newString)
+    .replacing(string, with: newString)
     .write(to: file, atomically: true, encoding: .utf8)
 }
 
 public func replace(contentIn file: String, matching string: String, with newString: String) throws {
   try replace(contentIn: URL(fileURLWithPath: file), matching: string, with: newString)
+}
+
+public func replace(contentIn file: URL, matching regex: some RegexComponent, with newString: String) throws {
+  try String(contentsOf: file)
+    .replacing(regex, with: newString)
+    .write(to: file, atomically: true, encoding: .utf8)
+}
+
+public func replace(contentIn file: String, matching regex: some RegexComponent, with newString: String) throws {
+  try replace(contentIn: URL(fileURLWithPath: file), matching: regex, with: newString)
 }
