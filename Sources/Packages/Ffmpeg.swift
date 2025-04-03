@@ -14,6 +14,10 @@ public struct Ffmpeg: Package {
       try replace(contentIn: "configure", matching: "pkg_config_default=pkg-config", with: "pkg_config_default=\"pkg-config --static\"")
     }
 
+    #if os(Linux)
+    try context.launch("chmod", "+x", "./configure")
+    #endif
+    
     try context.launch(path: "./configure", configureOptions(context: context))
 
     try context.make()
