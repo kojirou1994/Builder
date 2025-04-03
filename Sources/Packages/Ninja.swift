@@ -27,8 +27,10 @@ public struct Ninja: Package {
   public func build(with context: BuildContext) throws {
     try context.inRandomDirectory { _ in
       try context.cmake(
-        toolType: .make, 
-        ".."
+        toolType: .make,
+        // TODO: remove when fixed for cmake 4.0
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+        "..",
         /* -DBUILD_TESTING */
       )
 

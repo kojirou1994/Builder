@@ -8,7 +8,8 @@ public struct Cmake: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.30.3"
+    // "4.0.0"
+    "3.31.6"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

@@ -5,7 +5,7 @@ public struct Boost: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "1.86.0"
+    "1.87.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

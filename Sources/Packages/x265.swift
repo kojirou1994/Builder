@@ -19,10 +19,12 @@ public struct x265: Package {
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
 
+// https://bitbucket.org/multicoreware/x265_git/commits/b354c009a60bcd6d7fc04014e200a1ee9c45c167
+// failed with cmake 4
     var source: PackageSource
     switch order.version {
     case .head:
-      source = .repository(url: officialRepo, requirement: .revision("4ecee600df03bc5c7679d2caf702be9169f41aec"))
+      source = .repository(url: officialRepo, requirement: .revision("ef83e1285847952bd50c04cfe98bd521845f05db"))
     case .stable(let version):
       source = .repository(url: officialRepo, requirement: .tag(version.toString(includeZeroPatch: false)))
     }

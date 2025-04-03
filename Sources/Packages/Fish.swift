@@ -4,6 +4,7 @@ public struct Fish: Package {
   
   public init() {}
   
+  // TODO: 4.0 or delete
   public var defaultVersion: PackageVersion {
     "3.7.1"
   }

@@ -5,7 +5,7 @@ public struct Mpfr: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "4.2.1"
+    "4.2.2"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

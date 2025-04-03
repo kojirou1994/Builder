@@ -5,7 +5,7 @@ public struct Gettext: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "0.22.5"
+    "0.24.0"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -25,6 +25,7 @@ public struct Gettext: Package {
   public func build(with context: BuildContext) throws {
 
     if context.order.system.isApple {
+      context.environment["am_cv_func_iconv_works"] = "yes"
       context.environment.append("-liconv", for: .ldflags)
     }
 
@@ -36,6 +37,7 @@ public struct Gettext: Package {
       "--with-included-libcroco",
       "--with-included-libunistring",
       "--with-included-libxml",
+      configureWithFlag("/usr/lib", "libiconv-prefix"),
       "--with-emacs",
 //      "--with-lispdir=#{elisp}",
       "--disable-java",

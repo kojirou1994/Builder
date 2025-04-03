@@ -4,7 +4,7 @@ public struct Fmt: Package {
 
   public init() {}
 
-  // MARK: todo 10.2.1
+  // MARK: todo 11.1.4
   public var defaultVersion: PackageVersion {
     "8.1.1"
   }

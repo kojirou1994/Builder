@@ -17,7 +17,7 @@ public struct Fribidi: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "1.0.15"
+    "1.0.16"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

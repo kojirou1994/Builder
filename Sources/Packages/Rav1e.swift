@@ -35,6 +35,8 @@ public struct Rav1e: Package {
       source: source,
       dependencies: [
         .buildTool(Nasm.self),
+        .buildTool(Zlib.self),
+        .buildTool(PkgConfig.self),
         .cargo(["cargo-c"]),
       ]
     )

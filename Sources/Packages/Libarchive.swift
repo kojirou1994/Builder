@@ -5,7 +5,7 @@ public struct Libarchive: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.7.4"
+    "3.7.9"
   }
 
   @Option

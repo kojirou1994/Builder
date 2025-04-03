@@ -5,7 +5,7 @@ public struct Iperf3: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.17.1"
+    "3.18"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

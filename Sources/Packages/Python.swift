@@ -8,7 +8,7 @@ public struct Python: Package {
   public init() {}
 
   public var defaultVersion: PackageVersion {
-    "3.11.9"
+    "3.11.11"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {

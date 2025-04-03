@@ -22,7 +22,7 @@ public struct Ffmpeg: Package {
   }
 
   public var defaultVersion: PackageVersion {
-    "7.0.2"
+    "7.1.1"
   }
 
   public func recipe(for order: PackageOrder) throws -> PackageRecipe {
@@ -39,6 +39,7 @@ public struct Ffmpeg: Package {
     }
 
     source.patches.append(.remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/ffmpeg/0002-change-AV_CODEC_FLAG-priority-for-libx265.patch", sha256: nil))
+    source.patches.append(.remote(url: "https://github.com/FFmpeg/FFmpeg/commit/d1ed5c06e3edc5f2b5f3664c80121fa55b0baa95.patch?full_index=1", sha256: nil))
 
     var deps: [PackageDependency] = [
       .buildTool(Nasm.self),
