@@ -237,7 +237,7 @@ struct Builder {
       }
 
       #warning("handle other tarball format")
-      try env.launch("tar", "xf", dstFileURL.path)
+      try env.launch("tar", "--no-same-owner", "-xf", dstFileURL.path)
 
       let contents = try fm.contentsOfDirectory(at: env.fm.currentDirectory, options: [.skipsHiddenFiles])
       if contents.count == 1, fm.fileExistance(at: contents[0]) == .directory {
