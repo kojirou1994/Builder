@@ -17,7 +17,7 @@ public struct Ffmpeg: Package {
     #if os(Linux)
     try context.launch("chmod", "+x", "./configure")
     #endif
-    
+
     try context.launch(path: "./configure", configureOptions(context: context))
 
     try context.make()
@@ -53,7 +53,9 @@ public struct Ffmpeg: Package {
 
     switch tls {
     case .openssl:
-      deps.append(.runTime(Openssl.self))
+      if context.order.system != .linuxGNU {
+        deps.append(.runTime(Openssl.self))
+      }
     case .none:
       break
     case .mbedtls:
