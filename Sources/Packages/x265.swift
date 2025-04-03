@@ -2,7 +2,7 @@ import BuildSystem
 import FPExecutableLauncher
 
 private let officialRepo = "https://bitbucket.org/multicoreware/x265_git.git"
-private let chocoRepo = "https://github.com/kojirou1994/x265_choco.git"
+// private let chocoRepo = "https://github.com/kojirou1994/x265_choco.git"
 public struct x265: Package {
 
   public init() {}
@@ -34,20 +34,7 @@ public struct x265: Package {
           .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A01-darwin-neon-support-for-arm64.patch", sha256: nil),
           .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/e4d9f3313c700acf9d8522aa270d96e806304693/contrib/x265/A02-threads-priority.patch", sha256: nil),
         ]
-      } else {
-        source.patches += [
-          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A02-threads-priority.patch", sha256: nil),
-          .remote(url: "https://raw.githubusercontent.com/HandBrake/HandBrake/a15f2d0ae131c417522a4b3a2455c79982a8e7f1/contrib/x265/A03-threads-pool-adjustments.patch", sha256: nil),
-        ]
       }
-    }
-
-    if case .stable = order.version {
-      source.patches += [
-        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0001-fix-Ctrl-C.patch", sha256: nil),
-        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0002-presets-and-tunes.patch", sha256: nil),
-        .remote(url: "https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0003-update-build-info.patch", sha256: nil),
-      ]
     }
 
     return .init(
@@ -66,11 +53,199 @@ public struct x265: Package {
   }
 
   public func build(with context: BuildContext) throws {
+    if context.order.version == .head {
+    // https://github.com/HandBrake/HandBrake/blob/281dbc98f0477e60dd2eb78ea86073ef7ceedd4a/contrib/x265/A01-threads-priority.patch
+    try replace(contentIn: "source/common/threadpool.cpp", matching: """
+#if _WIN32
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+#else
+    __attribute__((unused)) int val = nice(10);
+#endif
+
+""", with: "")
+
+// warning: https://bitbucket.org/multicoreware/x265_git/commits/5a0b22deb6d8adbce8a5d586bcee679eaf45babf
+
+    // https://github.com/HandBrake/HandBrake/blob/281dbc98f0477e60dd2eb78ea86073ef7ceedd4a/contrib/x265/A02-threads-pool-adjustments.patch
+    try replace(contentIn: "source/common/threadpool.cpp", matching: """
+        p->frameNumThreads = 4; 
+    else if (cpuCount >= 8)
+#if _WIN32 && X265_ARCH_ARM64
+        p->frameNumThreads = cpuCount;
+#else
+        p->frameNumThreads = 3;
+#endif
+""", with: """
+#if MACOS && X265_ARCH_ARM64
+        p->frameNumThreads = 16;
+#else
+        p->frameNumThreads = 4;
+#endif
+    else if (cpuCount >= 8)
+#if MACOS && X265_ARCH_ARM64
+        p->frameNumThreads = 8;
+#elif _WIN32 && X265_ARCH_ARM64
+        p->frameNumThreads = cpuCount;
+#else
+        p->frameNumThreads = 3;
+#endif
+""")
+
+    // https://github.com/HandBrake/HandBrake/blob/281dbc98f0477e60dd2eb78ea86073ef7ceedd4a/contrib/x265/A03-sei-length-crash-fix.patch
+//     try replace(contentIn: "source/encoder/encoder.cpp", matching: "input = pic_in->userSEI.payloads[i];", with: """
+// input = pic_in->userSEI.payloads[i];
+
+//             if (frame->m_userSEI.payloads[i].payload && (frame->m_userSEI.payloads[i].payloadSize < input.payloadSize))
+//             {
+//                 delete[] frame->m_userSEI.payloads[i].payload;
+//                 frame->m_userSEI.payloads[i].payload = NULL;
+//             }
+// """)
+
+    // https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0003-update-build-info.patch
+    try replace(contentIn: "source/common/version.cpp", matching: "[clang", with: "[Clang")
+    try replace(contentIn: "source/common/version.cpp", matching: "#define ONOS    \"[Mac OS X]\"", with: """
+#define ONOS    "[macOS]"
+#if X86_64
+#define MAC_ARCH    "[Intel]"
+#elif defined(__aarch64__)
+#define MAC_ARCH    "[Apple Silicon]"
+#endif // MAC_ARCH end 
+""")
+    if context.order.system.isApple {
+      try replace(contentIn: "source/common/version.cpp", matching: "ONOS COMPILEDBY", with: "ONOS MAC_ARCH COMPILEDBY")
+    }
+
+    // https://raw.githubusercontent.com/kojirou1994/patches/main/x265/0002-presets-and-tunes.patch
+    try replace(contentIn: "source/common/param.cpp", matching: """
+            else if (!strcmp(preset, "superfast"))
+            {
+    """, with: """
+            else if (!strncmp(preset, "flyabc", 6))
+            {
+                param->keyframeMin = 5;
+                param->scenecutThreshold = 50;
+                param->bOpenGOP = false;
+                param->lookaheadDepth = 60;
+                param->lookaheadSlices = 0;
+                param->searchMethod = X265_HEX_SEARCH;
+                param->subpelRefine = 2;
+                param->searchRange = 57;
+                param->maxNumReferences = 3;
+                param->maxNumMergeCand = 3;
+                param->bEnableStrongIntraSmoothing = false;
+                param->bEnableSAO = false;
+                param->selectiveSAO = false;
+                param->deblockingFilterTCOffset = -3;
+                param->deblockingFilterBetaOffset = -3;
+                param->bEnableLoopFilter = true;
+                param->maxCUSize = 32;
+                param->rdoqLevel = 2;
+                param->psyRdoq = 1.0;
+                param->recursionSkipMode = 2;
+    
+                if (!strcmp(preset, "flyabc+"))
+                {
+                    param->bEnableEarlySkip = 0;
+                }
+            }
+            else if (!strcmp(preset, "superfast"))
+            {
+    """)
+    try replace(contentIn: "source/common/param.cpp", matching: "param->bframes = (param->bframes + 2) >= param->lookaheadDepth? param->bframes : param->bframes + 2;", with: "if (param->bframes + 1 < param->lookaheadDepth) param->bframes++; if (param->bframes + 1 < param->lookaheadDepth) param->bframes++;")
+    try replace(contentIn: "source/common/param.cpp", matching: """
+             else if (!strcmp(tune, "animation"))
+    """, with: """
+            else if (!strncmp(tune, "littlepox", 9) || !strncmp(tune, "vcb-s", 5)) {
+                param->searchRange = 25; //down from 57
+                param->bEnableAMP = 0;
+                param->bEnableRectInter = 0;
+                param->rc.aqStrength = 0.8; //down from 1.0
+                if (param->rdLevel < 4) param->rdLevel = 4;
+                param->rdoqLevel = 2; //force rdoq to be effective
+                param->bEnableSAO = 0;
+                param->bEnableStrongIntraSmoothing = 0;
+                if (param->bframes + 1 < param->lookaheadDepth) param->bframes++;
+                if (param->bframes + 1 < param->lookaheadDepth) param->bframes++; //from tune animation
+                if (param->tuQTMaxInterDepth > 3) param->tuQTMaxInterDepth--;
+                if (param->tuQTMaxIntraDepth > 3) param->tuQTMaxIntraDepth--;
+                if (param->maxNumMergeCand > 3) param->maxNumMergeCand--;
+                if (param->subpelRefine < 3) param->subpelRefine = 3;
+                param->keyframeMin = 1;
+                param->keyframeMax = 360;
+                param->bOpenGOP = 0;
+                param->deblockingFilterBetaOffset = -1;
+                param->deblockingFilterTCOffset = -1;
+                param->maxCUSize = 32;
+                param->maxTUSize = 32;
+                param->rc.qgSize = 8;
+                param->cbQpOffset = -2; //better chroma quality to compensate 420 subsampling
+                param->crQpOffset = -2; //better chroma quality to compensate 420 subsampling
+                param->rc.pbFactor = 1.2; //down from 1.3
+                param->bEnableWeightedBiPred = 1;
+                if (tune[0] == 'l') {
+                    // Mid bitrate anime
+                    param->rc.rfConstant = 20;
+                    param->psyRd = 1.5; //down
+                    param->psyRdoq = 0.8; //down
+        
+                    if (strstr(tune, "+")) {
+                        if (param->maxNumReferences < 2) param->maxNumReferences = 2;
+                        if (param->subpelRefine < 3) param->subpelRefine = 3;
+                        if (param->lookaheadDepth < 60) param->lookaheadDepth = 60;
+                        param->searchRange = 38; //down from 57
+                    }
+                } else {
+                    // High bitrate anime (bluray) or film
+                    param->rc.rfConstant = 18;
+                    param->psyRd = 1.8; //down
+                    param->psyRdoq = 1.0; //same
+        
+                    if (strstr(tune, "+")) {
+                        if (param->maxNumReferences < 3) param->maxNumReferences = 3;
+                        if (param->subpelRefine < 3) param->subpelRefine = 3;
+                        param->bIntraInBFrames = 1;
+                        param->bEnableRectInter = 1;
+                        param->limitTU = 4;
+                        if (param->lookaheadDepth < 60) param->lookaheadDepth = 60;
+                        param->searchRange = 38; //down from 57
+                    }
+                }
+             }
+             else if (!strcmp(tune, "animation"))
+    """)
+
+    try replace(contentIn: "source/x265.h", matching: """
+    "animation", 0
+    """, with: """
+    "animation", "littlepox", "littlepox+", "vcb-s", "vcb-s+", 0
+    """)
+    try replace(contentIn: "source/x265.h", matching: """
+    "placebo", 0
+    """, with: """
+    "placebo", "flyabc", "flyabc+", 0
+    """)
+    try replace(contentIn: "source/x265cli.cpp", matching: """
+        H0("-t/--tune <string>               Tune the settings for a particular type of source or situation:\n");
+""", with: """
+        H0("           (good for everything) flyabc, (slower) flyabc+\n");
+        H0("-t/--tune <string>               Tune the settings for a particular type of source or situation:\n");
+        H0("             (mid bitrate anime) littlepox, (slower) littlepox+\n");
+        H0("  (high bitrate anime BD / film) vcb-s,   (slower) vcb-s+\n");
+""")
+    try replace(contentIn: "source/x265cli.cpp", matching: "startReader();", with: """
+startReader();
+
+        if (!preset) preset = "medium";
+        if (!tune) tune = "none";
+        x265_log(param, X265_LOG_INFO, "Using preset %s & tune %s\\n", preset, tune);
+
+""")
+    }
+
 
     let srcDir = "../source"
     let toolType: MakeToolType = .ninja
-
-    try replace(contentIn: "source/common/aarch64/pixel-util.S", matching: " x265_entropyStateBits", with: " _x265_entropyStateBits")
 
     if enable12bit {
       try context.changingDirectory("12bit") { cwd in
@@ -81,7 +256,8 @@ public struct x265: Package {
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
           "-DENABLE_CLI=OFF",
-          "-DMAIN12=ON"
+          "-DMAIN12=ON",
+          "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
         )
 
         try context.make(toolType: toolType)
@@ -97,7 +273,8 @@ public struct x265: Package {
           "-DENABLE_HDR10_PLUS=ON",
           "-DEXPORT_C_API=OFF",
           "-DENABLE_SHARED=OFF",
-          "-DENABLE_CLI=OFF"
+          "-DENABLE_CLI=OFF",
+          "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
         )
 
         try context.make(toolType: toolType)
@@ -126,7 +303,8 @@ public struct x265: Package {
         cmakeOnFlag(enable10bit, "LINKED_10BIT"),
         cmakeOnFlag(enable12bit, "LINKED_12BIT"),
         context.libraryType.sharedCmakeFlag,
-        cmakeOnFlag(true, "ENABLE_CLI")
+        cmakeOnFlag(true, "ENABLE_CLI"),
+        "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
       )
 
       try context.make(toolType: toolType)
