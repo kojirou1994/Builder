@@ -1,11 +1,11 @@
-// swift-tools-version:5.4
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
   name: "Builder",
   platforms: [
-    .macOS(.v10_15)
+    .macOS(.v13)
   ],
   products: [
     .library(name: "BuildSystem", type: .dynamic, targets: ["BuildSystem"]),
